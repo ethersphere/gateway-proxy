@@ -1,0 +1,3 @@
+{
+  "ignores": ["@types/node", "@commitlint/cli", "husky", "ts-node"]
+}
