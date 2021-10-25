@@ -13,6 +13,9 @@
     "browser",
     "node"
   ],
+  "bin": {
+    "bee-gateway-proxy": "dist/index.js"
+  },
   "main": "dist/index.js",
   "scripts": {
     "build": "rimraf ./build && tsc",
