@@ -25,22 +25,19 @@ app.get('/health', (_req, res) => res.send('OK'))
 // Readiness endpoint
 app.get('/readiness', (_req, res) => res.send('OK'))
 
-const getMethodOnly = (_pathname: string, req: Request) => req.method === 'GET'
-const postMethodOnly = (_pathname: string, req: Request) => req.method === 'POST'
-
 // Download file/collection proxy
-app.use(
+app.get(
   '/bzz/:reference',
-  createProxyMiddleware(getMethodOnly, {
+  createProxyMiddleware({
     target: BEE_API_URL,
     changeOrigin: true,
   }),
 )
 
 // Upload file/collection proxy
-app.use(
+app.post(
   '/bzz',
-  createProxyMiddleware(postMethodOnly, {
+  createProxyMiddleware({
     target: BEE_API_URL,
     changeOrigin: true,
   }),
