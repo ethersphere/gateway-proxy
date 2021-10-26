@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Express } from 'express'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 
 interface Config {
@@ -6,7 +6,7 @@ interface Config {
   AUTH_SECRET?: string
 }
 
-export const createApp = ({ BEE_API_URL, AUTH_SECRET }: Config) => {
+export const createApp = ({ BEE_API_URL, AUTH_SECRET }: Config): Express => {
   // Create Express Server
   const app = express()
 
