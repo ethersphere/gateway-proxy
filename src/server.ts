@@ -1,46 +1,66 @@
 import express from 'express'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 
-// Create Express Server
-export const app = express()
-
-// Configuration
-const BEE_API_URL = process.env.BEE_API_URL || 'http://localhost:1633'
-const AUTH_SECRET = process.env.AUTH_SECRET
-
-// Authorization
-if (AUTH_SECRET) {
-  app.use('', (req, res, next) => {
-    if (req.headers.authorization === AUTH_SECRET) {
-      next()
-    } else {
-      res.sendStatus(403)
-    }
-  })
+interface Config {
+  BEE_API_URL: string
+  AUTH_SECRET?: string
 }
 
-// Health endpoint
-app.get('/health', (_req, res) => res.send('OK'))
+export const createApp = ({ BEE_API_URL, AUTH_SECRET }: Config) => {
+  // Create Express Server
+  const app = express()
 
-// Readiness endpoint
-app.get('/readiness', (_req, res) => res.send('OK'))
+  // Authorization
+  if (AUTH_SECRET) {
+    app.use('', (req, res, next) => {
+      if (req.headers.authorization === AUTH_SECRET) {
+        next()
+      } else {
+        res.sendStatus(403)
+      }
+    })
+  }
 
-// Download file/collection proxy
-app.get(
-  '/bzz/:reference',
-  createProxyMiddleware({
-    target: BEE_API_URL,
-    changeOrigin: true,
-  }),
-)
+  // Health endpoint
+  app.get('/health', (_req, res) => res.send('OK'))
 
-// Upload file/collection proxy
-app.post(
-  '/bzz',
-  createProxyMiddleware({
-    target: BEE_API_URL,
-    changeOrigin: true,
-  }),
-)
+  // Readiness endpoint
+  app.get(
+    '/readiness',
+    createProxyMiddleware({
+      target: BEE_API_URL,
+      changeOrigin: true,
+      pathRewrite: {
+        '/readiness': '/',
+      },
+      onError: (_err, _req, res) => {
+        res.writeHead(404).end('Not Found')
+      },
+      onProxyRes: (_proxyRes, _req, res) => {
+        res.writeHead(200).end('OK')
+      },
+    }),
+  )
 
-app.use((_req, res) => res.sendStatus(404))
+  // Download file/collection proxy
+  app.get(
+    '/bzz/:reference',
+    createProxyMiddleware({
+      target: BEE_API_URL,
+      changeOrigin: true,
+    }),
+  )
+
+  // Upload file/collection proxy
+  app.post(
+    '/bzz',
+    createProxyMiddleware({
+      target: BEE_API_URL,
+      changeOrigin: true,
+    }),
+  )
+
+  app.use((_req, res) => res.sendStatus(404))
+
+  return app
+}
