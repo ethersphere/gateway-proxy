@@ -34,7 +34,7 @@ export const createApp = ({ BEE_API_URL, AUTH_SECRET }: Config): Express => {
         '/readiness': '/',
       },
       onError: (_err, _req, res) => {
-        res.writeHead(404).end('Not Found')
+        res.writeHead(502).end('Bad Gateway')
       },
       onProxyRes: (_proxyRes, _req, res) => {
         res.writeHead(200).end('OK')
