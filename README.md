@@ -81,8 +81,8 @@ curl \
 | `GET /health`         | `200`             | `OK`                                                                                                  |
 |                       | `403`             | `Forbidden`                                                                                           |
 | `GET /readiness`      | `200`             | `OK`                                                                                                  |
-|                       | `502`             | `Bad Gateway` when can not connect to Bee node                                                        |
 |                       | `403`             | `Forbidden`                                                                                           |
+|                       | `502`             | `Bad Gateway` when can not connect to Bee node                                                        |
 | `GET /bzz/:swarmhash` | `200`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/BZZ/paths/~1bzz~1{reference}/get) |
 | `POST /bzz`           | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/BZZ/paths/~1bzz/post)             |
 
