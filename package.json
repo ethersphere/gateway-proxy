@@ -17,6 +17,7 @@
     "bee-gateway-proxy": "dist/index.js"
   },
   "main": "dist/index.js",
+  "files": ["dist"],
   "scripts": {
     "build": "rimraf ./build && tsc",
     "start": "npm run build && node dist/index.js",
