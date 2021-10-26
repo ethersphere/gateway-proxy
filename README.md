@@ -14,7 +14,7 @@
 **Warning: This project is in beta state. There might (and most probably will) be changes in the future to its API and
 working. Also, no guarantees can be made about its stability, efficiency, and security at this stage.**
 
-This project is intended to be used with **Bee version 1.2.1**. Using it with older or newer Bee versions is not
+This project is intended to be used with **Bee version 1.2.0**. Using it with older or newer Bee versions is not
 recommended and may not work. Stay up to date by joining the [official Discord](https://discord.gg/GU22h2utj6) and by
 keeping an eye on the [releases tab](https://github.com/ethersphere/gateway-proxy/releases).
 
@@ -78,10 +78,11 @@ curl \
 
 | Endpoint              | Response code     | Response text                                                                                         |
 | --------------------- | ----------------- | ----------------------------------------------------------------------------------------------------- |
-| `GET /health`         | `200`             | OK                                                                                                    |
-|                       | `403`             |                                                                                                       |
-| `GET /readiness`      | `200`             | OK                                                                                                    |
-|                       | `403`             |                                                                                                       |
+| `GET /health`         | `200`             | `OK`                                                                                                  |
+|                       | `403`             | `Forbidden`                                                                                           |
+| `GET /readiness`      | `200`             | `OK`                                                                                                  |
+|                       | `502`             | `Bad Gateway` when can not connect to Bee node                                                        |
+|                       | `403`             | `Forbidden`                                                                                           |
 | `GET /bzz/:swarmhash` | `200`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/BZZ/paths/~1bzz~1{reference}/get) |
 | `POST /bzz`           | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/BZZ/paths/~1bzz/post)             |
 
