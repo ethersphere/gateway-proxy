@@ -17,12 +17,14 @@
     "bee-gateway-proxy": "dist/index.js"
   },
   "main": "dist/index.js",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "prepare": "npm run build",
     "build": "rimraf ./build && tsc",
-    "start": "npm run build && node dist/index.js",
-    "dev": "nodemon --config nodemon.json src/index.ts",
-    "dev:debug": "nodemon --config nodemon.json --inspect-brk src/index.ts",
+    "start": "nodemon --config nodemon.json src/index.ts",
+    "start:debug": "nodemon --config nodemon.json --inspect-brk src/index.ts",
     "lint": "eslint --fix \"src/**/*.ts\" \"test/**/*.ts\" && prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint:check": "eslint \"src/**/*.ts\" \"test/**/*.ts\" && prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
     "depcheck": "depcheck .",
