@@ -8,6 +8,15 @@ on:
     branches:
       - '**'
 
+env:
+  BEE_VERSION: '1.2.0-29eb9414-stateful'
+  BLOCKCHAIN_VERSION: '1.2.0-for-1.2.0-29eb9414-stateful'
+  BEE_ENV_PREFIX: 'swarm-test'
+  BEE_IMAGE_PREFIX: 'docker.pkg.github.com/ethersphere/bee-factory'
+  COMMIT_VERSION_TAG: 'false'
+  WORKERS: 2
+  BEE_API_URL: 'http://localhost:1633'
+
 jobs:
   nodejs:
     runs-on: ubuntu-latest
@@ -26,6 +35,17 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
+
+      - name: Auth to Github Package Docker Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login https://docker.pkg.github.com -u ${GITHUB_ACTOR} --password-stdin
+
+      # Setup Bee environment
+      - name: Start Bee Factory environment
+        run: |
+          git clone --depth=1 https://github.com/ethersphere/bee-factory.git
+          chmod +x -R ./bee-factory/scripts
+          ./bee-factory/scripts/environment.sh start --detach --workers=$WORKERS
 
       ## Try getting the node modules from cache, if failed npm ci
       - uses: actions/cache@v2
