@@ -1,5 +1,5 @@
 import express, { Express } from 'express'
-import { createProxyMiddleware } from 'http-proxy-middleware'
+import { createProxyMiddleware, Options } from 'http-proxy-middleware'
 
 interface Config {
   BEE_API_URL: string
@@ -7,6 +7,11 @@ interface Config {
 }
 
 export const createApp = ({ BEE_API_URL, AUTH_SECRET }: Config): Express => {
+  const commonOptions: Options = {
+    target: BEE_API_URL,
+    changeOrigin: true,
+  }
+
   // Create Express Server
   const app = express()
 
@@ -28,8 +33,7 @@ export const createApp = ({ BEE_API_URL, AUTH_SECRET }: Config): Express => {
   app.get(
     '/readiness',
     createProxyMiddleware({
-      target: BEE_API_URL,
-      changeOrigin: true,
+      ...commonOptions,
       pathRewrite: {
         '/readiness': '/',
       },
@@ -42,23 +46,11 @@ export const createApp = ({ BEE_API_URL, AUTH_SECRET }: Config): Express => {
     }),
   )
 
-  // Download file/collection proxy
-  app.get(
-    '/bzz/:reference',
-    createProxyMiddleware({
-      target: BEE_API_URL,
-      changeOrigin: true,
-    }),
-  )
+  // Download file/collection/chunk proxy
+  app.get(['/bzz/:reference', '/bzz/:reference/*', '/bytes/:reference'], createProxyMiddleware(commonOptions))
 
   // Upload file/collection proxy
-  app.post(
-    '/bzz',
-    createProxyMiddleware({
-      target: BEE_API_URL,
-      changeOrigin: true,
-    }),
-  )
+  app.post('/bzz', createProxyMiddleware(commonOptions))
 
   app.use((_req, res) => res.sendStatus(404))
 
