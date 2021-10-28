@@ -14,6 +14,12 @@ const appWrong = createApp({ BEE_API_URL: BEE_API_URL_WRONG })
 const appAuth = createApp({ BEE_API_URL, AUTH_SECRET })
 const appAuthWrong = createApp({ BEE_API_URL: BEE_API_URL_WRONG, AUTH_SECRET })
 
+interface AddressInfo {
+  address: string
+  family: string
+  port: number
+}
+
 describe('GET /health', () => {
   it('should return 200 & OK', async () => {
     const res = await request(app).get(`/health`).expect(200)
@@ -73,13 +79,13 @@ describe('POST /bzz', () => {
     const fileName = '1.txt'
     const directoryStructure = await makeCollectionFromFS(dir)
 
-    const port = 4000
     const server: Server = await new Promise((resolve, _reject) => {
-      const server = app.listen(port, async () => {
+      const server = app.listen(async () => {
         resolve(server)
       })
     })
 
+    const port = (server.address() as AddressInfo).port
     const bee2 = new Bee(`http://localhost:${port}`)
     const { reference } = await bee2.uploadCollection(batch.batchID, directoryStructure, {
       indexDocument: `${fileName}`,
