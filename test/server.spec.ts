@@ -20,6 +20,8 @@ interface AddressInfo {
   port: number
 }
 
+beforeAll(async () => await getOrCreatePostageBatch('1000', 20), 60_000)
+
 describe('GET /health', () => {
   it('should return 200 & OK', async () => {
     const res = await request(app).get(`/health`).expect(200)
