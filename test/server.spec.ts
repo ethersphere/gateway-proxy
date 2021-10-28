@@ -3,7 +3,7 @@ import request from 'supertest'
 import { Bee } from '@ethersphere/bee-js'
 import type { Server } from 'http'
 
-import { bee, getOrCreatePostageBatch, makeCollectionFromFS } from './utils'
+import { bee, getOrCreatePostageBatch, makeCollectionFromFS, sleep } from './utils'
 
 const BEE_API_URL = process.env.BEE_API_URL || 'http://localhost:1633'
 const BEE_API_URL_WRONG = process.env.BEE_API_URL_WRONG || 'http://localhost:2021'
@@ -76,6 +76,9 @@ describe('GET /readiness', () => {
 describe('POST /bzz', () => {
   it('should store and retrieve actual directory with index document', async () => {
     const batch = await getOrCreatePostageBatch()
+
+    await sleep(10_000)
+
     const path = 'test/data/'
     const dir = `./${path}`
     const fileName = '1.txt'
