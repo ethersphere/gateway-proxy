@@ -112,7 +112,7 @@ describe('POST /bzz', () => {
     // const file1 = await bee.downloadFile(result.reference)
     // expect(file1.name).toEqual(fileName)
     // expect(file1.data).toEqual(data)
-  })
+  }, 60_000)
 })
 
 describe('GET /bytes/:reference/', () => {
