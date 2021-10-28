@@ -37,8 +37,8 @@ export async function waitForBatchToBeUsable(batchId: string, pollingInterval = 
   ])
 }
 
-const DEFAULT_BATCH_AMOUNT = '1'
-const DEFAULT_BATCH_DEPTH = 17
+const DEFAULT_BATCH_AMOUNT = '1000000'
+const DEFAULT_BATCH_DEPTH = 20
 
 /**
  * Returns already existing batch or will create one.
