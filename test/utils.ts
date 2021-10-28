@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { Bee, BeeDebug, BatchId, DebugPostageBatch, Collection } from '@ethersphere/bee-js'
 
-const USABLE_TIMEOUT = 7_000
+const USABLE_TIMEOUT = 10_000
 const BEE_API_URL = process.env.BEE_API_URL || 'http://localhost:1633'
 const BEE_DEBUG_API_URL = process.env.BEE_DEBUG_API_URL || 'http://localhost:1635'
 
