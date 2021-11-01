@@ -14,6 +14,30 @@ const appWrong = createApp({ BEE_API_URL: BEE_API_URL_WRONG })
 const appAuth = createApp({ BEE_API_URL, AUTH_SECRET })
 const appAuthWrong = createApp({ BEE_API_URL: BEE_API_URL_WRONG, AUTH_SECRET })
 
+let proxy: Server
+let proxyAuth: Server
+let beeProxy: Bee
+let _beeProxyAuth: Bee
+
+beforeAll(async () => {
+  proxy = await new Promise((resolve, _reject) => {
+    const server = app.listen(async () => resolve(server))
+  })
+  const port = (proxy.address() as AddressInfo).port
+  beeProxy = new Bee(`http://localhost:${port}`)
+
+  proxyAuth = await new Promise((resolve, _reject) => {
+    const server = appAuth.listen(async () => resolve(server))
+  })
+  const portAuth = (proxy.address() as AddressInfo).port
+  _beeProxyAuth = new Bee(`http://localhost:${portAuth}`)
+})
+
+afterAll(() => {
+  proxy.close()
+  proxyAuth.close()
+})
+
 interface AddressInfo {
   address: string
   family: string
@@ -80,38 +104,14 @@ describe('POST /bzz', () => {
     const fileName = '1.txt'
     const directoryStructure = await makeCollectionFromFS(dir)
 
-    const server: Server = await new Promise((resolve, _reject) => {
-      const server = app.listen(async () => {
-        resolve(server)
-      })
-    })
-
-    const port = (server.address() as AddressInfo).port
-    const bee2 = new Bee(`http://localhost:${port}`)
-    const { reference } = await bee2.uploadCollection(batch, directoryStructure, {
+    const { reference } = await beeProxy.uploadCollection(batch, directoryStructure, {
       indexDocument: `${fileName}`,
     })
 
     const file1 = await bee.downloadFile(reference)
     expect(file1.name).toEqual(fileName)
     expect(file1.data.text()).toMatch(/^1abcd\n$/)
-    server.close()
-
-    // // Attempt to do that with supertest
-    // const res = await request(app)
-    //   .post(`/bzz`)
-    //   .type('application/octet-stream')
-    //   .set('content-type', 'application/x-tar')
-    //   .set('swarm-collection', 'true')
-    //   .set('swarm-postage-batch-id', batch)
-    //   .send(tarData)
-    // .expect(200)
-
-    // console.log(res) // eslint-disable-line
-    // const file1 = await bee.downloadFile(result.reference)
-    // expect(file1.name).toEqual(fileName)
-    // expect(file1.data).toEqual(data)
-  }, 60_000)
+  })
 })
 
 describe('GET /bytes/:reference/', () => {
