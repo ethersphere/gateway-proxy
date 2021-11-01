@@ -3,7 +3,7 @@ import request from 'supertest'
 import { Bee } from '@ethersphere/bee-js'
 import type { Server } from 'http'
 
-import { bee, getOrCreatePostageBatch, makeCollectionFromFS, sleep } from './utils'
+import { bee, getPostageBatch, makeCollectionFromFS } from './utils'
 
 const BEE_API_URL = process.env.BEE_API_URL || 'http://localhost:1633'
 const BEE_API_URL_WRONG = process.env.BEE_API_URL_WRONG || 'http://localhost:2021'
@@ -19,8 +19,6 @@ interface AddressInfo {
   family: string
   port: number
 }
-
-beforeAll(async () => await getOrCreatePostageBatch(), 60_000)
 
 describe('GET /health', () => {
   it('should return 200 & OK', async () => {
@@ -75,9 +73,7 @@ describe('GET /readiness', () => {
 
 describe('POST /bzz', () => {
   it('should store and retrieve actual directory with index document', async () => {
-    const batch = await getOrCreatePostageBatch()
-
-    await sleep(10_000)
+    const batch = getPostageBatch()
 
     const path = 'test/data/'
     const dir = `./${path}`
@@ -92,7 +88,7 @@ describe('POST /bzz', () => {
 
     const port = (server.address() as AddressInfo).port
     const bee2 = new Bee(`http://localhost:${port}`)
-    const { reference } = await bee2.uploadCollection(batch.batchID, directoryStructure, {
+    const { reference } = await bee2.uploadCollection(batch, directoryStructure, {
       indexDocument: `${fileName}`,
     })
 
@@ -107,7 +103,7 @@ describe('POST /bzz', () => {
     //   .type('application/octet-stream')
     //   .set('content-type', 'application/x-tar')
     //   .set('swarm-collection', 'true')
-    //   .set('swarm-postage-batch-id', batch.batchID)
+    //   .set('swarm-postage-batch-id', batch)
     //   .send(tarData)
     // .expect(200)
 
@@ -120,12 +116,12 @@ describe('POST /bzz', () => {
 
 describe('GET /bytes/:reference/', () => {
   it('should retrieve bytes from the proxy', async () => {
-    const batch = await getOrCreatePostageBatch()
+    const batch = getPostageBatch()
     const path = 'test/data/'
     const dir = `./${path}`
     const fileName = '1.txt'
     const directoryStructure = await makeCollectionFromFS(dir)
-    const { reference } = await bee.uploadCollection(batch.batchID, directoryStructure, {
+    const { reference } = await bee.uploadCollection(batch, directoryStructure, {
       indexDocument: `${fileName}`,
     })
 
@@ -144,12 +140,12 @@ describe('GET /bytes/:reference/', () => {
 
 describe('GET /bzz/:reference/', () => {
   it('should retrieve index document from a directory', async () => {
-    const batch = await getOrCreatePostageBatch()
+    const batch = getPostageBatch()
     const path = 'test/data/'
     const dir = `./${path}`
     const fileName = '1.txt'
     const directoryStructure = await makeCollectionFromFS(dir)
-    const { reference } = await bee.uploadCollection(batch.batchID, directoryStructure, {
+    const { reference } = await bee.uploadCollection(batch, directoryStructure, {
       indexDocument: `${fileName}`,
     })
 
@@ -167,12 +163,12 @@ describe('GET /bzz/:reference/', () => {
 
 describe('GET /bzz/:reference/<path>', () => {
   it('should retrieve a subdocument from a directory', async () => {
-    const batch = await getOrCreatePostageBatch()
+    const batch = getPostageBatch()
     const path = 'test/data/'
     const dir = `./${path}`
     const fileName = '1.txt'
     const directoryStructure = await makeCollectionFromFS(dir)
-    const { reference } = await bee.uploadCollection(batch.batchID, directoryStructure, {
+    const { reference } = await bee.uploadCollection(batch, directoryStructure, {
       indexDocument: `${fileName}`,
     })
 
