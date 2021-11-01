@@ -33,9 +33,9 @@ beforeAll(async () => {
   _beeProxyAuth = new Bee(`http://localhost:${portAuth}`)
 })
 
-afterAll(() => {
-  proxy.close()
-  proxyAuth.close()
+afterAll(async () => {
+  await new Promise(resolve => proxy.close(resolve))
+  await new Promise(resolve => proxyAuth.close(resolve))
 })
 
 interface AddressInfo {
