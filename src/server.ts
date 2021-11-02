@@ -1,5 +1,6 @@
 import express, { Express } from 'express'
 import { createProxyMiddleware, Options } from 'http-proxy-middleware'
+import { getPostageStamp } from './stamps'
 
 interface Config {
   BEE_API_URL: string
@@ -50,7 +51,7 @@ export const createApp = ({ BEE_API_URL, AUTH_SECRET }: Config): Express => {
   app.get(['/bzz/:reference', '/bzz/:reference/*', '/bytes/:reference'], createProxyMiddleware(commonOptions))
 
   // Upload file/collection proxy
-  app.post('/bzz', createProxyMiddleware(commonOptions))
+  app.post('/bzz', createProxyMiddleware({ ...commonOptions, ...getPostageStamp() }))
 
   app.use((_req, res) => res.sendStatus(404))
 
