@@ -99,17 +99,13 @@ describe('POST /bzz', () => {
   it('should store and retrieve actual directory with index document', async () => {
     const batch = getPostageBatch()
 
-    const path = 'test/data/'
-    const dir = `./${path}`
-    const fileName = '1.txt'
-    const directoryStructure = await makeCollectionFromFS(dir)
+    const indexDocument = '1.txt'
+    const directoryStructure = await makeCollectionFromFS('./test/data/')
 
-    const { reference } = await beeProxy.uploadCollection(batch, directoryStructure, {
-      indexDocument: `${fileName}`,
-    })
+    const { reference } = await beeProxy.uploadCollection(batch, directoryStructure, { indexDocument })
 
     const file1 = await bee.downloadFile(reference)
-    expect(file1.name).toEqual(fileName)
+    expect(file1.name).toEqual(indexDocument)
     expect(file1.data.text()).toMatch(/^1abcd\n$/)
   })
 })
@@ -117,13 +113,11 @@ describe('POST /bzz', () => {
 describe('GET /bytes/:reference/', () => {
   it('should retrieve bytes from the proxy', async () => {
     const batch = getPostageBatch()
-    const path = 'test/data/'
-    const dir = `./${path}`
-    const fileName = '1.txt'
-    const directoryStructure = await makeCollectionFromFS(dir)
-    const { reference } = await bee.uploadCollection(batch, directoryStructure, {
-      indexDocument: `${fileName}`,
-    })
+
+    const indexDocument = '1.txt'
+    const directoryStructure = await makeCollectionFromFS('./test/data/')
+
+    const { reference } = await bee.uploadCollection(batch, directoryStructure, { indexDocument })
 
     const res = await request(app).get(`/bytes/${reference}`).redirects(1).expect(200)
     expect(JSON.stringify(res.body)).toBe(
@@ -141,13 +135,11 @@ describe('GET /bytes/:reference/', () => {
 describe('GET /bzz/:reference/', () => {
   it('should retrieve index document from a directory', async () => {
     const batch = getPostageBatch()
-    const path = 'test/data/'
-    const dir = `./${path}`
-    const fileName = '1.txt'
-    const directoryStructure = await makeCollectionFromFS(dir)
-    const { reference } = await bee.uploadCollection(batch, directoryStructure, {
-      indexDocument: `${fileName}`,
-    })
+
+    const indexDocument = '1.txt'
+    const directoryStructure = await makeCollectionFromFS('./test/data/')
+
+    const { reference } = await bee.uploadCollection(batch, directoryStructure, { indexDocument })
 
     const res = await request(app).get(`/bzz/${reference}`).redirects(1).expect(200)
     expect(res.headers['content-disposition']).toBe('inline; filename="1.txt"')
@@ -164,13 +156,11 @@ describe('GET /bzz/:reference/', () => {
 describe('GET /bzz/:reference/<path>', () => {
   it('should retrieve a subdocument from a directory', async () => {
     const batch = getPostageBatch()
-    const path = 'test/data/'
-    const dir = `./${path}`
-    const fileName = '1.txt'
-    const directoryStructure = await makeCollectionFromFS(dir)
-    const { reference } = await bee.uploadCollection(batch, directoryStructure, {
-      indexDocument: `${fileName}`,
-    })
+
+    const indexDocument = '1.txt'
+    const directoryStructure = await makeCollectionFromFS('./test/data/')
+
+    const { reference } = await bee.uploadCollection(batch, directoryStructure, { indexDocument })
 
     const res = await request(app).get(`/bzz/${reference}/sub/3.txt`).redirects(1).expect(200)
     expect(res.headers['content-disposition']).toBe('inline; filename="3.txt"')
