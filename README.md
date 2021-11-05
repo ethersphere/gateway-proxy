@@ -42,12 +42,13 @@ export AUTH_SECRET="this_is_some_secret_string"
 npm run start
 ```
 
-| Name        | Default Value         | Description                                |
-| ----------- | --------------------- | ------------------------------------------ |
-| BEE_API_URL | http://localhost:1633 | URL of the Bee node API                    |
-| AUTH_SECRET | undefined             | Authentication secret, disabled if not set |
-| HOST        | 127.0.0.1             | Hostname of the proxy                      |
-| PORT        | 3000                  | Port of the proxy                          |
+| Name          | Default Value         | Description                                           |
+| ------------- | --------------------- | ----------------------------------------------------- |
+| BEE_API_URL   | http://localhost:1633 | URL of the Bee node API                               |
+| AUTH_SECRET   | undefined             | Authentication secret, disabled if not set            |
+| HOST          | 127.0.0.1             | Hostname of the proxy                                 |
+| PORT          | 3000                  | Port of the proxy                                     |
+| POSTAGE_STAMP | undefined             | Postage stamp that should be used for upload requests |
 
 ### Curl
 

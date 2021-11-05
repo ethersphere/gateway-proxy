@@ -16,8 +16,10 @@ const appAuthWrong = createApp({ BEE_API_URL: BEE_API_URL_WRONG, AUTH_SECRET })
 
 let proxy: Server
 let proxyAuth: Server
+let proxyWithStamp: Server
 let beeProxy: Bee
 let _beeProxyAuth: Bee
+let beeWithStamp: Bee
 
 beforeAll(async () => {
   proxy = await new Promise((resolve, _reject) => {
@@ -25,6 +27,14 @@ beforeAll(async () => {
   })
   const port = (proxy.address() as AddressInfo).port
   beeProxy = new Bee(`http://localhost:${port}`)
+
+  const stamp = getPostageBatch()
+  const appWithStamp = createApp({ BEE_API_URL, postageStamps: { POSTAGE_STAMP: stamp } })
+  proxyWithStamp = await new Promise((resolve, _reject) => {
+    const server = appWithStamp.listen(async () => resolve(server))
+  })
+  const portWithStamp = (proxyWithStamp.address() as AddressInfo).port
+  beeWithStamp = new Bee(`http://localhost:${portWithStamp}`)
 
   proxyAuth = await new Promise((resolve, _reject) => {
     const server = appAuth.listen(async () => resolve(server))
@@ -36,6 +46,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await new Promise(resolve => proxy.close(resolve))
   await new Promise(resolve => proxyAuth.close(resolve))
+  await new Promise(resolve => proxyWithStamp.close(resolve))
 })
 
 interface AddressInfo {
@@ -103,6 +114,21 @@ describe('POST /bzz', () => {
     const directoryStructure = await makeCollectionFromFS('./test/data/')
 
     const { reference } = await beeProxy.uploadCollection(batch, directoryStructure, { indexDocument })
+
+    const file1 = await bee.downloadFile(reference)
+    expect(file1.name).toEqual(indexDocument)
+    expect(file1.data.text()).toMatch(/^1abcd\n$/)
+  })
+
+  it('should upload with environment defined postage stamp', async () => {
+    const indexDocument = '1.txt'
+    const directoryStructure = await makeCollectionFromFS('./test/data/')
+
+    const { reference } = await beeWithStamp.uploadCollection(
+      '0000000000000000000000000000000000000000000000000000000000000000',
+      directoryStructure,
+      { indexDocument },
+    )
 
     const file1 = await bee.downloadFile(reference)
     expect(file1.name).toEqual(indexDocument)

@@ -1,12 +1,14 @@
 import express, { Express } from 'express'
 import { createProxyMiddleware, Options } from 'http-proxy-middleware'
+import { getPostageStamp, shouldReplaceStamp, PostageStamps } from './stamps'
 
 interface Config {
   BEE_API_URL: string
   AUTH_SECRET?: string
+  postageStamps?: PostageStamps
 }
 
-export const createApp = ({ BEE_API_URL, AUTH_SECRET }: Config): Express => {
+export const createApp = ({ BEE_API_URL, AUTH_SECRET, postageStamps }: Config): Express => {
   const commonOptions: Options = {
     target: BEE_API_URL,
     changeOrigin: true,
@@ -49,8 +51,12 @@ export const createApp = ({ BEE_API_URL, AUTH_SECRET }: Config): Express => {
   // Download file/collection/chunk proxy
   app.get(['/bzz/:reference', '/bzz/:reference/*', '/bytes/:reference'], createProxyMiddleware(commonOptions))
 
+  const options = shouldReplaceStamp(postageStamps)
+    ? { ...commonOptions, headers: { 'swarm-postage-batch-id': getPostageStamp(postageStamps) } }
+    : commonOptions
+
   // Upload file/collection proxy
-  app.post('/bzz', createProxyMiddleware(commonOptions))
+  app.post('/bzz', createProxyMiddleware(options))
 
   app.use((_req, res) => res.sendStatus(404))
 
