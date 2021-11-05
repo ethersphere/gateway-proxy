@@ -52,3 +52,10 @@ jobs:
 
       - name: Check typings
         run: npm run check:types
+
+      - name: Update supported Bee action
+
+        uses: ethersphere/update-supported-bee-action@v1
+        if: github.ref == 'refs/heads/master'
+        with:
+          token: ${{ secrets.REPO_GHA_PAT }}
