@@ -14,10 +14,12 @@
 **Warning: This project is in beta state. There might (and most probably will) be changes in the future to its API and
 working. Also, no guarantees can be made about its stability, efficiency, and security at this stage.**
 
-This project is intended to be used with **Bee version <!-- SUPPORTED_BEE_START -->1.2.0-29eb9414<!-- SUPPORTED_BEE_END -->**.
-Using it with older or newer Bee versions is not recommended and may not work. Stay up to date by joining the
-[official Discord](https://discord.gg/GU22h2utj6) and by keeping an eye on the
-[releases tab](https://github.com/ethersphere/gateway-proxy/releases).
+This project is intended to be used with \*\*Bee version
+
+<!-- SUPPORTED_BEE_START -->1.2.0-29eb9414<!-- SUPPORTED_BEE_END -->**. Using it with older or newer Bee versions is not
+
+recommended and may not work. Stay up to date by joining the [official Discord](https://discord.gg/GU22h2utj6) and by
+keeping an eye on the [releases tab](https://github.com/ethersphere/gateway-proxy/releases).
 
 ## Table of Contents
 
@@ -42,13 +44,17 @@ export AUTH_SECRET="this_is_some_secret_string"
 npm run start
 ```
 
-| Name          | Default Value         | Description                                           |
-| ------------- | --------------------- | ----------------------------------------------------- |
-| BEE_API_URL   | http://localhost:1633 | URL of the Bee node API                               |
-| AUTH_SECRET   | undefined             | Authentication secret, disabled if not set            |
-| HOST          | 127.0.0.1             | Hostname of the proxy                                 |
-| PORT          | 3000                  | Port of the proxy                                     |
-| POSTAGE_STAMP | undefined             | Postage stamp that should be used for upload requests |
+| Name                         | Default Value         | Description                                                                                             |
+| ---------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
+| BEE_API_URL                  | http://localhost:1633 | URL of the Bee node API                                                                                 |
+| AUTH_SECRET                  | undefined             | Authentication secret, disabled if not set                                                              |
+| HOST                         | 127.0.0.1             | Hostname of the proxy                                                                                   |
+| PORT                         | 3000                  | Port of the proxy                                                                                       |
+| POSTAGE_STAMP                | undefined             | Postage stamp that should be used for all upload requests. If provided, the autobuy feature is disabled |
+| POSTAGE_DEPTH                | undefined             | Postage stamp depth to be used when buying new stamps or selecting existing stamps                      |
+| POSTAGE_AMOUNT               | undefined             | Postage stamp amount to be used when buying new stamps or selecting existing stamps                     |
+| POSTAGE_UTILIZATION_TRESHOLD | 0.7                   | Utilization percentage at which new postage stamp will be bought (value between 0 and 1)                |
+| POSTAGE_UTILIZATION_MAX      | 0.95                  | Utilization percentage at which existing postage stamp should not be considered viable ( values 0 to 1) |
 
 ### Curl
 
@@ -78,16 +84,16 @@ curl \
 
 ## API
 
-| Endpoint               | Response code     | Response text                                                                                             |
-| ---------------------  | ----------------- | -----------------------------------------------------------------------------------------------------     |
-| `GET /health`          | `200`             | `OK`                                                                                                      |
-|                        | `403`             | `Forbidden`                                                                                               |
-| `GET /readiness`       | `200`             | `OK`                                                                                                      |
-|                        | `403`             | `Forbidden`                                                                                               |
-|                        | `502`             | `Bad Gateway` when can not connect to Bee node                                                            |
-| `GET /bzz/:swarmhash`  | `200`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/BZZ/paths/~1bzz~1{reference}/get)     |
-| `POST /bzz`            | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/BZZ/paths/~1bzz/post)                 |
-| `GET /bytes/:swarmhash`| `200`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Bytes/paths/~1bytes~1{reference}/get) |
+| Endpoint                | Response code     | Response text                                                                                             |
+| ----------------------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
+| `GET /health`           | `200`             | `OK`                                                                                                      |
+|                         | `403`             | `Forbidden`                                                                                               |
+| `GET /readiness`        | `200`             | `OK`                                                                                                      |
+|                         | `403`             | `Forbidden`                                                                                               |
+|                         | `502`             | `Bad Gateway` when can not connect to Bee node                                                            |
+| `GET /bzz/:swarmhash`   | `200`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/BZZ/paths/~1bzz~1{reference}/get)     |
+| `POST /bzz`             | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/BZZ/paths/~1bzz/post)                 |
+| `GET /bytes/:swarmhash` | `200`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Bytes/paths/~1bytes~1{reference}/get) |
 
 ## Contribute
 

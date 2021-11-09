@@ -4,6 +4,7 @@ import { Bee } from '@ethersphere/bee-js'
 import type { Server } from 'http'
 
 import { bee, getPostageBatch, makeCollectionFromFS } from './utils'
+import { StampsManager } from '../src/stamps'
 
 const BEE_API_URL = process.env.BEE_API_URL || 'http://localhost:1633'
 const BEE_API_URL_WRONG = process.env.BEE_API_URL_WRONG || 'http://localhost:2021'
@@ -29,7 +30,7 @@ beforeAll(async () => {
   beeProxy = new Bee(`http://localhost:${port}`)
 
   const stamp = getPostageBatch()
-  const appWithStamp = createApp({ BEE_API_URL, postageStamps: { POSTAGE_STAMP: stamp } })
+  const appWithStamp = createApp({ BEE_API_URL, stampManager: new StampsManager({ POSTAGE_STAMP: stamp }) })
   proxyWithStamp = await new Promise((resolve, _reject) => {
     const server = appWithStamp.listen(async () => resolve(server))
   })
