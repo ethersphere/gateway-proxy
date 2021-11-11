@@ -14,9 +14,9 @@
 **Warning: This project is in beta state. There might (and most probably will) be changes in the future to its API and
 working. Also, no guarantees can be made about its stability, efficiency, and security at this stage.**
 
-This project is intended to be used with \*\*Bee version
-
-<!-- SUPPORTED_BEE_START -->1.2.0-29eb9414<!-- SUPPORTED_BEE_END -->**. Using it with older or newer Bee versions is not
+This project is intended to be used with
+**Bee&nbsp;version&nbsp;<!-- SUPPORTED_BEE_START -->1.2.0-29eb9414<!-- SUPPORTED_BEE_END -->**. Using it with older or
+newer Bee versions is not
 
 recommended and may not work. Stay up to date by joining the [official Discord](https://discord.gg/GU22h2utj6) and by
 keeping an eye on the [releases tab](https://github.com/ethersphere/gateway-proxy/releases).
@@ -44,17 +44,19 @@ export AUTH_SECRET="this_is_some_secret_string"
 npm run start
 ```
 
-| Name                         | Default Value         | Description                                                                                             |
-| ---------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
-| BEE_API_URL                  | http://localhost:1633 | URL of the Bee node API                                                                                 |
-| AUTH_SECRET                  | undefined             | Authentication secret, disabled if not set                                                              |
-| HOST                         | 127.0.0.1             | Hostname of the proxy                                                                                   |
-| PORT                         | 3000                  | Port of the proxy                                                                                       |
-| POSTAGE_STAMP                | undefined             | Postage stamp that should be used for all upload requests. If provided, the autobuy feature is disabled |
-| POSTAGE_DEPTH                | undefined             | Postage stamp depth to be used when buying new stamps or selecting existing stamps                      |
-| POSTAGE_AMOUNT               | undefined             | Postage stamp amount to be used when buying new stamps or selecting existing stamps                     |
-| POSTAGE_UTILIZATION_TRESHOLD | 0.7                   | Utilization percentage at which new postage stamp will be bought (value between 0 and 1)                |
-| POSTAGE_UTILIZATION_MAX      | 0.95                  | Utilization percentage at which existing postage stamp should not be considered viable ( values 0 to 1) |
+| Name                         | Default Value               | Description                                                                                             |
+| ---------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------- |
+| BEE_API_URL                  | http://localhost:1633       | URL of the Bee node API                                                                                 |
+| AUTH_SECRET                  | undefined                   | Authentication secret, disabled if not set                                                              |
+| HOST                         | 127.0.0.1                   | Hostname of the proxy                                                                                   |
+| PORT                         | 3000                        | Port of the proxy                                                                                       |
+| POSTAGE_STAMP                | undefined                   | Postage stamp that should be used for all upload requests. If provided, the autobuy feature is disabled |
+| POSTAGE_DEPTH                | undefined                   | Postage stamp depth to be used when buying new stamps or selecting existing stamps                      |
+| POSTAGE_AMOUNT               | undefined                   | Postage stamp amount to be used when buying new stamps or selecting existing stamps                     |
+| POSTAGE_UTILIZATION_TRESHOLD | 0.7                         | Utilization percentage at which new postage stamp will be bought (value between 0 and 1)                |
+| POSTAGE_UTILIZATION_MAX      | 0.95                        | Utilization percentage at which existing postage stamp should not be considered viable ( values 0 to 1) |
+| POSTAGE_TTL_MIN              | 5 \* POSTAGE_REFRESH_PERIOD | Minimal time to live for the postage stamps to still be considered for upload (in seconds)              |
+| POSTAGE_REFRESH_PERIOD       | 60                          | How frequently are the postage stamps checked in seconds                                                |
 
 ### Curl
 

@@ -12,7 +12,7 @@ interface AddressInfo {
 
 let server: Server
 let url: string
-let db = new StampDB()
+const db = new StampDB()
 
 beforeAll(async () => {
   server = await createStampMockServer(db)
@@ -26,7 +26,7 @@ afterAll(async () => {
 
 afterEach(() => db.clear())
 
-const defaultAmount = '1000'
+const defaultAmount = '1000000'
 const defaultDepth = 20
 const defaultTTL = Number(defaultAmount)
 const defaultStamp: DebugPostageBatch = {
@@ -43,11 +43,15 @@ const defaultStamp: DebugPostageBatch = {
   batchTTL: defaultTTL,
 }
 
-const buildStamp = (overwrites: Partial<DebugPostageBatch>) => ({
-  ...defaultStamp,
-  batchId: genRandomHex(64) as BatchId,
-  ...overwrites,
-})
+const buildStamp = (overwrites: Partial<DebugPostageBatch>) => {
+  const batchID = genRandomHex(64) as BatchId
+
+  return {
+    ...defaultStamp,
+    batchID,
+    ...overwrites,
+  }
+}
 
 describe('constructor', () => {
   const throwValues = [
@@ -96,7 +100,7 @@ describe('getPostageStamp', () => {
 
 describe('checkExistingPostageStamps', () => {
   it('should return undefined if there are no stamps', async () => {
-    const res = await checkExistingPostageStamps(20, '1000', 0.7, new BeeDebug(url))
+    const res = await checkExistingPostageStamps(20, '1000', 0.7, 1_000, new BeeDebug(url))
     expect(res).toEqual(undefined)
   })
 
@@ -106,7 +110,7 @@ describe('checkExistingPostageStamps', () => {
     db.add(buildStamp({ utilization: 0.75 }))
     db.add(buildStamp({ utilization: 0.05 }))
 
-    const res = await checkExistingPostageStamps(defaultDepth, defaultAmount, 0.95, new BeeDebug(url))
+    const res = await checkExistingPostageStamps(defaultDepth, defaultAmount, 0.95, 1_000, new BeeDebug(url))
     expect(res?.utilization).toEqual(0.75)
   })
 
@@ -118,7 +122,18 @@ describe('checkExistingPostageStamps', () => {
     db.add(buildStamp({ utilization: 0.74 }))
     db.add(buildStamp({ utilization: 0.05 }))
 
-    const res = await checkExistingPostageStamps(defaultDepth, defaultAmount, 0.95, new BeeDebug(url))
+    const res = await checkExistingPostageStamps(defaultDepth, defaultAmount, 0.95, 1_000, new BeeDebug(url))
     expect(res?.utilization).toEqual(0.81)
+  })
+
+  it('should return most utilised stamp eliminating with low TTL', async () => {
+    db.add(buildStamp({ utilization: 0.5, batchTTL: 50_000 }))
+    db.add(buildStamp({ utilization: 0.05, batchTTL: 110_000 }))
+    db.add(buildStamp({ utilization: 0.81, batchTTL: 40_000 }))
+    db.add(buildStamp({ utilization: 0.74, batchTTL: 50_000 }))
+
+    const res = await checkExistingPostageStamps(defaultDepth, defaultAmount, 0.95, 100_000, new BeeDebug(url))
+    expect(res?.utilization).toEqual(0.05)
+    expect(res?.batchTTL).toEqual(110_000)
   })
 })
