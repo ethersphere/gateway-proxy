@@ -1,7 +1,7 @@
 import type { Server } from 'http'
 import { BeeDebug, DebugPostageBatch, BatchId } from '@ethersphere/bee-js'
 import { StampsManager, checkExistingPostageStamps } from '../src/stamps'
-import { createStampMockServer, Stamps } from './stamps.mockserver'
+import { createStampMockServer, StampDB } from './stamps.mockserver'
 import { genRandomHex } from './utils'
 
 interface AddressInfo {
@@ -12,18 +12,41 @@ interface AddressInfo {
 
 let server: Server
 let url: string
-let stamps: Stamps
+let db = new StampDB()
 
 beforeAll(async () => {
-  const res = await createStampMockServer()
-  server = res.server
-  stamps = res.stamps
+  server = await createStampMockServer(db)
   const port = (server.address() as AddressInfo).port
   url = `http://localhost:${port}`
 })
 
 afterAll(async () => {
   await new Promise(resolve => server.close(resolve))
+})
+
+afterEach(() => db.clear())
+
+const defaultAmount = '1000'
+const defaultDepth = 20
+const defaultTTL = Number(defaultAmount)
+const defaultStamp: DebugPostageBatch = {
+  batchID: genRandomHex(64) as BatchId,
+  utilization: 0.5,
+  usable: false,
+  label: 'label',
+  depth: defaultDepth,
+  amount: defaultAmount,
+  bucketDepth: 0,
+  blockNumber: 0,
+  immutableFlag: false,
+  exists: true,
+  batchTTL: defaultTTL,
+}
+
+const buildStamp = (overwrites: Partial<DebugPostageBatch>) => ({
+  ...defaultStamp,
+  batchId: genRandomHex(64) as BatchId,
+  ...overwrites,
 })
 
 describe('constructor', () => {
@@ -78,60 +101,24 @@ describe('checkExistingPostageStamps', () => {
   })
 
   it('should return most utilised stamp', async () => {
-    const amount = '1000'
-    const depth = 20
-    const stamp1: DebugPostageBatch = {
-      batchID: genRandomHex(64) as BatchId,
-      utilization: 0.5,
-      usable: false,
-      label: 'label',
-      depth,
-      amount,
-      bucketDepth: 0,
-      blockNumber: 0,
-      immutableFlag: false,
-      exists: true,
-      batchTTL: Number(amount),
-    }
-    const stamp2: DebugPostageBatch = { ...stamp1, batchID: genRandomHex(64) as BatchId, utilization: 0.75 }
-    const stamp3: DebugPostageBatch = { ...stamp1, batchID: genRandomHex(64) as BatchId, utilization: 0.25 }
-    stamps[stamp1.batchID] = stamp1
-    stamps[stamp2.batchID] = stamp2
-    stamps[stamp3.batchID] = stamp3
-    const res = await checkExistingPostageStamps(depth, amount, 0.95, new BeeDebug(url))
-    expect(res).toEqual(stamp2)
+    db.add(buildStamp({ utilization: 0.25 }))
+    db.add(buildStamp({ utilization: 0.74 }))
+    db.add(buildStamp({ utilization: 0.75 }))
+    db.add(buildStamp({ utilization: 0.05 }))
 
-    delete stamps[stamp1.batchID]
-    delete stamps[stamp2.batchID]
-    delete stamps[stamp3.batchID]
+    const res = await checkExistingPostageStamps(defaultDepth, defaultAmount, 0.95, new BeeDebug(url))
+    expect(res?.utilization).toEqual(0.75)
   })
 
   it('should return most utilised stamp eliminating overutilized', async () => {
-    const amount = '1000'
-    const depth = 20
-    const stamp1: DebugPostageBatch = {
-      batchID: genRandomHex(64) as BatchId,
-      utilization: 0.5,
-      usable: false,
-      label: 'label',
-      depth,
-      amount,
-      bucketDepth: 0,
-      blockNumber: 0,
-      immutableFlag: false,
-      exists: true,
-      batchTTL: Number(amount),
-    }
-    const stamp2: DebugPostageBatch = { ...stamp1, batchID: genRandomHex(64) as BatchId, utilization: 0.81 }
-    const stamp3: DebugPostageBatch = { ...stamp1, batchID: genRandomHex(64) as BatchId, utilization: 0.96 }
-    stamps[stamp1.batchID] = stamp1
-    stamps[stamp2.batchID] = stamp2
-    stamps[stamp3.batchID] = stamp3
-    const res = await checkExistingPostageStamps(depth, amount, 0.95, new BeeDebug(url))
-    expect(res).toEqual(stamp2)
+    db.add(buildStamp({ utilization: 0.5 }))
+    db.add(buildStamp({ utilization: 0.81 }))
+    db.add(buildStamp({ utilization: 0.96 }))
+    db.add(buildStamp({ utilization: 1 }))
+    db.add(buildStamp({ utilization: 0.74 }))
+    db.add(buildStamp({ utilization: 0.05 }))
 
-    delete stamps[stamp1.batchID]
-    delete stamps[stamp2.batchID]
-    delete stamps[stamp3.batchID]
+    const res = await checkExistingPostageStamps(defaultDepth, defaultAmount, 0.95, new BeeDebug(url))
+    expect(res?.utilization).toEqual(0.81)
   })
 })

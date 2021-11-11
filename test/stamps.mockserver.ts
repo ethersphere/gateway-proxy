@@ -3,18 +3,35 @@ import type { Server } from 'http'
 import type { DebugPostageBatch, BatchId } from '@ethersphere/bee-js'
 import { genRandomHex } from './utils'
 
-export type Stamps = Record<string, DebugPostageBatch>
+export class StampDB {
+  stamps: Record<BatchId, DebugPostageBatch> = {}
 
-export async function createStampMockServer(): Promise<{ server: Server; stamps: Stamps }> {
+  get(batchID: BatchId): DebugPostageBatch {
+    return this.stamps[batchID]
+  }
+
+  add(stamp: DebugPostageBatch): void {
+    this.stamps[stamp.batchID] = stamp
+  }
+
+  toArray(): DebugPostageBatch[] {
+    return Object.values(this.stamps)
+  }
+
+  clear(): void {
+    this.stamps = {}
+  }
+}
+
+export async function createStampMockServer(db: StampDB): Promise<Server> {
   const app = express()
-  const stamps: Record<string, DebugPostageBatch> = {}
 
   app.get('/stamps', (req, res) => {
-    res.send({ stamps: Object.values(stamps) })
+    res.send({ stamps: db.toArray() })
   })
 
   app.get('/stamps/:id', (req, res) => {
-    res.send(JSON.stringify(stamps[req.params.id]))
+    res.send(db.get(req.params.id as BatchId))
   })
 
   app.post('/stamps/:amount/:depth', (req, res) => {
@@ -31,13 +48,13 @@ export async function createStampMockServer(): Promise<{ server: Server; stamps:
       exists: true,
       batchTTL: Number(req.params.amount),
     }
-    stamps[newStamp.batchID] = newStamp
+    db.add(newStamp)
     res.send(newStamp.batchID)
   })
 
   return new Promise(resolve => {
     const server = app.listen(() => {
-      resolve({ server, stamps })
+      resolve(server)
     })
   })
 }
