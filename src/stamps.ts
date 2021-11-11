@@ -15,7 +15,7 @@ export interface PostageStamps {
 const REFRESH_PERIOD = 60_000
 const MIN_STAMP_TTL = (REFRESH_PERIOD * 5) / 1000
 
-async function checkExistingPostageStamps(
+export async function checkExistingPostageStamps(
   depth: number,
   amount: string,
   maxUsage: number,
@@ -24,7 +24,7 @@ async function checkExistingPostageStamps(
   const stamps = await beeDebug.getAllPostageBatch()
   const usableStamps = stamps
     // filter to get stamps that have the right depth, amount and are not fully used or expired
-    .filter(s => s.depth === depth && s.amount === amount && s.utilization < maxUsage && s.batchTTL < MIN_STAMP_TTL)
+    .filter(s => s.depth === depth && s.amount === amount && s.utilization < maxUsage && s.batchTTL > MIN_STAMP_TTL)
     // sort the stamps by utilization
     .sort((a, b) => (a.utilization < b.utilization ? 1 : -1))
 
