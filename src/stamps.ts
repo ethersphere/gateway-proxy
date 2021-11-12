@@ -8,12 +8,23 @@ export interface Args {
   // Autobuy postage stamps
   POSTAGE_DEPTH?: string
   POSTAGE_AMOUNT?: string
-  POSTAGE_UTILIZATION_TRESHOLD?: string
-  POSTAGE_UTILIZATION_MAX?: string
+  POSTAGE_USAGE_THRESHOLD?: string
+  POSTAGE_USAGE_MAX?: string
   POSTAGE_TTL_MIN?: string
   POSTAGE_REFRESH_PERIOD?: string
 }
 
+/**
+ * Calculate usage from
+ */
+export function getUsage({ utilization, depth, bucketDepth }: DebugPostageBatch): number {
+  return utilization / Math.pow(2, depth - bucketDepth)
+}
+
+/**
+ * Check if any of the postage stamps that are already bought can be used
+ * Return the one with highest usage that still fits the treshold
+ */
 export async function checkExistingPostageStamps(
   depth: number,
   amount: string,
@@ -22,9 +33,10 @@ export async function checkExistingPostageStamps(
   beeDebug: BeeDebug,
 ): Promise<DebugPostageBatch | undefined> {
   const stamps = await beeDebug.getAllPostageBatch()
+  console.log({ stamps })
   const usableStamps = stamps
     // filter to get stamps that have the right depth, amount and are not fully used or expired
-    .filter(s => s.depth === depth && s.amount === amount && s.utilization < maxUsage && s.batchTTL > minTTL)
+    .filter(s => s.usable && s.depth === depth && s.amount === amount && getUsage(s) < maxUsage && s.batchTTL > minTTL)
     // sort the stamps by utilization
     .sort((a, b) => (a.utilization < b.utilization ? 1 : -1))
 
@@ -42,8 +54,8 @@ export class StampsManager {
       POSTAGE_STAMP,
       POSTAGE_DEPTH,
       POSTAGE_AMOUNT,
-      POSTAGE_UTILIZATION_TRESHOLD,
-      POSTAGE_UTILIZATION_MAX,
+      POSTAGE_USAGE_THRESHOLD,
+      POSTAGE_USAGE_MAX,
       POSTAGE_TTL_MIN,
       POSTAGE_REFRESH_PERIOD,
     }: Args = {},
@@ -57,8 +69,8 @@ export class StampsManager {
       this.start(
         Number(POSTAGE_DEPTH),
         POSTAGE_AMOUNT,
-        Number(POSTAGE_UTILIZATION_TRESHOLD || '0.7'),
-        Number(POSTAGE_UTILIZATION_MAX || '0.95'),
+        Number(POSTAGE_USAGE_THRESHOLD || '0.7'),
+        Number(POSTAGE_USAGE_MAX || '0.95'),
         Number(POSTAGE_TTL_MIN || refreshPeriod * 5),
         refreshPeriod * 1000,
         new BeeDebug(BEE_DEBUG_API_URL),
@@ -118,6 +130,7 @@ export class StampsManager {
     beeDebug: BeeDebug,
   ): void {
     this.stop()
+
     this.timeout = setTimeout(
       async () => this.getUsablePostageStamp(depth, amount, usageTreshold, maxUsage, minTTL, beeDebug),
       refreshPeriod,
