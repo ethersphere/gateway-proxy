@@ -51,8 +51,8 @@ export const createApp = ({ BEE_API_URL, AUTH_SECRET, stampManager }: Config): E
   // Download file/collection/chunk proxy
   app.get(['/bzz/:reference', '/bzz/:reference/*', '/bytes/:reference'], createProxyMiddleware(commonOptions))
 
-  const options = stampManager?.shouldReplaceStamp
-    ? { ...commonOptions, headers: { 'swarm-postage-batch-id': stampManager.getPostageStamp } }
+  const options = stampManager?.enabled
+    ? { ...commonOptions, headers: { 'swarm-postage-batch-id': stampManager.postageStamp } }
     : commonOptions
 
   // Upload file/collection proxy
