@@ -49,7 +49,8 @@ export async function createStampMockServer(db: StampDB): Promise<Server> {
       batchTTL: Number(req.params.amount),
     }
     db.add(newStamp)
-    res.send(newStamp.batchID)
+    setTimeout(() => (newStamp.usable = true), 100)
+    res.send({ batchID: newStamp.batchID })
   })
 
   return new Promise(resolve => {

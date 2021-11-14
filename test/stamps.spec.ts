@@ -1,6 +1,7 @@
 import type { Server } from 'http'
 import { BeeDebug, DebugPostageBatch, BatchId } from '@ethersphere/bee-js'
-import { StampsManager, checkExistingPostageStamps, getUsage } from '../src/stamps'
+import { StampsManager, filterUsableStamps, getUsage, waitUntilStampUsable } from '../src/stamps'
+import { sleep } from '../src/utils'
 import { createStampMockServer, StampDB } from './stamps.mockserver'
 import { genRandomHex } from './utils'
 
@@ -13,7 +14,6 @@ interface AddressInfo {
 let server: Server
 let url: string
 const db = new StampDB()
-
 beforeAll(async () => {
   server = await createStampMockServer(db)
   const port = (server.address() as AddressInfo).port
@@ -24,7 +24,9 @@ afterAll(async () => {
   await new Promise(resolve => server.close(resolve))
 })
 
-afterEach(() => db.clear())
+afterEach(() => {
+  db.clear()
+})
 
 const defaultAmount = '1000000'
 const defaultDepth = 20
@@ -53,7 +55,7 @@ const buildStamp = (overwrites: Partial<DebugPostageBatch>) => {
   }
 }
 
-describe('constructor', () => {
+describe('StampsManager', () => {
   const throwValues = [
     { POSTAGE_AMOUNT: '1000' },
     { POSTAGE_DEPTH: '20' },
@@ -61,19 +63,72 @@ describe('constructor', () => {
     { BEE_DEBUG_API_URL: 'http://localhost:1633', POSTAGE_DEPTH: '20' },
   ]
 
-  throwValues.forEach(
-    param =>
-      it(`should throw constructor({${Object.keys(param)}})`, async () => {
-        expect(() => new StampsManager(param)).toThrowError(
-          'Please provide POSTAGE_DEPTH, POSTAGE_AMOUNT and BEE_DEBUG_API_URL environment variable',
-        )
-      }),
-
-    // it('should start and create postage stamp', async () => {
-    //   const manager = new StampsManager({ POSTAGE_DEPTH: '20', POSTAGE_AMOUNT: '1000' }, url)
-    //
-    // }),
+  throwValues.forEach(param =>
+    it(`should throw constructor({${Object.keys(param)}})`, async () => {
+      expect(() => new StampsManager(param)).toThrowError(
+        'Please provide POSTAGE_DEPTH, POSTAGE_AMOUNT and BEE_DEBUG_API_URL environment variable',
+      )
+    }),
   )
+
+  it('should return existing stamp', async () => {
+    const stamp = buildStamp({ utilization: 0 })
+    db.add(stamp)
+    const manager = new StampsManager(
+      {
+        POSTAGE_DEPTH: defaultDepth.toString(),
+        POSTAGE_AMOUNT: defaultAmount.toString(),
+        POSTAGE_REFRESH_PERIOD: '200',
+      },
+      url,
+    )
+    await sleep(1_000)
+    expect(db.toArray().length).toEqual(1)
+
+    const batchId = manager.getPostageStamp
+    expect(batchId).toBe(stamp.batchID)
+    manager.stop()
+    await sleep(250) // Needed as there could be the wait for posage stamp usable process in progress
+  })
+
+  it('should start without any postage stamp and create new one', async () => {
+    const manager = new StampsManager(
+      {
+        POSTAGE_DEPTH: defaultDepth.toString(),
+        POSTAGE_AMOUNT: defaultAmount.toString(),
+        POSTAGE_REFRESH_PERIOD: '200',
+      },
+      url,
+    )
+    await sleep(1_000)
+    expect(db.toArray().length).toEqual(1)
+
+    expect(manager.shouldReplaceStamp).toEqual(true)
+    expect(manager.getPostageStamp).toEqual(db.toArray()[0].batchID)
+    manager.stop()
+    await sleep(250) // Needed as there could be the wait for posage stamp usable process in progress
+  })
+
+  it('should create additional stamp if existing is starting to get full', async () => {
+    const stamp = buildStamp({ utilization: 14 })
+    db.add(stamp)
+    const manager = new StampsManager(
+      {
+        POSTAGE_DEPTH: defaultDepth.toString(),
+        POSTAGE_AMOUNT: defaultAmount.toString(),
+        POSTAGE_REFRESH_PERIOD: '200',
+      },
+      url,
+    )
+
+    await sleep(1_000)
+
+    expect(db.toArray().length).toEqual(2)
+    expect(manager.shouldReplaceStamp).toEqual(true)
+    expect(manager.getPostageStamp).toEqual(stamp.batchID)
+    manager.stop()
+    await sleep(250) // Needed as there could be the wait for posage stamp usable process in progress
+  })
 })
 
 describe('shouldReplaceStamp', () => {
@@ -92,7 +147,7 @@ describe('getPostageStamp', () => {
     expect(() => new StampsManager().getPostageStamp).toThrowError('No postage stamp')
   })
 
-  it('should return correct postage stamp', async () => {
+  it('should return correct hardcoded single postage stamp', async () => {
     const stamp = '0000000000000000000000000000000000000000000000000000000000000000'
     expect(new StampsManager({ POSTAGE_STAMP: stamp }).getPostageStamp).toEqual(stamp)
   })
@@ -121,10 +176,10 @@ describe('getUsage', () => {
   )
 })
 
-describe('checkExistingPostageStamps', () => {
+describe('filterUsableStamps', () => {
   it('should return undefined if there are no stamps', async () => {
-    const res = await checkExistingPostageStamps(20, '1000', 0.7, 1_000, new BeeDebug(url))
-    expect(res).toEqual(undefined)
+    const res = filterUsableStamps([], 20, '1000', 0.7, 1_000)
+    expect(res).toEqual(expect.arrayContaining([]))
   })
 
   it('should return most utilised stamp', async () => {
@@ -133,30 +188,54 @@ describe('checkExistingPostageStamps', () => {
     db.add(buildStamp({ utilization: 0.75 }))
     db.add(buildStamp({ utilization: 0.05 }))
 
-    const res = await checkExistingPostageStamps(defaultDepth, defaultAmount, 0.95, 1_000, new BeeDebug(url))
-    expect(res?.utilization).toEqual(0.75)
+    const res = filterUsableStamps(db.toArray(), defaultDepth, defaultAmount, 0.95, 1_000)
+    expect(res).toEqual(expect.arrayContaining(db.toArray()))
   })
 
   it('should return most utilised stamp eliminating overutilized', async () => {
-    db.add(buildStamp({ utilization: 4 }))
-    db.add(buildStamp({ utilization: 8 }))
-    db.add(buildStamp({ utilization: 14 }))
-    db.add(buildStamp({ utilization: 12 }))
-    db.add(buildStamp({ utilization: 16 }))
-    db.add(buildStamp({ utilization: 15 }))
+    const goodStamps = [
+      buildStamp({ utilization: 4 }),
+      buildStamp({ utilization: 6 }),
+      buildStamp({ utilization: 8 }),
+      buildStamp({ utilization: 12 }),
+      buildStamp({ utilization: 13 }),
+    ]
 
-    const res = await checkExistingPostageStamps(defaultDepth, defaultAmount, 0.9, 1_000, new BeeDebug(url))
-    expect(res?.utilization).toEqual(14)
+    const allStamps = [buildStamp({ utilization: 15 }), ...goodStamps, buildStamp({ utilization: 16 })]
+
+    const res = filterUsableStamps(allStamps, defaultDepth, defaultAmount, 0.9, 1_000)
+    expect(res).toEqual(expect.arrayContaining(goodStamps))
   })
 
   it('should return most utilised stamp eliminating with low TTL', async () => {
-    db.add(buildStamp({ utilization: 4, batchTTL: 50_000 }))
-    db.add(buildStamp({ utilization: 6, batchTTL: 110_000 }))
-    db.add(buildStamp({ utilization: 12, batchTTL: 40_000 }))
-    db.add(buildStamp({ utilization: 10, batchTTL: 50_000 }))
+    const goodStamps = [buildStamp({ utilization: 6, batchTTL: 110_000 })]
 
-    const res = await checkExistingPostageStamps(defaultDepth, defaultAmount, 0.9, 100_000, new BeeDebug(url))
-    expect(res?.utilization).toEqual(6)
-    expect(res?.batchTTL).toEqual(110_000)
+    const allStamps = [
+      buildStamp({ utilization: 4, batchTTL: 50_000 }),
+      ...goodStamps,
+      buildStamp({ utilization: 12, batchTTL: 40_000 }),
+      buildStamp({ utilization: 14, batchTTL: 50_000 }),
+    ]
+
+    const res = filterUsableStamps(allStamps, defaultDepth, defaultAmount, 0.9, 100_000)
+    expect(res).toEqual(expect.arrayContaining(goodStamps))
+  })
+})
+
+describe('waitUntilStampUsable', () => {
+  it('should wait until stamp is usable', async () => {
+    const stamp = buildStamp({ usable: false })
+    db.add(stamp)
+    const timeStart = Date.now()
+
+    setTimeout(() => (stamp.usable = true), 500)
+
+    expect(db.get(stamp.batchID).usable).toEqual(false)
+    await waitUntilStampUsable(stamp.batchID, new BeeDebug(url), 100)
+    expect(db.get(stamp.batchID).usable).toEqual(true)
+
+    const timeDiff = Date.now() - timeStart
+    expect(timeDiff).toBeGreaterThan(500)
+    expect(timeDiff).toBeLessThan(1000)
   })
 })

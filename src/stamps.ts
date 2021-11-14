@@ -1,4 +1,4 @@
-import { BeeDebug, DebugPostageBatch } from '@ethersphere/bee-js'
+import { BeeDebug, DebugPostageBatch, BatchId } from '@ethersphere/bee-js'
 import { sleep } from './utils'
 
 export interface Args {
@@ -15,7 +15,24 @@ export interface Args {
 }
 
 /**
- * Calculate usage from
+ * Wait until a given postage stamp is usable
+ *
+ * @param batchId Postage stamp id to be waited on
+ * @param beeDebug Connection to the bee debug service
+ * @param pollingFrequency (optional) How often should the stamp be checked in ms, default 1000
+ */
+export async function waitUntilStampUsable(
+  batchId: BatchId,
+  beeDebug: BeeDebug,
+  pollingFrequency: number = 1_000,
+): Promise<void> | never {
+  while (!(await beeDebug.getPostageBatch(batchId)).usable) await sleep(pollingFrequency)
+}
+
+/**
+ * Calculate usage of a given postage stamp
+ *
+ * @param stamp Postage stamp which usage should be determined
  */
 export function getUsage({ utilization, depth, bucketDepth }: DebugPostageBatch): number {
   return utilization / Math.pow(2, depth - bucketDepth)
@@ -25,15 +42,13 @@ export function getUsage({ utilization, depth, bucketDepth }: DebugPostageBatch)
  * Check if any of the postage stamps that are already bought can be used
  * Return the one with highest usage that still fits the treshold
  */
-export async function checkExistingPostageStamps(
+export function filterUsableStamps(
+  stamps: DebugPostageBatch[],
   depth: number,
   amount: string,
   maxUsage: number,
   minTTL: number,
-  beeDebug: BeeDebug,
-): Promise<DebugPostageBatch | undefined> {
-  const stamps = await beeDebug.getAllPostageBatch()
-  console.log({ stamps })
+): DebugPostageBatch[] {
   const usableStamps = stamps
     // filter to get stamps that have the right depth, amount and are not fully used or expired
     .filter(s => s.usable && s.depth === depth && s.amount === amount && getUsage(s) < maxUsage && s.batchTTL > minTTL)
@@ -41,13 +56,33 @@ export async function checkExistingPostageStamps(
     .sort((a, b) => (a.utilization < b.utilization ? 1 : -1))
 
   // return the most utilized stamp
-  return usableStamps[0]
+  return usableStamps
+}
+
+export function buyNewStamp(depth: number, amount: string, beeDebug: BeeDebug) {
+  return new Promise((resolve, reject) =>
+    beeDebug
+      .createPostageBatch(amount, depth)
+      .then(async (batchId: BatchId) => {
+        waitUntilStampUsable(batchId, beeDebug)
+          .then(resolve)
+          .catch(e => {
+            console.error('error: failed to wait until postage stamp is usable', e)
+            reject(e)
+          })
+      })
+      .catch(e => {
+        console.error('error: failed to buy postage stamp', e)
+        reject(e)
+      }),
+  )
 }
 
 export class StampsManager {
   stamp?: string
+  usableStamps?: DebugPostageBatch[]
   enabled: boolean
-  timeout?: ReturnType<typeof setTimeout>
+  interval?: ReturnType<typeof setInterval>
 
   constructor(
     {
@@ -65,14 +100,14 @@ export class StampsManager {
 
     if (POSTAGE_STAMP) this.stamp = POSTAGE_STAMP
     else if (POSTAGE_DEPTH && POSTAGE_AMOUNT && BEE_DEBUG_API_URL) {
-      const refreshPeriod = Number(POSTAGE_REFRESH_PERIOD || 60)
+      const refreshPeriod = Number(POSTAGE_REFRESH_PERIOD || 60_000)
       this.start(
         Number(POSTAGE_DEPTH),
         POSTAGE_AMOUNT,
         Number(POSTAGE_USAGE_THRESHOLD || '0.7'),
         Number(POSTAGE_USAGE_MAX || '0.95'),
-        Number(POSTAGE_TTL_MIN || refreshPeriod * 5),
-        refreshPeriod * 1000,
+        Number(POSTAGE_TTL_MIN || (refreshPeriod / 1_000) * 5),
+        refreshPeriod,
         new BeeDebug(BEE_DEBUG_API_URL),
       )
     } else if (POSTAGE_DEPTH || POSTAGE_AMOUNT || BEE_DEBUG_API_URL) {
@@ -88,6 +123,8 @@ export class StampsManager {
   get getPostageStamp(): string {
     if (this.stamp) return this.stamp
 
+    if (this.usableStamps && this.usableStamps[0]) return this.usableStamps[0].batchID
+
     throw new Error('No postage stamp')
   }
 
@@ -98,7 +135,7 @@ export class StampsManager {
     return this.enabled
   }
 
-  private async getUsablePostageStamp(
+  private async refreshStamps(
     depth: number,
     amount: string,
     usageTreshold: number,
@@ -106,21 +143,26 @@ export class StampsManager {
     minTTL: number,
     beeDebug: BeeDebug,
   ) {
-    const nextStamp = await checkExistingPostageStamps(depth, amount, maxUsage, minTTL, beeDebug)
+    try {
+      const stamps = await beeDebug.getAllPostageBatch()
 
-    if (!nextStamp || nextStamp?.utilization > usageTreshold) {
-      beeDebug.createPostageBatch(amount, depth).then(async batchId => {
-        while ((await beeDebug.getPostageBatch(batchId)).usable) {
-          await sleep(1_000)
-        }
-        this.getUsablePostageStamp(depth, amount, usageTreshold, maxUsage, minTTL, beeDebug)
-      })
+      // Get all usable stamps sorted by usage from most used to least
+      this.usableStamps = filterUsableStamps(stamps, depth, amount, maxUsage, minTTL)
+
+      // Check if this stamps is starting to get full and if so purchase new stamp
+      const leastUsed = this.usableStamps[this.usableStamps.length - 1]
+      if (!leastUsed || leastUsed?.utilization > usageTreshold) {
+        buyNewStamp(depth, amount, beeDebug).then(() => {
+          // Once bought, should check if it maybe does not need to be used again
+          this.refreshStamps(depth, amount, usageTreshold, maxUsage, minTTL, beeDebug)
+        })
+      }
+    } catch (e) {
+      console.error('error: failed to check postage stamp', e)
     }
-
-    if (nextStamp) this.stamp = nextStamp.batchID
   }
 
-  start(
+  private start(
     depth: number,
     amount: string,
     usageTreshold: number,
@@ -131,16 +173,16 @@ export class StampsManager {
   ): void {
     this.stop()
 
-    this.timeout = setTimeout(
-      async () => this.getUsablePostageStamp(depth, amount, usageTreshold, maxUsage, minTTL, beeDebug),
-      refreshPeriod,
-    )
+    const f = () => this.refreshStamps(depth, amount, usageTreshold, maxUsage, minTTL, beeDebug)
+    f()
+
+    this.interval = setInterval(f, refreshPeriod)
   }
 
   stop(): void {
-    if (this.timeout) {
-      clearTimeout(this.timeout)
-      this.timeout = undefined
+    if (this.interval) {
+      clearInterval(this.interval)
+      this.interval = undefined
     }
   }
 }
