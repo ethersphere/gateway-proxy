@@ -226,7 +226,7 @@ describe('buyNewStamp', () => {
 
     await sleep(50) // need to wait a little bit as buying is async
 
-    let [stampFromDb] = db.toArray()
+    const [stampFromDb] = db.toArray()
     expect(db.toArray().length).toEqual(1)
     expect(stampFromDb.amount).toEqual(defaultAmount)
     expect(stampFromDb.depth).toEqual(defaultDepth)
