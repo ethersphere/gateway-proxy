@@ -88,7 +88,7 @@ export async function buyNewStamp(
   depth: number,
   amount: string,
   beeDebug: BeeDebug,
-  pollingFrequency = 1_000,
+  pollingFrequency?: number,
 ): Promise<DebugPostageBatch> {
   return new Promise(async (resolve, reject) =>
     beeDebug
