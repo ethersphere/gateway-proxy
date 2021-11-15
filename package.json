@@ -51,7 +51,7 @@
     "eslint-plugin-unused-imports": "^1.1.1",
     "husky": "^7.0.4",
     "jest": "^27.3.1",
-    "nodemon": "^2.0.14",
+    "nodemon": "^2.0.15",
     "prettier": "^2.3.1",
     "rimraf": "^3.0.2",
     "supertest": "^6.1.6",
