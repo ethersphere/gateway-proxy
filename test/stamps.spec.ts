@@ -242,22 +242,12 @@ describe('buyNewStamp', () => {
 })
 
 describe('filterUsableStamps', () => {
-  it('should return undefined if there are no stamps', async () => {
+  it('should return empty arry if there are no stamps', async () => {
     const res = filterUsableStamps([], 20, '1000', 0.7, 1_000)
     expect(res).toEqual(expect.arrayContaining([]))
   })
 
-  it('should return most utilised stamp', async () => {
-    db.add(buildStamp({ utilization: 0.25 }))
-    db.add(buildStamp({ utilization: 0.74 }))
-    db.add(buildStamp({ utilization: 0.75 }))
-    db.add(buildStamp({ utilization: 0.05 }))
-
-    const res = filterUsableStamps(db.toArray(), defaultDepth, defaultAmount, 0.95, 1_000)
-    expect(res).toEqual(expect.arrayContaining(db.toArray()))
-  })
-
-  it('should return most utilised stamp eliminating overutilized', async () => {
+  it('should return only usable stamps sorted by usage', async () => {
     const goodStamps = [
       buildStamp({ utilization: 4 }),
       buildStamp({ utilization: 6 }),
@@ -270,10 +260,15 @@ describe('filterUsableStamps', () => {
 
     const res = filterUsableStamps(allStamps, defaultDepth, defaultAmount, 0.9, 1_000)
     expect(res).toEqual(expect.arrayContaining(goodStamps))
+    for (let i = 1; i < res.length; i++) expect(getUsage(res[i - 1])).toBeGreaterThanOrEqual(getUsage(res[i]))
   })
 
-  it('should return most utilised stamp eliminating with low TTL', async () => {
-    const goodStamps = [buildStamp({ utilization: 6, batchTTL: 110_000 })]
+  it('should return only usable stamps eliminating the ones with low TTL', async () => {
+    const goodStamps = [
+      buildStamp({ utilization: 7, batchTTL: 200_000 }),
+      buildStamp({ utilization: 6, batchTTL: 110_000 }),
+      buildStamp({ utilization: 9, batchTTL: 105_000 }),
+    ]
 
     const allStamps = [
       buildStamp({ utilization: 4, batchTTL: 50_000 }),
@@ -284,6 +279,7 @@ describe('filterUsableStamps', () => {
 
     const res = filterUsableStamps(allStamps, defaultDepth, defaultAmount, 0.9, 100_000)
     expect(res).toEqual(expect.arrayContaining(goodStamps))
+    for (let i = 1; i < res.length; i++) expect(getUsage(res[i - 1])).toBeGreaterThanOrEqual(getUsage(res[i]))
   })
 })
 
