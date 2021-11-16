@@ -56,15 +56,20 @@ describe('getStampsConfig', () => {
   const POSTAGE_TTL_MIN = '200'
   const POSTAGE_REFRESH_PERIOD = '10'
 
-  const values: { env: EnvironmentVariables; output: StampsConfig | undefined }[] = [
+  const values: { env: EnvironmentVariables; output: StampsConfig | undefined; description: string }[] = [
     // Postage stamps are disabld
-    { env: {}, output: undefined },
+    { env: {}, output: undefined, description: 'undefined for no input' },
     // Hardcoded postage stamp
-    { env: { POSTAGE_STAMP }, output: { mode: 'hardcoded', stamp: POSTAGE_STAMP } },
+    {
+      env: { POSTAGE_STAMP },
+      output: { mode: 'hardcoded', stamp: POSTAGE_STAMP },
+      description: '{mode: hardcoded, stamp} for {POSTAGE_STAMP}',
+    },
     // Shoudl return hardcoded postage stamp even if autobuy values are provided
     {
       env: { POSTAGE_STAMP, POSTAGE_AMOUNT, POSTAGE_DEPTH, BEE_DEBUG_API_URL },
       output: { mode: 'hardcoded', stamp: POSTAGE_STAMP },
+      description: '{mode: hardcoded, stamp} for when both hardcoded and autobuy values are provided',
     },
     // Autobuy with default values
     {
@@ -79,6 +84,7 @@ describe('getStampsConfig', () => {
         ttlMin: (DEFAULT_POSTAGE_REFRESH_PERIOD / 1000) * 5,
         refreshPeriod: DEFAULT_POSTAGE_REFRESH_PERIOD,
       },
+      description: '{mode: autobuy, ...} with default values',
     },
     // Autobuy with all values set
     {
@@ -101,6 +107,7 @@ describe('getStampsConfig', () => {
         ttlMin: Number(POSTAGE_TTL_MIN),
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
       },
+      description: '{mode: autobuy, ...} with overwritten default values',
     },
     {
       // Autobuy TTL should be 5 times refresh period if not provided
@@ -115,11 +122,13 @@ describe('getStampsConfig', () => {
         ttlMin: (Number(POSTAGE_REFRESH_PERIOD) / 1000) * 5,
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
       },
+      description:
+        '{mode: autobuy, ...} with TTL being 5 times the refresh period when no ttl is provided but refresh period is',
     },
   ]
 
-  values.forEach(({ env, output }) => {
-    it(`should return ${JSON.stringify(output)} for ${JSON.stringify(env)}`, () => {
+  values.forEach(({ env, output, description }) => {
+    it(`should return ${description}`, () => {
       const config = getStampsConfig(env)
       expect(config).toEqual(output)
     })
