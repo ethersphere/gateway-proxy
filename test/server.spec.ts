@@ -4,15 +4,16 @@ import { Bee } from '@ethersphere/bee-js'
 import type { Server } from 'http'
 
 import { bee, getPostageBatch, makeCollectionFromFS } from './utils'
+import { StampsManager } from '../src/stamps'
 
-const BEE_API_URL = process.env.BEE_API_URL || 'http://localhost:1633'
-const BEE_API_URL_WRONG = process.env.BEE_API_URL_WRONG || 'http://localhost:2021'
-const AUTH_SECRET = process.env.AUTH_SECRET || 'super_secret_token'
+const beeApiUrl = process.env.BEE_API_URL || 'http://localhost:1633'
+const beeApiUrlWrong = process.env.BEE_API_URL_WRONG || 'http://localhost:2021'
+const authorization = process.env.AUTH_SECRET || 'super_secret_token'
 
-const app = createApp({ BEE_API_URL })
-const appWrong = createApp({ BEE_API_URL: BEE_API_URL_WRONG })
-const appAuth = createApp({ BEE_API_URL, AUTH_SECRET })
-const appAuthWrong = createApp({ BEE_API_URL: BEE_API_URL_WRONG, AUTH_SECRET })
+const app = createApp({ beeApiUrl })
+const appWrong = createApp({ beeApiUrl: beeApiUrlWrong })
+const appAuth = createApp({ beeApiUrl, authorization })
+const appAuthWrong = createApp({ beeApiUrl: beeApiUrlWrong, authorization })
 
 let proxy: Server
 let proxyAuth: Server
@@ -29,7 +30,9 @@ beforeAll(async () => {
   beeProxy = new Bee(`http://localhost:${port}`)
 
   const stamp = getPostageBatch()
-  const appWithStamp = createApp({ BEE_API_URL, postageStamps: { POSTAGE_STAMP: stamp } })
+  const stampManager = new StampsManager()
+  await stampManager.start({ mode: 'hardcoded', stamp })
+  const appWithStamp = createApp({ beeApiUrl }, stampManager)
   proxyWithStamp = await new Promise((resolve, _reject) => {
     const server = appWithStamp.listen(async () => resolve(server))
   })
@@ -69,7 +72,7 @@ describe('GET /health', () => {
   })
 
   it('with authorization enabled should return 200 & OK', async () => {
-    const res = await request(appAuth).get(`/health`).set('authorization', AUTH_SECRET).expect(200)
+    const res = await request(appAuth).get(`/health`).set('authorization', authorization).expect(200)
 
     expect(res.text).toEqual('OK')
   })
@@ -94,13 +97,13 @@ describe('GET /readiness', () => {
   })
 
   it('with authorization enabled should return 502 & Bad Gateway', async () => {
-    const res = await request(appAuthWrong).get(`/readiness`).set('authorization', AUTH_SECRET).expect(502)
+    const res = await request(appAuthWrong).get(`/readiness`).set('authorization', authorization).expect(502)
 
     expect(res.text).toEqual('Bad Gateway')
   })
 
   it('with authorization enabled should return 200 & OK', async () => {
-    const res = await request(appAuth).get(`/readiness`).set('authorization', AUTH_SECRET).expect(200)
+    const res = await request(appAuth).get(`/readiness`).set('authorization', authorization).expect(200)
 
     expect(res.text).toEqual('OK')
   })

@@ -61,3 +61,6 @@ async function buildCollectionRelative(dir: string, relativePath: string): Promi
 
   return collection
 }
+
+export const genRandomHex = (size: number): string =>
+  [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('')
