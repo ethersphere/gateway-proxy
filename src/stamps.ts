@@ -126,11 +126,11 @@ export class StampsManager {
       if (!leastUsed || getUsage(leastUsed) > usageTreshold) {
         await buyNewStamp(depth, amount, beeDebug)
 
-        // Once bought, should check if it maybe does not need to be used again
+        // Once bought, should check if it maybe does not need to be used already
         this.refreshStamps(config, beeDebug)
       }
     } catch (e) {
-      logger.error('error: failed to check postage stamp', e)
+      logger.error('error: failed to refresh postage stamp', e)
     }
   }
 
