@@ -28,20 +28,25 @@ export async function waitUntilStampUsable(
 ): Promise<DebugPostageBatch> | never {
   const timeout = options.timeout || DEFAULT_STAMP_USABLE_TIMEOUT
   const pollingFrequency = options.pollingFrequency || DEFAULT_POLLING_FREQUENCY
+  let timeoutReached = false
 
   const timeoutPromise = async (): Promise<never> =>
     new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Wait until stamp usable timeout has been reached')), timeout),
+      setTimeout(() => {
+        timeoutReached = true
+        reject(new Error('Wait until stamp usable timeout has been reached'))
+      }, timeout),
     )
 
   const stampWaitPromise = async (): Promise<DebugPostageBatch> | never => {
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
+    while (!timeoutReached) {
       const stamp = await beeDebug.getPostageBatch(batchId)
 
       if (stamp.usable) return stamp
       await sleep(pollingFrequency)
     }
+    // Need to throw something otherwise this will just return Promise<undefined>
+    throw new Error('Wait until stamp usable timeout has been reached')
   }
 
   return Promise.race([stampWaitPromise(), timeoutPromise()])
