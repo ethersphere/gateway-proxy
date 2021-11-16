@@ -5,7 +5,7 @@ import { sleep } from './utils'
 const logger = console // eslint-disable-line no-console
 
 const DEFAULT_POLLING_FREQUENCY = 1_000
-const DEFAULT_STAMP_USABLE_TIMEOUT = 10_000
+const DEFAULT_STAMP_USABLE_TIMEOUT = 60_000
 
 interface Options {
   pollingFrequency?: number
