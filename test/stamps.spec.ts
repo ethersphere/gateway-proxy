@@ -1,6 +1,7 @@
 import type { Server } from 'http'
 import { BeeDebug, DebugPostageBatch, BatchId } from '@ethersphere/bee-js'
 import { StampsManager, filterUsableStamps, getUsage, waitUntilStampUsable, buyNewStamp } from '../src/stamps'
+import { getStampsConfig } from '../src/config'
 import { sleep } from '../src/utils'
 import { createStampMockServer, StampDB } from './stamps.mockserver'
 import { genRandomHex } from './utils'
@@ -55,69 +56,25 @@ const buildStamp = (overwrites: Partial<DebugPostageBatch>) => {
   }
 }
 
-describe('StampsManager', () => {
-  const throwValues = [
-    { POSTAGE_AMOUNT: '1000' },
-    { POSTAGE_DEPTH: '20' },
-    { POSTAGE_AMOUNT: '1000', POSTAGE_DEPTH: '20' },
-    { BEE_DEBUG_API_URL: 'http://localhost:1633', POSTAGE_DEPTH: '20' },
-  ]
-
-  throwValues.forEach(param =>
-    it(`should throw constructor({${Object.keys(param)}})`, async () => {
-      expect(() => new StampsManager(param)).toThrowError(
-        'Please provide POSTAGE_DEPTH, POSTAGE_AMOUNT and BEE_DEBUG_API_URL environment variable',
-      )
-    }),
-  )
-})
-
-describe('enabled', () => {
-  it('should return false if no postage stamp is provided', async () => {
-    expect(new StampsManager().enabled).toEqual(false)
-  })
-
-  it('should return true if hardcoded postage stamp is provided', async () => {
-    const stamp = '0000000000000000000000000000000000000000000000000000000000000000'
-    expect(new StampsManager({ POSTAGE_STAMP: stamp }).enabled).toEqual(true)
-  })
-
-  it('should return true if autobuy is enabled', async () => {
-    const stamp = buildStamp({ utilization: 0 })
-    db.add(stamp)
-    const manager = new StampsManager(
-      {
-        POSTAGE_DEPTH: defaultDepth.toString(),
-        POSTAGE_AMOUNT: defaultAmount.toString(),
-      },
-      url,
-    )
-    expect(manager.enabled).toEqual(true)
-    manager.stop()
-    await sleep(250) // Needed as there could be the wait for posage stamp usable process in progress
-  })
-})
-
 describe('postageStamp', () => {
-  it('should throw if no postage stamp is provided', async () => {
-    expect(() => new StampsManager().postageStamp).toThrowError('No postage stamp')
-  })
-
   it('should return correct hardcoded single postage stamp', async () => {
     const stamp = '0000000000000000000000000000000000000000000000000000000000000000'
-    expect(new StampsManager({ POSTAGE_STAMP: stamp }).postageStamp).toEqual(stamp)
+    const stampManager = new StampsManager()
+    await stampManager.start(getStampsConfig({ POSTAGE_STAMP: stamp })!)
+    expect(stampManager.postageStamp).toEqual(stamp)
   })
 
   it('should return existing stamp', async () => {
     const stamp = buildStamp({ utilization: 0 })
     db.add(stamp)
-    const manager = new StampsManager(
-      {
+    const manager = new StampsManager()
+    await manager.start(
+      getStampsConfig({
         POSTAGE_DEPTH: defaultDepth.toString(),
         POSTAGE_AMOUNT: defaultAmount.toString(),
         POSTAGE_REFRESH_PERIOD: '200',
-      },
-      url,
+        BEE_DEBUG_API_URL: url,
+      })!,
     )
     await sleep(1_000)
     expect(db.toArray().length).toEqual(1)
@@ -129,18 +86,18 @@ describe('postageStamp', () => {
   })
 
   it('should start without any postage stamp and create new one', async () => {
-    const manager = new StampsManager(
-      {
+    const manager = new StampsManager()
+    await manager.start(
+      getStampsConfig({
         POSTAGE_DEPTH: defaultDepth.toString(),
         POSTAGE_AMOUNT: defaultAmount.toString(),
         POSTAGE_REFRESH_PERIOD: '200',
-      },
-      url,
+        BEE_DEBUG_API_URL: url,
+      })!,
     )
     await sleep(1_000)
     expect(db.toArray().length).toEqual(1)
 
-    expect(manager.enabled).toEqual(true)
     expect(manager.postageStamp).toEqual(db.toArray()[0].batchID)
     manager.stop()
     await sleep(250) // Needed as there could be the wait for posage stamp usable process in progress
@@ -149,19 +106,20 @@ describe('postageStamp', () => {
   it('should create additional stamp if existing is starting to get full', async () => {
     const stamp = buildStamp({ utilization: 14 })
     db.add(stamp)
-    const manager = new StampsManager(
-      {
+
+    const manager = new StampsManager()
+    await manager.start(
+      getStampsConfig({
         POSTAGE_DEPTH: defaultDepth.toString(),
         POSTAGE_AMOUNT: defaultAmount.toString(),
         POSTAGE_REFRESH_PERIOD: '200',
-      },
-      url,
+        BEE_DEBUG_API_URL: url,
+      })!,
     )
 
     await sleep(1_000)
 
     expect(db.toArray().length).toEqual(2)
-    expect(manager.enabled).toEqual(true)
     expect(manager.postageStamp).toEqual(stamp.batchID)
     manager.stop()
     await sleep(250) // Needed as there could be the wait for posage stamp usable process in progress
@@ -170,26 +128,26 @@ describe('postageStamp', () => {
   it('should create additional stamp if existing stamp usage increases', async () => {
     const stamp = buildStamp({ utilization: 5 })
     db.add(stamp)
-    const manager = new StampsManager(
-      {
+
+    const manager = new StampsManager()
+    await manager.start(
+      getStampsConfig({
         POSTAGE_DEPTH: defaultDepth.toString(),
         POSTAGE_AMOUNT: defaultAmount.toString(),
         POSTAGE_REFRESH_PERIOD: '200',
         POSTAGE_USAGE_MAX: '0.8',
-      },
-      url,
+        BEE_DEBUG_API_URL: url,
+      })!,
     )
 
     await sleep(200)
     expect(db.toArray().length).toEqual(1)
-    expect(manager.enabled).toEqual(true)
     expect(manager.postageStamp).toEqual(stamp.batchID)
 
     stamp.utilization = 15
     await sleep(500)
 
     expect(db.toArray().length).toEqual(2)
-    expect(manager.enabled).toEqual(true)
     expect(manager.postageStamp).not.toEqual(stamp.batchID)
     manager.stop()
     await sleep(1500) // Needed as there could be the wait for posage stamp usable process in progress

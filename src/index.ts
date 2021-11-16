@@ -1,41 +1,28 @@
 #!/usr/bin/env node
+import { Application } from 'express'
 
 import { createApp } from './server'
 import { StampsManager } from './stamps'
+import { getAppConfig, getServerConfig, getStampsConfig, EnvironmentVariables } from './config'
 
-// Configuration
-const BEE_API_URL = process.env.BEE_API_URL || 'http://localhost:1633'
-const BEE_DEBUG_API_URL = process.env.BEE_DEBUG_API_URL || 'http://localhost:1635'
+async function main() {
+  // Configuration
+  const stampConfig = getStampsConfig(process.env as EnvironmentVariables)
+  const appConfig = getAppConfig(process.env as EnvironmentVariables)
+  const { host, port } = getServerConfig(process.env as EnvironmentVariables)
 
-const AUTH_SECRET = process.env.AUTH_SECRET
+  let app: Application
 
-const POSTAGE_STAMP = process.env.POSTAGE_STAMP
-const POSTAGE_DEPTH = process.env.POSTAGE_DEPTH
-const POSTAGE_AMOUNT = process.env.POSTAGE_AMOUNT
-const POSTAGE_USAGE_THRESHOLD = process.env.POSTAGE_USAGE_THRESHOLD
-const POSTAGE_USAGE_MAX = process.env.POSTAGE_USAGE_MAX
-const POSTAGE_TTL_MIN = process.env.POSTAGE_TTL_MIN
-const POSTAGE_REFRESH_PERIOD = process.env.POSTAGE_REFRESH_PERIOD
+  if (stampConfig) {
+    const stampManager = new StampsManager()
+    await stampManager.start(stampConfig)
+    app = createApp(appConfig, stampManager)
+  } else app = createApp(appConfig)
 
-const PORT = Number(process.env.PORT || 3000)
-const HOST = process.env.HOST || '127.0.0.1'
+  // Start the Proxy
+  app.listen(port, host, () => {
+    console.log(`Starting Proxy at ${host}:${port}`) // eslint-disable-line no-console
+  })
+}
 
-const stampManager = new StampsManager(
-  {
-    POSTAGE_STAMP,
-    POSTAGE_DEPTH,
-    POSTAGE_AMOUNT,
-    POSTAGE_USAGE_MAX,
-    POSTAGE_USAGE_THRESHOLD,
-    POSTAGE_TTL_MIN,
-    POSTAGE_REFRESH_PERIOD,
-  },
-  BEE_DEBUG_API_URL,
-)
-
-const app = createApp({ BEE_API_URL, AUTH_SECRET, stampManager })
-
-// Start the Proxy
-app.listen(PORT, HOST, () => {
-  console.log(`Starting Proxy at ${HOST}:${PORT}`) // eslint-disable-line no-console
-})
+main()

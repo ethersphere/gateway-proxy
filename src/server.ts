@@ -1,16 +1,14 @@
-import express, { Express } from 'express'
+import express, { Application } from 'express'
 import { createProxyMiddleware, Options } from 'http-proxy-middleware'
+import type { AppConfig } from './config'
 import type { StampsManager } from './stamps'
 
-interface Config {
-  BEE_API_URL: string
-  AUTH_SECRET?: string
-  stampManager?: StampsManager
-}
-
-export const createApp = ({ BEE_API_URL, AUTH_SECRET, stampManager }: Config): Express => {
+export const createApp = (
+  { beeApiUrl, authorization }: AppConfig,
+  stampManager: StampsManager | undefined = undefined,
+): Application => {
   const commonOptions: Options = {
-    target: BEE_API_URL,
+    target: beeApiUrl,
     changeOrigin: true,
   }
 
@@ -18,9 +16,9 @@ export const createApp = ({ BEE_API_URL, AUTH_SECRET, stampManager }: Config): E
   const app = express()
 
   // Authorization
-  if (AUTH_SECRET) {
+  if (authorization) {
     app.use('', (req, res, next) => {
-      if (req.headers.authorization === AUTH_SECRET) {
+      if (req.headers.authorization === authorization) {
         next()
       } else {
         res.sendStatus(403)
@@ -51,7 +49,7 @@ export const createApp = ({ BEE_API_URL, AUTH_SECRET, stampManager }: Config): E
   // Download file/collection/chunk proxy
   app.get(['/bzz/:reference', '/bzz/:reference/*', '/bytes/:reference'], createProxyMiddleware(commonOptions))
 
-  const options = stampManager?.enabled
+  const options = stampManager
     ? { ...commonOptions, headers: { 'swarm-postage-batch-id': stampManager.postageStamp } }
     : commonOptions
 
