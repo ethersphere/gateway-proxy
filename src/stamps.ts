@@ -5,26 +5,46 @@ import { sleep } from './utils'
 const logger = console // eslint-disable-line no-console
 
 const DEFAULT_POLLING_FREQUENCY = 1_000
+const DEFAULT_STAMP_USABLE_TIMEOUT = 10_000
+
+interface Options {
+  pollingFrequency?: number
+  timeout?: number
+}
 
 /**
  * Wait until a given postage stamp is usable
  *
  * @param batchId Postage stamp id to be waited on
  * @param beeDebug Connection to the bee debug service
- * @param pollingFrequency (optional) How often should the stamp be checked in ms, default 1000
+ * @param options
+ *        pollingFrequency (optional) How often should the stamp be checked in ms, default 1000
+ *        timeout (optional) How long should the system wait for the stamp to be usable in ms, default to 10000
  */
 export async function waitUntilStampUsable(
   batchId: BatchId,
   beeDebug: BeeDebug,
-  pollingFrequency = DEFAULT_POLLING_FREQUENCY,
+  options: Options = {},
 ): Promise<DebugPostageBatch> | never {
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    const stamp = await beeDebug.getPostageBatch(batchId)
+  const timeout = options.timeout || DEFAULT_STAMP_USABLE_TIMEOUT
+  const pollingFrequency = options.pollingFrequency || DEFAULT_POLLING_FREQUENCY
 
-    if (stamp.usable) return stamp
-    await sleep(pollingFrequency)
+  const timeoutPromise = async (): Promise<never> =>
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Wait until stamp usable timeout has been reached')), timeout),
+    )
+
+  const stampWaitPromise = async (): Promise<DebugPostageBatch> | never => {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const stamp = await beeDebug.getPostageBatch(batchId)
+
+      if (stamp.usable) return stamp
+      await sleep(pollingFrequency)
+    }
   }
+
+  return Promise.race([stampWaitPromise(), timeoutPromise()])
 }
 
 /**
@@ -70,7 +90,9 @@ export function filterUsableStamps(
  * @param depth Postage stamps depth
  * @param amount Postage stamps amount
  * @param beeDebug Connection to debug endpoint for checking/buying stamps
- * @param pollingFrequency (optional) How often should the stamp be checked in ms, default 1000
+ * @param options
+ *        pollingFrequency (optional) How often should the stamp be checked in ms, default 1000
+ *        timeout (optional) How long should the system wait for the stamp to be usable in ms, default to 10000
  *
  * @returns Newly bought postage stamp
  */
@@ -78,11 +100,11 @@ export async function buyNewStamp(
   depth: number,
   amount: string,
   beeDebug: BeeDebug,
-  pollingFrequency?: number,
+  options: Options = {},
 ): Promise<DebugPostageBatch> {
   const batchId = await beeDebug.createPostageBatch(amount, depth)
 
-  return await waitUntilStampUsable(batchId, beeDebug, pollingFrequency)
+  return await waitUntilStampUsable(batchId, beeDebug, options)
 }
 
 export class StampsManager {

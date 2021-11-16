@@ -180,7 +180,7 @@ describe('getUsage', () => {
 describe('buyNewStamp', () => {
   it('should buy correct stamp and await for it to be usable', async () => {
     let stamp: DebugPostageBatch | undefined = undefined
-    buyNewStamp(defaultDepth, defaultAmount, new BeeDebug(url), 100).then(s => (stamp = s))
+    buyNewStamp(defaultDepth, defaultAmount, new BeeDebug(url), { pollingFrequency: 100 }).then(s => (stamp = s))
 
     await sleep(50) // need to wait a little bit as buying is async
 
@@ -242,6 +242,18 @@ describe('filterUsableStamps', () => {
 })
 
 describe('waitUntilStampUsable', () => {
+  it('should timeout while waiting for postage stamp to be usable', async () => {
+    const stamp = buildStamp({ usable: false })
+    db.add(stamp)
+
+    const request = async () =>
+      waitUntilStampUsable(stamp.batchID, new BeeDebug(url), { pollingFrequency: 100, timeout: 300 })
+
+    await expect(request).rejects.toThrowError('Wait until stamp usable timeout has been reached')
+
+    await sleep(150) // Need to wait at least one full refresh cycle (100 ms) to not have interval hanging
+  })
+
   it('should wait until stamp is usable', async () => {
     const stamp = buildStamp({ usable: false })
     db.add(stamp)
@@ -250,7 +262,7 @@ describe('waitUntilStampUsable', () => {
     setTimeout(() => (stamp.usable = true), 500)
 
     expect(db.get(stamp.batchID).usable).toEqual(false)
-    await waitUntilStampUsable(stamp.batchID, new BeeDebug(url), 100)
+    await waitUntilStampUsable(stamp.batchID, new BeeDebug(url), { pollingFrequency: 100 })
     expect(db.get(stamp.batchID).usable).toEqual(true)
 
     const timeDiff = Date.now() - timeStart
