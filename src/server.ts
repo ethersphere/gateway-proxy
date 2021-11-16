@@ -3,6 +3,8 @@ import { createProxyMiddleware, Options } from 'http-proxy-middleware'
 import type { AppConfig } from './config'
 import type { StampsManager } from './stamps'
 
+const SWARM_STAMP_HEADER = 'swarm-postage-batch-id'
+
 export const createApp = (
   { beeApiUrl, authorization }: AppConfig,
   stampManager: StampsManager | undefined = undefined,
@@ -50,7 +52,7 @@ export const createApp = (
   app.get(['/bzz/:reference', '/bzz/:reference/*', '/bytes/:reference'], createProxyMiddleware(commonOptions))
 
   const options = stampManager
-    ? { ...commonOptions, headers: { 'swarm-postage-batch-id': stampManager.postageStamp } }
+    ? { ...commonOptions, headers: { [SWARM_STAMP_HEADER]: stampManager.postageStamp } }
     : commonOptions
 
   // Upload file/collection proxy
