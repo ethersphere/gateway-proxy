@@ -1,8 +1,7 @@
 import { BeeDebug, DebugPostageBatch, BatchId } from '@ethersphere/bee-js'
 import type { StampsConfig, StampsConfigAutobuy } from './config'
 import { sleep } from './utils'
-
-const logger = console // eslint-disable-line no-console
+import { logger } from './logger'
 
 const DEFAULT_POLLING_FREQUENCY = 1_000
 const DEFAULT_STAMP_USABLE_TIMEOUT = 60_000
@@ -156,7 +155,7 @@ export class StampsManager {
         this.refreshStamps(config, beeDebug)
       }
     } catch (e) {
-      logger.error('error: failed to refresh postage stamp', e)
+      logger.error('failed to refresh postage stamp', e)
     }
   }
 

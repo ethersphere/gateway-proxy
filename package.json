@@ -60,7 +60,8 @@
   "dependencies": {
     "@ethersphere/bee-js": "^2.1.1",
     "express": "^4.17.1",
-    "http-proxy-middleware": "^2.0.1"
+    "http-proxy-middleware": "^2.0.1",
+    "winston": "^3.3.3"
   },
   "engines": {
     "node": ">=12.0.0",
