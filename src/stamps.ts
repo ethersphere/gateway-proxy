@@ -80,22 +80,9 @@ export async function buyNewStamp(
   beeDebug: BeeDebug,
   pollingFrequency?: number,
 ): Promise<DebugPostageBatch> {
-  return new Promise(async (resolve, reject) =>
-    beeDebug
-      .createPostageBatch(amount, depth)
-      .then(async (batchId: BatchId) => {
-        waitUntilStampUsable(batchId, beeDebug, pollingFrequency)
-          .then(resolve)
-          .catch(e => {
-            logger.error('error: failed to wait until postage stamp is usable', e)
-            reject(e)
-          })
-      })
-      .catch(e => {
-        logger.error('error: failed to buy postage stamp', e)
-        reject(e)
-      }),
-  )
+  const batchId = await beeDebug.createPostageBatch(amount, depth)
+
+  return await waitUntilStampUsable(batchId, beeDebug, pollingFrequency)
 }
 
 export class StampsManager {
@@ -137,10 +124,10 @@ export class StampsManager {
       const leastUsed = this.usableStamps[this.usableStamps.length - 1]
 
       if (!leastUsed || getUsage(leastUsed) > usageTreshold) {
-        buyNewStamp(depth, amount, beeDebug).then(() => {
-          // Once bought, should check if it maybe does not need to be used again
-          this.refreshStamps(config, beeDebug)
-        })
+        await buyNewStamp(depth, amount, beeDebug)
+
+        // Once bought, should check if it maybe does not need to be used again
+        this.refreshStamps(config, beeDebug)
       }
     } catch (e) {
       logger.error('error: failed to check postage stamp', e)
