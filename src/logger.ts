@@ -1,15 +1,10 @@
 import { createLogger, format, transports, Logger, Logform } from 'winston'
+import { SupportedLevels, SUPPORTED_LEVELS, logLevel } from './config'
 
-type SupportedLevels = 'critical' | 'error' | 'warn' | 'info' | 'verbose' | 'debug'
-
-const supportedLevels: Record<SupportedLevels, number> = {
-  critical: 0,
-  error: 1,
-  warn: 2,
-  info: 3,
-  verbose: 4,
-  debug: 5,
-}
+const supportedLevels: Record<SupportedLevels, number> = SUPPORTED_LEVELS.reduce(
+  (acc, cur, idx) => ({ ...acc, [cur]: idx }),
+  {} as Record<SupportedLevels, number>,
+)
 
 export const logger: Logger = createLogger({
   // To see more detailed errors, change this to 'debug'
@@ -17,19 +12,21 @@ export const logger: Logger = createLogger({
   format: format.combine(
     format.errors({ stack: true }),
     format.metadata(),
-    format.timestamp({ format: 'DD/MM hh:mm:ss' }),
-    format.colorize(),
+    format.timestamp(),
     format.printf(formatLogMessage),
+    format.colorize({ all: true }),
   ),
-  transports: [new transports.Console()],
+  transports: [new transports.Console({ level: logLevel })],
 })
+
+logger.info(`using max log level=${logLevel}`)
 
 export function formatLogMessage(info: Logform.TransformableInfo): string {
   const sanitizedMessage = info.message.replace(/\n/g, '\\n')
 
-  const message = `time="${info.timestamp}" level="${info.level}" msg="${sanitizedMessage}" ${JSON.stringify(
-    info.metadata,
-  )}`
+  let message = `time="${info.timestamp}" level="${info.level}" msg="${sanitizedMessage}"`
+
+  if (Object.keys(info.metadata).length > 0) message = `${message} ${JSON.stringify(info.metadata)}`
 
   return message
 }

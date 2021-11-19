@@ -27,6 +27,9 @@ export interface StampsConfigAutobuy {
 export type StampsConfig = StampsConfigHardcoded | StampsConfigAutobuy
 
 export type EnvironmentVariables = Partial<{
+  // Logging
+  LOG_LEVEL: string
+
   // Proxy
   BEE_API_URL: string
   AUTH_SECRET: string
@@ -46,12 +49,21 @@ export type EnvironmentVariables = Partial<{
   POSTAGE_REFRESH_PERIOD: string
 }>
 
+export const SUPPORTED_LEVELS = ['critical', 'error', 'warn', 'info', 'verbose', 'debug'] as const
+export type SupportedLevels = typeof SUPPORTED_LEVELS[number]
+
 export const DEFAULT_BEE_API_URL = 'http://localhost:1633'
 export const DEFAULT_HOST = '127.0.0.1'
 export const DEFAULT_PORT = 3000
 export const DEFAULT_POSTAGE_USAGE_THRESHOLD = 0.7
 export const DEFAULT_POSTAGE_USAGE_MAX = 0.9
 export const DEFAULT_POSTAGE_REFRESH_PERIOD = 60_000
+export const DEFAULT_LOG_LEVEL = 'info'
+
+export const logLevel =
+  process.env.LOG_LEVEL && SUPPORTED_LEVELS.includes(process.env.LOG_LEVEL as SupportedLevels)
+    ? process.env.LOG_LEVEL
+    : DEFAULT_LOG_LEVEL
 
 export function getAppConfig({ BEE_API_URL, AUTH_SECRET }: EnvironmentVariables = {}): AppConfig {
   return { beeApiUrl: BEE_API_URL || DEFAULT_BEE_API_URL, authorization: AUTH_SECRET }
