@@ -4,7 +4,7 @@ import { Application } from 'express'
 import { createApp } from './server'
 import { StampsManager } from './stamps'
 import { getAppConfig, getServerConfig, getStampsConfig, EnvironmentVariables } from './config'
-import { logger } from './logger'
+import { logger, subscribeLogServerRequests } from './logger'
 
 async function main() {
   // Configuration
@@ -23,14 +23,16 @@ async function main() {
     await stampManager.start(stampConfig)
     app = createApp(appConfig, stampManager)
   } else {
-    logger.debug('stargint the app without postage stamps management')
+    logger.info('starting the app without postage stamps management')
     app = createApp(appConfig)
   }
 
   // Start the Proxy
-  app.listen(port, host, () => {
+  const server = app.listen(port, host, () => {
     logger.info(`starting gateway-proxy at ${host}:${port}`)
   })
+
+  subscribeLogServerRequests(server)
 }
 
 main()

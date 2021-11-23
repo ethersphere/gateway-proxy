@@ -123,9 +123,19 @@ export class StampsManager {
    * @throws Error if there is no postage stamp
    */
   get postageStamp(): string {
-    if (this.stamp) return this.stamp
+    if (this.stamp) {
+      const stamp = this.stamp
+      logger.info('using hardcoded stamp', { stamp })
 
-    if (this.usableStamps && this.usableStamps[0]) return this.usableStamps[0].batchID
+      return stamp
+    }
+
+    if (this.usableStamps && this.usableStamps[0]) {
+      const stamp = this.usableStamps[0]
+      logger.info('using autobought stamp', { stamp })
+
+      return stamp.batchID
+    }
 
     throw new Error('No postage stamp')
   }
@@ -138,18 +148,23 @@ export class StampsManager {
    */
   public async refreshStamps(config: StampsConfigAutobuy, beeDebug: BeeDebug): Promise<void> {
     try {
+      logger.info('checking postage stamps')
       const stamps = await beeDebug.getAllPostageBatch()
+      logger.debug('retrieved stamps', stamps)
 
       const { depth, amount, usageMax, usageTreshold, ttlMin } = config
 
       // Get all usable stamps sorted by usage from most used to least
       this.usableStamps = filterUsableStamps(stamps, depth, amount, usageMax, ttlMin)
+      logger.debug('usable stamps', this.usableStamps)
 
       // Check if the least used stamps is starting to get full and if so purchase new stamp
       const leastUsed = this.usableStamps[this.usableStamps.length - 1]
 
       if (!leastUsed || getUsage(leastUsed) > usageTreshold) {
+        logger.info('buying new stamp')
         await buyNewStamp(depth, amount, beeDebug)
+        logger.info('successfully bought new stamp')
 
         // Once bought, should check if it maybe does not need to be used already
         this.refreshStamps(config, beeDebug)
