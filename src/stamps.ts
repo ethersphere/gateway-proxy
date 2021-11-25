@@ -163,8 +163,8 @@ export class StampsManager {
 
       if (!leastUsed || getUsage(leastUsed) > usageTreshold) {
         logger.info('buying new stamp')
-        await buyNewStamp(depth, amount, beeDebug)
-        logger.info('successfully bought new stamp')
+        const stamp = await buyNewStamp(depth, amount, beeDebug)
+        logger.info('successfully bought new stamp', { stamp })
 
         // Once bought, should check if it maybe does not need to be used already
         this.refreshStamps(config, beeDebug)
