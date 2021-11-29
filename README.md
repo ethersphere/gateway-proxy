@@ -93,18 +93,19 @@ npm run start
 
 | Name                    | Default Value               | Description                                                                                                |
 | ----------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| BEE_API_URL             | http://localhost:1633       | URL of the Bee node API                                                                                    |
-| BEE_DEBUG_API_URL       | undefined                   | URL of the Bee node Debug API. Only used and required when postage stamps autobuy is enabled.              |
-| AUTH_SECRET             | undefined                   | Authentication secret, disabled if not set (this secret is checked in the request header `authorization`). |
-| HOST                    | 127.0.0.1                   | Hostname of the proxy.                                                                                     |
-| PORT                    | 3000                        | Port of the proxy.                                                                                         |
-| POSTAGE_STAMP           | undefined                   | Postage stamp that should be used for all upload requests. If provided, the autobuy feature is disabled.   |
-| POSTAGE_DEPTH           | undefined                   | Postage stamp depth to be used when buying new stamps or selecting existing stamps.                        |
-| POSTAGE_AMOUNT          | undefined                   | Postage stamp amount to be used when buying new stamps or selecting existing stamps.                       |
-| POSTAGE_USAGE_THRESHOLD | 0.7                         | Usage percentage at which new postage stamp will be bought (value between 0 and 1).                        |
-| POSTAGE_USAGE_MAX       | 0.9                         | Usage percentage at which existing postage stamp should not be considered viable ( values 0 to 1).         |
-| POSTAGE_TTL_MIN         | 5 \* POSTAGE_REFRESH_PERIOD | Minimal time to live for the postage stamps to still be considered for upload (in seconds).                |
-| POSTAGE_REFRESH_PERIOD  | 60                          | How frequently are the postage stamps checked in seconds.                                                  |
+| `BEE_API_URL`             | http://localhost:1633       | URL of the Bee node API                                                                                    |
+| `BEE_DEBUG_API_URL`       | undefined                   | URL of the Bee node Debug API. Only used and required when postage stamps autobuy is enabled.              |
+| `AUTH_SECRET`             | undefined                   | Authentication secret, disabled if not set (this secret is checked in the request header `authorization`). |
+| `HOST`                    | 127.0.0.1                   | Hostname of the proxy.                                                                                     |
+| `PORT`                    | 3000                        | Port of the proxy.                                                                                         |
+| `POSTAGE_STAMP`           | undefined                   | Postage stamp that should be used for all upload requests. If provided, the autobuy feature is disabled.   |
+| `POSTAGE_DEPTH`           | undefined                   | Postage stamp depth to be used when buying new stamps or selecting existing stamps.                        |
+| `POSTAGE_AMOUNT`          | undefined                   | Postage stamp amount to be used when buying new stamps or selecting existing stamps.                       |
+| `POSTAGE_USAGE_THRESHOLD` | 0.7                         | Usage percentage at which new postage stamp will be bought (value between 0 and 1).                        |
+| `POSTAGE_USAGE_MAX`       | 0.9                         | Usage percentage at which existing postage stamp should not be considered viable ( values 0 to 1).         |
+| `POSTAGE_TTL_MIN`         | 5 \* POSTAGE_REFRESH_PERIOD | Minimal time to live for the postage stamps to still be considered for upload (in seconds).                |
+| `POSTAGE_REFRESH_PERIOD`  | 60                          | How frequently are the postage stamps checked in seconds.                                                  |
+| `LOG_LEVEL`  | "info"                                   | Log level that is outputted (values: `critical`, `error`, `warn`, `info`, `verbose`, `debug`)                                                  |
 
 ### Curl
 
