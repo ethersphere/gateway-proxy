@@ -2,6 +2,7 @@ import express, { Application } from 'express'
 import { createProxyMiddleware, Options } from 'http-proxy-middleware'
 import type { AppConfig } from './config'
 import type { StampsManager } from './stamps'
+import { logger } from './logger'
 
 const SWARM_STAMP_HEADER = 'swarm-postage-batch-id'
 
@@ -12,6 +13,7 @@ export const createApp = (
   const commonOptions: Options = {
     target: beeApiUrl,
     changeOrigin: true,
+    logProvider: () => logger,
   }
 
   // Create Express Server
