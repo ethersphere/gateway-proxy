@@ -15,7 +15,7 @@
 working. Also, no guarantees can be made about its stability, efficiency, and security at this stage.**
 
 This project is intended to be used with
-**Bee&nbsp;version&nbsp;<!-- SUPPORTED_BEE_START -->1.3.0-fd09d1c4<!-- SUPPORTED_BEE_END -->**. Using it with older or
+**Bee&nbsp;version&nbsp;<!-- SUPPORTED_BEE_START -->1.4.0-8fa696a8<!-- SUPPORTED_BEE_END -->**. Using it with older or
 newer Bee versions is not recommended and may not work. Stay up to date by joining the
 [official Discord](https://discord.gg/GU22h2utj6) and by keeping an eye on the
 [releases tab](https://github.com/ethersphere/gateway-proxy/releases).
