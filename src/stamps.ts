@@ -4,7 +4,7 @@ import { sleep } from './utils'
 import { logger } from './logger'
 
 const DEFAULT_POLLING_FREQUENCY = 1_000
-const DEFAULT_STAMP_USABLE_TIMEOUT = 60_000
+const DEFAULT_STAMP_USABLE_TIMEOUT = 120_000
 
 interface Options {
   pollingFrequency?: number
