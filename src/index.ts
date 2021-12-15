@@ -28,8 +28,8 @@ async function main() {
   }
 
   // Start the Proxy
-  const server = app.listen(port, host, () => {
-    logger.info(`starting gateway-proxy at ${host}:${port}`)
+  const server = app.listen(port, () => {
+    logger.info(`starting gateway-proxy at ${host}`)
   })
 
   subscribeLogServerRequests(server)

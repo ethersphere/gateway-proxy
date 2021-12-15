@@ -1,6 +1,9 @@
 export interface AppConfig {
+  host: string
   beeApiUrl: string
   authorization?: string
+  cidSubdomains?: boolean
+  ensSubdomains?: boolean
 }
 
 export interface ServerConfig {
@@ -38,6 +41,10 @@ export type EnvironmentVariables = Partial<{
   PORT: string
   HOST: string
 
+  // CID subdomain support
+  CID_SUBDOMAINS: string
+  ENS_SUBDOMAINS: string
+
   // Stamps
   BEE_DEBUG_API_URL: string
   POSTAGE_STAMP: string
@@ -53,7 +60,7 @@ export const SUPPORTED_LEVELS = ['critical', 'error', 'warn', 'info', 'verbose',
 export type SupportedLevels = typeof SUPPORTED_LEVELS[number]
 
 export const DEFAULT_BEE_API_URL = 'http://localhost:1633'
-export const DEFAULT_HOST = '127.0.0.1'
+export const DEFAULT_HOST = 'localhost:3000'
 export const DEFAULT_PORT = 3000
 export const DEFAULT_POSTAGE_USAGE_THRESHOLD = 0.7
 export const DEFAULT_POSTAGE_USAGE_MAX = 0.9
@@ -65,8 +72,20 @@ export const logLevel =
     ? process.env.LOG_LEVEL
     : DEFAULT_LOG_LEVEL
 
-export function getAppConfig({ BEE_API_URL, AUTH_SECRET }: EnvironmentVariables = {}): AppConfig {
-  return { beeApiUrl: BEE_API_URL || DEFAULT_BEE_API_URL, authorization: AUTH_SECRET }
+export function getAppConfig({
+  BEE_API_URL,
+  AUTH_SECRET,
+  CID_SUBDOMAINS,
+  ENS_SUBDOMAINS,
+  HOST,
+}: EnvironmentVariables = {}): AppConfig {
+  return {
+    host: HOST || DEFAULT_HOST,
+    beeApiUrl: BEE_API_URL || DEFAULT_BEE_API_URL,
+    authorization: AUTH_SECRET,
+    cidSubdomains: CID_SUBDOMAINS === 'true',
+    ensSubdomains: ENS_SUBDOMAINS === 'true',
+  }
 }
 
 export function getServerConfig({ PORT, HOST }: EnvironmentVariables = {}): ServerConfig {

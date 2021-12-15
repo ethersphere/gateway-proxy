@@ -3,11 +3,12 @@ import { createProxyMiddleware, Options } from 'http-proxy-middleware'
 import type { AppConfig } from './config'
 import type { StampsManager } from './stamps'
 import { logger } from './logger'
+import * as bzzLink from './bzz-link'
 
 const SWARM_STAMP_HEADER = 'swarm-postage-batch-id'
 
 export const createApp = (
-  { beeApiUrl, authorization }: AppConfig,
+  { host, beeApiUrl, authorization, cidSubdomains, ensSubdomains }: AppConfig,
   stampManager: StampsManager | undefined = undefined,
 ): Application => {
   const commonOptions: Options = {
@@ -28,6 +29,22 @@ export const createApp = (
         res.sendStatus(403)
       }
     })
+  }
+
+  if (cidSubdomains || ensSubdomains) {
+    if (cidSubdomains) logger.info('enabling CID subdomain support')
+
+    if (ensSubdomains) logger.info('enabling ENS subdomain support')
+
+    app.get(
+      '*',
+      createProxyMiddleware(bzzLink.requestFilterClosure(host), {
+        ...commonOptions,
+        router: bzzLink.routerClosure(beeApiUrl, Boolean(cidSubdomains), Boolean(ensSubdomains)),
+      }),
+    )
+
+    app.use(bzzLink.errorHandler)
   }
 
   // Health endpoint
