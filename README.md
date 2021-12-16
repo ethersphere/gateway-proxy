@@ -24,6 +24,7 @@ newer Bee versions is not recommended and may not work. Stay up to date by joini
 
 - [Install](#install)
 - [Usage](#usage)
+  - [Bzz.link support](#bzzlink-support)
   - [Examples](#examples)
     - [1. No postage stamp](#1-no-postage-stamp)
     - [2. Hardcoded postage stamp](#2-hardcoded-postage-stamp)
@@ -44,7 +45,7 @@ cd gateway-proxy
 
 ## Usage
 
-The proxy has 3 modes of operation:
+The proxy can manage postage stamps for you in 3 modes of operation:
 
 1. It can just proxy requests without manipulating the request
 2. It can add/replace the request postage stamp with one provided through environment variable `POSTAGE_STAMP`
@@ -54,6 +55,13 @@ The proxy has 3 modes of operation:
 
 In all 3 modes, the proxy can be configured to require authentication secret to forward the requests. Use the
 `AUTH_SECRET` environment variable to enable it.
+
+### Bzz.link support
+
+Gateway proxy has support for Bzz.link which allows translating [Swarm CIDs](https://github.com/ethersphere/swarm-cid-js) and ENS names
+placed under subdomains into `/bzz` call. This allows to have better security model for your web applications.
+
+In order to use Bzz.link you may need to set up DNS with wildcard submdomain support.
 
 ### Examples
 
@@ -96,7 +104,7 @@ npm run start
 | BEE_API_URL             | http://localhost:1633       | URL of the Bee node API                                                                                    |
 | BEE_DEBUG_API_URL       | undefined                   | URL of the Bee node Debug API. Only used and required when postage stamps autobuy is enabled.              |
 | AUTH_SECRET             | undefined                   | Authentication secret, disabled if not set (this secret is checked in the request header `authorization`). |
-| HOST                    | 127.0.0.1                   | Hostname of the proxy.                                                                                     |
+| HOSTNAME                | localhost                   | Hostname of the proxy.                                                                                     |
 | PORT                    | 3000                        | Port of the proxy.                                                                                         |
 | POSTAGE_STAMP           | undefined                   | Postage stamp that should be used for all upload requests. If provided, the autobuy feature is disabled.   |
 | POSTAGE_DEPTH           | undefined                   | Postage stamp depth to be used when buying new stamps or selecting existing stamps.                        |
@@ -105,6 +113,8 @@ npm run start
 | POSTAGE_USAGE_MAX       | 0.9                         | Usage percentage at which existing postage stamp should not be considered viable ( values 0 to 1).         |
 | POSTAGE_TTL_MIN         | 5 \* POSTAGE_REFRESH_PERIOD | Minimal time to live for the postage stamps to still be considered for upload (in seconds).                |
 | POSTAGE_REFRESH_PERIOD  | 60                          | How frequently are the postage stamps checked in seconds.                                                  |
+| CID_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for CIDs                                              |
+| ENS_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for ENS                                               |
 
 ### Curl
 
@@ -153,6 +163,19 @@ There are some ways you can make this module better:
 - Help our tests reach 100% coverage!
 - Join us in our [Discord chat](https://discord.gg/wdghaQsGq5) in the #develop-on-swarm channel if you have questions or
   want to give feedback
+
+### Local development with Bzz.link
+
+Local development with the subdomain Bzz.link support is a bit more tricky as it requires to have a way how to direct local subdomains to given URL.
+
+Easy way is to have one testing CID that you will put directly to `/etc/hosts` and use only that for testing.
+
+```
+bah5acgzamh5fl7emnrazttpy7sag6utq5myidv3venspn6l5sevr4lko2n3q.localhost 127.0.0.1
+```
+
+If you want fully functional setup than you have to locally install some DNS client that will provide you this functionality.
+See for example [here](https://serverfault.com/a/118589) for `dnsmasq` solution.
 
 ## Maintainers
 

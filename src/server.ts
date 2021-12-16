@@ -3,11 +3,12 @@ import { createProxyMiddleware, Options } from 'http-proxy-middleware'
 import type { AppConfig } from './config'
 import type { StampsManager } from './stamps'
 import { logger } from './logger'
+import * as bzzLink from './bzz-link'
 
 const SWARM_STAMP_HEADER = 'swarm-postage-batch-id'
 
 export const createApp = (
-  { beeApiUrl, authorization }: AppConfig,
+  { hostname, beeApiUrl, authorization, cidSubdomains, ensSubdomains }: AppConfig,
   stampManager: StampsManager | undefined = undefined,
 ): Application => {
   const commonOptions: Options = {
@@ -19,6 +20,11 @@ export const createApp = (
   // Create Express Server
   const app = express()
 
+  if (hostname) {
+    const subdomainOffset = hostname.split('.').length
+    app.set('subdomain offset', subdomainOffset)
+  }
+
   // Authorization
   if (authorization) {
     app.use('', (req, res, next) => {
@@ -28,6 +34,26 @@ export const createApp = (
         res.sendStatus(403)
       }
     })
+  }
+
+  if (cidSubdomains || ensSubdomains) {
+    if (!hostname) {
+      throw new Error('For Bzz.link support you have to configure HOSTNAME env!')
+    }
+
+    if (cidSubdomains) logger.info('enabling CID subdomain support')
+
+    if (ensSubdomains) logger.info('enabling ENS subdomain support')
+
+    app.get(
+      '*',
+      createProxyMiddleware(bzzLink.requestFilter, {
+        ...commonOptions,
+        router: bzzLink.routerClosure(beeApiUrl, Boolean(cidSubdomains), Boolean(ensSubdomains)),
+      }),
+    )
+
+    app.use(bzzLink.errorHandler)
   }
 
   // Health endpoint
