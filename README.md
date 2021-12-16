@@ -164,6 +164,19 @@ There are some ways you can make this module better:
 - Join us in our [Discord chat](https://discord.gg/wdghaQsGq5) in the #develop-on-swarm channel if you have questions or
   want to give feedback
 
+### Local development with Bzz.link
+
+Local development with the subdomain Bzz.link support is a bit more tricky as it requires to have a way how to direct local subdomains to given URL.
+
+Easy way is to have one testing CID that you will put directly to `/etc/hosts` and use only that for testing.
+
+```
+bah5acgzamh5fl7emnrazttpy7sag6utq5myidv3venspn6l5sevr4lko2n3q.localhost 127.0.0.1
+```
+
+If you want fully functional setup than you have to locally install some DNS client that will provide you this functionality.
+See for example [here](https://serverfault.com/a/118589) for `dnsmasq` solution.
+
 ## Maintainers
 
 - [vojtechsimetka](https://github.com/vojtechsimetka)
