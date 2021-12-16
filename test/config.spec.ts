@@ -40,7 +40,7 @@ describe('getServerConfig', () => {
     const HOSTNAME = '0.0.0.0'
     const PORT = '5000'
 
-    const config = getServerConfig({ HOSTNAME: HOSTNAME, PORT })
+    const config = getServerConfig({ HOSTNAME, PORT })
     expect(config.hostname).toEqual(HOSTNAME)
     expect(config.port).toEqual(Number(PORT))
   })
