@@ -86,6 +86,7 @@ export const createApp = (
   // Upload file/collection proxy
   app.post('/bzz', createProxyMiddleware(options))
 
+  app.use(express.static('public'))
   app.use((_req, res) => res.sendStatus(404))
 
   return app
