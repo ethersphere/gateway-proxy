@@ -7,7 +7,7 @@ export interface AppConfig {
 }
 
 export interface ServerConfig {
-  host: string
+  hostname: string
   port: number
 }
 
@@ -89,7 +89,7 @@ export function getAppConfig({
 }
 
 export function getServerConfig({ PORT, HOSTNAME }: EnvironmentVariables = {}): ServerConfig {
-  return { host: HOSTNAME || DEFAULT_HOSTNAME, port: Number(PORT || DEFAULT_PORT) }
+  return { hostname: HOSTNAME || DEFAULT_HOSTNAME, port: Number(PORT || DEFAULT_PORT) }
 }
 
 export function getStampsConfig({

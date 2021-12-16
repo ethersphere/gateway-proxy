@@ -35,7 +35,7 @@ export function routerClosure(target: string, isCidEnabled: boolean, isEnsEnable
   return (req: Request): string => {
     const bzzResource = subdomainToBzz(req, isCidEnabled, isEnsEnabled)
 
-    logger.debug(`bzz link proxy`, { host: req.hostname, bzzResource })
+    logger.debug(`bzz link proxy`, { hostname: req.hostname, bzzResource })
 
     return `${target}/bzz/${bzzResource}`
   }

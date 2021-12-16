@@ -32,16 +32,16 @@ describe('getAppConfig', () => {
 describe('getServerConfig', () => {
   it('should return default values', () => {
     const config = getServerConfig()
-    expect(config.host).toEqual(DEFAULT_HOSTNAME)
+    expect(config.hostname).toEqual(DEFAULT_HOSTNAME)
     expect(config.port).toEqual(DEFAULT_PORT)
   })
 
   it('should set port and host', () => {
-    const HOST = '0.0.0.0'
+    const HOSTNAME = '0.0.0.0'
     const PORT = '5000'
 
-    const config = getServerConfig({ HOSTNAME: HOST, PORT })
-    expect(config.host).toEqual(HOST)
+    const config = getServerConfig({ HOSTNAME: HOSTNAME, PORT })
+    expect(config.hostname).toEqual(HOSTNAME)
     expect(config.port).toEqual(Number(PORT))
   })
 })

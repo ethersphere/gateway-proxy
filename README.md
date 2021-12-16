@@ -104,7 +104,7 @@ npm run start
 | BEE_API_URL             | http://localhost:1633       | URL of the Bee node API                                                                                    |
 | BEE_DEBUG_API_URL       | undefined                   | URL of the Bee node Debug API. Only used and required when postage stamps autobuy is enabled.              |
 | AUTH_SECRET             | undefined                   | Authentication secret, disabled if not set (this secret is checked in the request header `authorization`). |
-| HOST                    | localhost                   | Hostname of the proxy.                                                                                     |
+| HOSTNAME                | localhost                   | Hostname of the proxy.                                                                                     |
 | PORT                    | 3000                        | Port of the proxy.                                                                                         |
 | POSTAGE_STAMP           | undefined                   | Postage stamp that should be used for all upload requests. If provided, the autobuy feature is disabled.   |
 | POSTAGE_DEPTH           | undefined                   | Postage stamp depth to be used when buying new stamps or selecting existing stamps.                        |
