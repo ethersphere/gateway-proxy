@@ -8,7 +8,7 @@ import * as bzzLink from './bzz-link'
 const SWARM_STAMP_HEADER = 'swarm-postage-batch-id'
 
 export const createApp = (
-  { host, beeApiUrl, authorization, cidSubdomains, ensSubdomains }: AppConfig,
+  { hostname, beeApiUrl, authorization, cidSubdomains, ensSubdomains }: AppConfig,
   stampManager: StampsManager | undefined = undefined,
 ): Application => {
   const commonOptions: Options = {
@@ -19,6 +19,11 @@ export const createApp = (
 
   // Create Express Server
   const app = express()
+
+  if (hostname) {
+    const subdomainOffset = hostname.split('.').length
+    app.set('subdomain offset', subdomainOffset)
+  }
 
   // Authorization
   if (authorization) {
@@ -32,13 +37,17 @@ export const createApp = (
   }
 
   if (cidSubdomains || ensSubdomains) {
+    if (!hostname) {
+      throw new Error('For Bzz.link support you have to configure HOSTNAME env!')
+    }
+
     if (cidSubdomains) logger.info('enabling CID subdomain support')
 
     if (ensSubdomains) logger.info('enabling ENS subdomain support')
 
     app.get(
       '*',
-      createProxyMiddleware(bzzLink.requestFilterClosure(host), {
+      createProxyMiddleware(bzzLink.requestFilter, {
         ...commonOptions,
         router: bzzLink.routerClosure(beeApiUrl, Boolean(cidSubdomains), Boolean(ensSubdomains)),
       }),

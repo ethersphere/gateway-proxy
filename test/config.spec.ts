@@ -1,6 +1,6 @@
 import {
   DEFAULT_BEE_API_URL,
-  DEFAULT_HOST,
+  DEFAULT_HOSTNAME,
   DEFAULT_PORT,
   DEFAULT_POSTAGE_USAGE_THRESHOLD,
   DEFAULT_POSTAGE_USAGE_MAX,
@@ -32,7 +32,7 @@ describe('getAppConfig', () => {
 describe('getServerConfig', () => {
   it('should return default values', () => {
     const config = getServerConfig()
-    expect(config.host).toEqual(DEFAULT_HOST)
+    expect(config.host).toEqual(DEFAULT_HOSTNAME)
     expect(config.port).toEqual(DEFAULT_PORT)
   })
 
@@ -40,7 +40,7 @@ describe('getServerConfig', () => {
     const HOST = '0.0.0.0'
     const PORT = '5000'
 
-    const config = getServerConfig({ HOST, PORT })
+    const config = getServerConfig({ HOSTNAME: HOST, PORT })
     expect(config.host).toEqual(HOST)
     expect(config.port).toEqual(Number(PORT))
   })

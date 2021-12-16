@@ -2,9 +2,9 @@ import { Request, Response } from 'express'
 import * as swarmCid from '@ethersphere/swarm-cid'
 import { logger } from './logger'
 
-class NotEnabledError extends Error {}
+export class NotEnabledError extends Error {}
 
-class RedirectCidError extends Error {
+export class RedirectCidError extends Error {
   public newUrl: string
 
   constructor(message: string, cid: string) {
@@ -14,32 +14,14 @@ class RedirectCidError extends Error {
 }
 
 /**
- * Closure that evaluates if the request was made with subdomain.
+ * Function that evaluates if the request was made with subdomain.
  *
- * @param expectedHost
+ * @param pathname
+ * @param req
  */
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function requestFilterClosure(expectedHost: string) {
-  const domain = expectedHost.split('.')[0] // For 'bzz.link' this should be 'bzz'
-
-  return (pathname: string, req: Request): boolean => {
-    if (!req.hostname) {
-      throw new Error('Host header has to be set!')
-    }
-
-    const host = req.hostname.split('.')
-    const potentialSubdomain = host[0] // Taking the first subdomain from left
-    const isSubdomain = potentialSubdomain !== domain
-
-    if (isSubdomain && domain !== host[1]) {
-      logger.warn(`got a request that was directed to different host then configured`, {
-        expected: expectedHost,
-        received: req.hostname,
-      })
-    }
-
-    return isSubdomain
-  }
+export function requestFilter(pathname: string, req: Request): boolean {
+  return req.subdomains.length === 1
 }
 
 /**
@@ -81,6 +63,7 @@ export function errorHandler(err: Error, req: Request, res: Response, next: (e: 
   }
 
   if (err instanceof RedirectCidError) {
+    // Using Permanently Moved HTTP code for redirection
     res.redirect(301, err.newUrl)
 
     return
@@ -91,12 +74,13 @@ export function errorHandler(err: Error, req: Request, res: Response, next: (e: 
 
 /**
  * Helper function that translates subdomain (CID/ENS) into Bzz resource
+ *
  * @param req
  * @param isCidEnabled
  * @param isEnsEnabled
  */
 function subdomainToBzz(req: Request, isCidEnabled: boolean, isEnsEnabled: boolean): string {
-  const host = req.headers.host!.split('.')
+  const host = req.hostname.split('.')
   const subdomain = host[0] // Taking the first subdomain from left
 
   try {
@@ -123,7 +107,7 @@ function subdomainToBzz(req: Request, isCidEnabled: boolean, isEnsEnabled: boole
 
     if (!isEnsEnabled) {
       logger.warn('ens subdomain support disabled, but got ens', { subdomain })
-      throw new Error('ENS subdomain support is disabled, but got an ENS domain!')
+      throw new NotEnabledError('ENS subdomain support is disabled, but got an ENS domain!')
     }
 
     return `${subdomain}.eth`

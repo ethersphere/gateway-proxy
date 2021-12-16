@@ -61,6 +61,8 @@ In all 3 modes, the proxy can be configured to require authentication secret to 
 Gateway proxy has support for Bzz.link which allows translating [Swarm CIDs](https://github.com/ethersphere/swarm-cid-js) and ENS names
 placed under subdomains into `/bzz` call. This allows to have better security model for your web applications.
 
+In order to use Bzz.link you may need to set up DNS with wildcard submdomain support.
+
 ### Examples
 
 #### 1. No postage stamp
