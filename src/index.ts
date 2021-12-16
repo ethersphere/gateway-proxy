@@ -26,7 +26,7 @@ async function main() {
     logger.info('starting the app without postage stamps management')
     app = createApp(appConfig)
   }
-  gs
+  ga
   // Start the Proxy
   const server = app.listen(port, () => {
     logger.info(`starting gateway-proxy at ${hostname}:${port}`)
