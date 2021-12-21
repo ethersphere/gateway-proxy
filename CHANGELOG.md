@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.1.0...v0.2.0) (2021-12-21)
+
+
+### Features
+
+* website with design ([#62](https://www.github.com/ethersphere/gateway-proxy/issues/62)) ([ca1430a](https://www.github.com/ethersphere/gateway-proxy/commit/ca1430ae47a3c30d486278fe9756fc866f9a94a8))
+
 ## 0.1.0 (2021-12-16)
 
 
