@@ -65,7 +65,7 @@
     "express": "^4.17.2",
     "http-proxy-middleware": "^2.0.1",
     "request-stats": "^3.0.0",
-    "winston": "^3.3.3"
+    "winston": "^3.3.4"
   },
   "engines": {
     "node": ">=12.0.0",
