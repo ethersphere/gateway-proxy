@@ -49,6 +49,7 @@ export const createApp = (
       '*',
       createProxyMiddleware(bzzLink.requestFilter, {
         ...commonOptions,
+        cookieDomainRewrite: hostname,
         router: bzzLink.routerClosure(beeApiUrl, Boolean(cidSubdomains), Boolean(ensSubdomains)),
       }),
     )

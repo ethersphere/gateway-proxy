@@ -1,8 +1,42 @@
 import { NotEnabledError, RedirectCidError, requestFilter, routerClosure } from '../src/bzz-link'
 import { Substitute } from '@fluffy-spoon/substitute'
-import { Request } from 'express'
+import { Application, Request } from 'express'
+import { Server } from 'http'
+import { createBzzLinkMockServer } from './bzz-link.mockserver'
+import { AddressInfo } from 'net'
+import { createApp } from '../src/server'
+import request from 'supertest'
 
 describe('bzz.link', () => {
+  describe('mock', () => {
+    let app: Application
+    let server: Server
+    let proxy: Server
+    let beeMockUrl: string
+    beforeAll(async () => {
+      server = await createBzzLinkMockServer('cookieName=cookieValue; Domain=localhost')
+      const beeMockPort = (server.address() as AddressInfo).port
+      beeMockUrl = `http://localhost:${beeMockPort}`
+
+      app = createApp({ beeApiUrl: beeMockUrl, hostname: 'bzz.link', ensSubdomains: true, cidSubdomains: true })
+      proxy = await new Promise((resolve, _reject) => {
+        const server = app.listen(async () => resolve(server))
+      })
+    })
+
+    it('should replace the domain for cookies', async () => {
+      await request(app)
+        .get('/')
+        .set('Host', 'some-reference.bzz.link')
+        .expect('set-cookie', 'cookieName=cookieValue; Domain=bzz.link')
+    })
+
+    afterAll(async () => {
+      await new Promise(resolve => server.close(resolve))
+      await new Promise(resolve => proxy.close(resolve))
+    })
+  })
+
   describe('requestFilter', () => {
     it('should return true for subdomain', async () => {
       const req = Substitute.for<Request>()
