@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.2.0...v0.3.0) (2022-02-09)
+
+
+### Features
+
+* cookie domain rewrite ([#107](https://www.github.com/ethersphere/gateway-proxy/issues/107)) ([009cdd2](https://www.github.com/ethersphere/gateway-proxy/commit/009cdd2fedc77b78e50b37324839641219693922))
+
 ## [0.2.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.1.0...v0.2.0) (2021-12-21)
 
 
