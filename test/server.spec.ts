@@ -109,6 +109,52 @@ describe('GET /readiness', () => {
   })
 })
 
+describe('POST /bytes', () => {
+  it('should store and retrieve actual data', async () => {
+    const batch = getPostageBatch()
+
+    const data = 'hello world'
+
+    const { reference } = await beeProxy.uploadData(batch, data)
+
+    const downloadedData = await bee.downloadData(reference)
+
+    expect(Buffer.from(downloadedData).toString()).toEqual(data)
+  })
+
+  it('should store and retrieve actual data with environment defined postage stamp', async () => {
+    const batch = '0000000000000000000000000000000000000000000000000000000000000000'
+
+    const data = 'hello world without stamp'
+
+    const { reference } = await beeWithStamp.uploadData(batch, data)
+
+    const downloadedData = await bee.downloadData(reference)
+
+    expect(Buffer.from(downloadedData).toString()).toEqual(data)
+  })
+})
+
+describe('GET /bytes/:reference/', () => {
+  it('should retrieve bytes from the proxy', async () => {
+    const batch = getPostageBatch()
+
+    const data = 'hello world'
+
+    const { reference } = await bee.uploadData(batch, data)
+
+    const downloadedData = await beeProxy.downloadData(reference)
+
+    expect(Buffer.from(downloadedData).toString()).toEqual(data)
+  })
+
+  it('with authorization enabled should return 403 & Forbidden', async () => {
+    const res = await request(appAuth).get(`/bytes/reference/`).expect(403)
+
+    expect(res.text).toEqual('Forbidden')
+  })
+})
+
 describe('POST /bzz', () => {
   it('should store and retrieve actual directory with index document', async () => {
     const batch = getPostageBatch()
@@ -136,28 +182,6 @@ describe('POST /bzz', () => {
     const file1 = await bee.downloadFile(reference)
     expect(file1.name).toEqual(indexDocument)
     expect(file1.data.text()).toMatch(/^1abcd\n$/)
-  })
-})
-
-describe('GET /bytes/:reference/', () => {
-  it('should retrieve bytes from the proxy', async () => {
-    const batch = getPostageBatch()
-
-    const indexDocument = '1.txt'
-    const directoryStructure = await makeCollectionFromFS('./test/data/')
-
-    const { reference } = await bee.uploadCollection(batch, directoryStructure, { indexDocument })
-
-    const res = await request(app).get(`/bytes/${reference}`).redirects(1).expect(200)
-    expect(JSON.stringify(res.body)).toBe(
-      '{"type":"Buffer","data":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,87,104,179,182,167,219,86,210,29,26,191,244,13,65,206,191,200,52,72,254,216,215,233,176,110,192,211,176,115,242,143,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,128,6,0,0,0,0,0,32,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18,1,47,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,133,4,242,161,7,202,148,11,234,252,76,226,246,201,169,240,150,140,98,165,181,137,63,240,228,225,226,152,48,72,210,118,0,62,123,34,119,101,98,115,105,116,101,45,105,110,100,101,120,45,100,111,99,117,109,101,110,116,34,58,34,49,46,116,120,116,34,125,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,18,5,49,46,116,120,116,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,127,65,153,145,119,243,47,72,205,83,184,211,127,216,184,173,193,213,39,114,148,80,9,118,55,12,251,19,241,142,7,236,0,62,123,34,67,111,110,116,101,110,116,45,84,121,112,101,34,58,34,34,44,34,70,105,108,101,110,97,109,101,34,58,34,49,46,116,120,116,34,125,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,18,5,50,46,116,120,116,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,50,195,238,155,127,96,150,52,193,76,42,162,251,139,143,84,168,161,23,39,23,115,210,193,90,208,81,223,104,243,119,107,0,62,123,34,67,111,110,116,101,110,116,45,84,121,112,101,34,58,34,34,44,34,70,105,108,101,110,97,109,101,34,58,34,50,46,116,120,116,34,125,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,18,5,101,109,112,116,121,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,50,195,238,155,127,96,150,52,193,76,42,162,251,139,143,84,168,161,23,39,23,115,210,193,90,208,81,223,104,243,119,107,0,62,123,34,67,111,110,116,101,110,116,45,84,121,112,101,34,58,34,34,44,34,70,105,108,101,110,97,109,101,34,58,34,101,109,112,116,121,34,125,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,12,4,115,117,98,47,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,163,208,234,149,199,128,19,57,214,15,237,167,57,8,53,133,187,207,94,107,194,107,92,133,90,168,43,199,30,164,204,202]}',
-    )
-  })
-
-  it('with authorization enabled should return 403 & Forbidden', async () => {
-    const res = await request(appAuth).get(`/bytes/reference/`).expect(403)
-
-    expect(res.text).toEqual('Forbidden')
   })
 })
 
@@ -200,5 +224,104 @@ describe('GET /bzz/:reference/<path>', () => {
     const res = await request(appAuth).get(`/bzz/reference/whatever`).expect(403)
 
     expect(res.text).toEqual('Forbidden')
+  })
+})
+
+describe('POST /chunks', () => {
+  it('should store and retrieve chunk', async () => {
+    const batch = getPostageBatch()
+    const payload = new Uint8Array([1, 2, 3])
+    // span is the payload length encoded as uint64 little endian
+    const span = new Uint8Array([payload.length, 0, 0, 0, 0, 0, 0, 0])
+    const data = new Uint8Array([...span, ...payload])
+    // the hash is hardcoded because we would need the bmt hasher otherwise
+    const hash = 'ca6357a08e317d15ec560fef34e4c45f8f19f01c372aa70f1da72bfa7f1a4338'
+
+    const reference = await beeProxy.uploadChunk(batch, data)
+    expect(reference).toEqual(hash)
+
+    const downloadedData = await bee.downloadChunk(reference)
+    expect(downloadedData).toEqual(data)
+  })
+
+  it('should store and retrieve chunk with environment defined postage stamp', async () => {
+    const batch = '0000000000000000000000000000000000000000000000000000000000000000'
+    const payload = new Uint8Array([1, 2, 3, 4, 5])
+    // span is the payload length encoded as uint64 little endian
+    const span = new Uint8Array([payload.length, 0, 0, 0, 0, 0, 0, 0])
+    const data = new Uint8Array([...span, ...payload])
+    // the hash is hardcoded because we would need the bmt hasher otherwise
+    const hash = '5094b636d1282c3ef22363ca816684edd843784b3d9f4d1a94c044c09919d335'
+
+    const reference = await beeWithStamp.uploadChunk(batch, data)
+    expect(reference).toEqual(hash)
+
+    const downloadedData = await bee.downloadChunk(reference)
+    expect(downloadedData).toEqual(data)
+  })
+})
+
+describe('GET /chunks/:reference/', () => {
+  it('should retrieve chunk from the proxy', async () => {
+    const batch = getPostageBatch()
+    const payload = new Uint8Array([1, 2, 3])
+    // span is the payload length encoded as uint64 little endian
+    const span = new Uint8Array([payload.length, 0, 0, 0, 0, 0, 0, 0])
+    const data = new Uint8Array([...span, ...payload])
+    // the hash is hardcoded because we would need the bmt hasher otherwise
+    const hash = 'ca6357a08e317d15ec560fef34e4c45f8f19f01c372aa70f1da72bfa7f1a4338'
+
+    const reference = await bee.uploadChunk(batch, data)
+    expect(reference).toEqual(hash)
+
+    const downloadedData = await beeProxy.downloadChunk(reference)
+    expect(downloadedData).toEqual(data)
+  })
+
+  it('with authorization enabled should return 403 & Forbidden', async () => {
+    const res = await request(appAuth).get(`/bytes/reference/`).expect(403)
+
+    expect(res.text).toEqual('Forbidden')
+  })
+})
+
+describe('POST /feeds/:owner/:topic', () => {
+  test('feed manifest creation and update with environment defined postage stamp', async () => {
+    const signer = '0x634fb5a872396d9693e5c9f9d7233cfa93f395c093371017ff44aa9ae6564cdd'
+    const topic = '0000000000000000000000000000000000000000000000000000000000000000'
+    const batch = getPostageBatch()
+    const batchFake = '0000000000000000000000000000000000000000000000000000000000000000'
+
+    const d1 = await bee.uploadData(batch, 'hello world!')
+
+    const writer = beeWithStamp.makeFeedWriter('sequence', topic, signer)
+    await writer.upload(batchFake, d1.reference)
+
+    const reader = bee.makeFeedReader('sequence', topic, writer.owner)
+    const dd1 = await reader.download()
+
+    expect(Number(dd1.feedIndex)).toBeGreaterThanOrEqual(0)
+    expect(Number(dd1.feedIndexNext)).toBeGreaterThanOrEqual(1)
+    expect(Number(dd1.feedIndex) + 1).toEqual(Number(dd1.feedIndexNext))
+  })
+})
+
+describe('GET /feeds/:owner/:topic', () => {
+  test('feed manifest creation and update with environment defined postage stamp', async () => {
+    const signer = '0x634fb5a872396d9693e5c9f9d7233cfa93f395c093371017ff44aa9ae6564cdd'
+    const topic = '0000000000000000000000000000000000000000000000000000000000000001'
+    const batch = getPostageBatch()
+
+    const d1 = await bee.uploadData(batch, 'hello from the other side!')
+
+    const writer = bee.makeFeedWriter('sequence', topic, signer)
+    await writer.upload(batch, d1.reference)
+
+    const reader = beeProxy.makeFeedReader('sequence', topic, writer.owner)
+    const dd1 = await reader.download()
+
+    expect(Number(dd1.feedIndex)).toBeGreaterThanOrEqual(0)
+    expect(Number(dd1.feedIndexNext)).toBeGreaterThanOrEqual(1)
+    expect(Number(dd1.feedIndex) + 1).toEqual(Number(dd1.feedIndexNext))
   })
 })
