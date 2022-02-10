@@ -78,14 +78,17 @@ export const createApp = (
   )
 
   // Download file/collection/chunk proxy
-  app.get(['/bzz/:reference', '/bzz/:reference/*', '/bytes/:reference'], createProxyMiddleware(commonOptions))
+  app.get(
+    ['/bzz/:reference', '/bzz/:reference/*', '/bytes/:reference', '/chunks/:reference', '/feeds/:owner/:topic'],
+    createProxyMiddleware(commonOptions),
+  )
 
   const options = stampManager
     ? { ...commonOptions, headers: { [SWARM_STAMP_HEADER]: stampManager.postageStamp } }
     : commonOptions
 
   // Upload file/collection proxy
-  app.post('/bzz', createProxyMiddleware(options))
+  app.post(['/bzz', '/bytes', '/chunks', '/feeds/:owner/:topic', '/soc/:owner/:id'], createProxyMiddleware(options))
 
   app.use(express.static('public'))
   app.use((_req, res) => res.sendStatus(404))
