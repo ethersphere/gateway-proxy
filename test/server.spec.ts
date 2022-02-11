@@ -286,7 +286,7 @@ describe('GET /chunks/:reference/', () => {
 })
 
 describe('POST /feeds/:owner/:topic', () => {
-  test('feed manifest creation and update with environment defined postage stamp', async () => {
+  test('should create and update feed with environment defined postage stamp', async () => {
     const signer = '0x634fb5a872396d9693e5c9f9d7233cfa93f395c093371017ff44aa9ae6564cdd'
     const topic = '0000000000000000000000000000000000000000000000000000000000000000'
     const batch = getPostageBatch()
@@ -307,7 +307,7 @@ describe('POST /feeds/:owner/:topic', () => {
 })
 
 describe('GET /feeds/:owner/:topic', () => {
-  test('feed manifest creation and update with environment defined postage stamp', async () => {
+  test('should retrieve feed', async () => {
     const signer = '0x634fb5a872396d9693e5c9f9d7233cfa93f395c093371017ff44aa9ae6564cdd'
     const topic = '0000000000000000000000000000000000000000000000000000000000000001'
     const batch = getPostageBatch()
