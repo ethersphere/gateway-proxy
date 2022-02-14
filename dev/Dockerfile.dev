@@ -1,11 +1,7 @@
 FROM node:lts
 
-ENV PORT=4000
-
 WORKDIR /usr/src/app
 
 COPY ../ .
 
 RUN npm ci
-
-EXPOSE 4000
