@@ -1,0 +1,9 @@
+.github
+.git
+test
+.gitignore
+CHANGELOG.md
+CODE_OF_CONDUCT.md
+CODEOWNERS
+README.md
+node_modules
