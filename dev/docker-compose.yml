@@ -57,13 +57,12 @@ services:
       - ../:/usr/src/app
     environment:
       - PORT=4000
-      - BEE_API_URL=http://localhost:1633
+      - BEE_API_URL=http://bee:1633
     ports:
       - 4000:4000
     expose:
       - 4000
     networks:
       - monitoring
-    image: ethersphere/gateway-proxy
     container_name: gateway-proxy
     command: npm start
