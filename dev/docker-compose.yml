@@ -1,8 +1,6 @@
 version: '3.8'
 networks:
-  default:
-    external: true
-    name: swarm-test-network
+  monitoring:
     driver: bridge
 volumes:
     prometheus_data: {}
@@ -18,6 +16,8 @@ services:
       - 9090:9090
     expose:
       - 9090
+    networks:
+      - monitoring
 
   grafana:
     image: grafana/grafana:7.1.5
@@ -33,11 +33,21 @@ services:
       - 9091:3000
     expose:
       - 9091
+    networks:
+      - monitoring
 
   bee:
     image: ethersphere/bee:1.4.3
     container_name: bee
     command: dev
+    ports:
+      - 1633:1633
+      - 1635:1635
+    expose:
+      - 1633
+      - 1635
+    networks:
+      - monitoring
 
   gateway-proxy:
     build:
@@ -47,10 +57,13 @@ services:
       - ../:/usr/src/app
     environment:
       - PORT=4000
+      - BEE_API_URL=http://localhost:1633
     ports:
       - 4000:4000
     expose:
       - 4000
+    networks:
+      - monitoring
     image: ethersphere/gateway-proxy
     container_name: gateway-proxy
     command: npm start
