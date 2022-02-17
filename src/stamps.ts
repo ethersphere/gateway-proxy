@@ -195,8 +195,8 @@ export class StampsManager {
       logger.debug('usable stamps', this.usableStamps)
 
       const leastUsed = this.usableStamps[this.usableStamps.length - 1]
-      stampTtlGauge.set(leastUsed.batchTTL)
-      stampUsageGauge.set(getUsage(leastUsed))
+      stampTtlGauge.set(leastUsed ? leastUsed.batchTTL : 0)
+      stampUsageGauge.set(leastUsed ? getUsage(leastUsed) : 0)
 
       // Check if the least used stamps is starting to get full and if so purchase new stamp
       if (!leastUsed || getUsage(leastUsed) > usageTreshold) {
