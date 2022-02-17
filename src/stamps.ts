@@ -15,31 +15,31 @@ interface Options {
 
 const stampPurchaseCounter = new client.Counter({
   name: 'stamp_purchase_counter',
-  help: 'How many stamps were purchased'
+  help: 'How many stamps were purchased',
 })
 register.registerMetric(stampPurchaseCounter)
 
 const stampCheckCounter = new client.Counter({
   name: 'stamp_check_counter',
-  help: 'How many times were stamps retrieved from server'
+  help: 'How many times were stamps retrieved from server',
 })
 register.registerMetric(stampCheckCounter)
 
 const stampGetCounter = new client.Counter({
   name: 'stamp_get_counter',
-  help: 'How many times was get postageStamp called'
+  help: 'How many times was get postageStamp called',
 })
 register.registerMetric(stampGetCounter)
 
 const stampTtlGauge = new client.Gauge({
   name: 'stamp_ttl_gauge',
-  help: 'TTL on the selected automanaged stamp'
+  help: 'TTL on the selected automanaged stamp',
 })
 register.registerMetric(stampTtlGauge)
 
 const stampUsageGauge = new client.Gauge({
   name: 'stamp_usage_gauge',
-  help: 'Usage on the selected automanaged stamp'
+  help: 'Usage on the selected automanaged stamp',
 })
 register.registerMetric(stampUsageGauge)
 
@@ -157,6 +157,7 @@ export class StampsManager {
    */
   get postageStamp(): string {
     stampGetCounter.inc()
+
     if (this.stamp) {
       const stamp = this.stamp
       logger.info('using hardcoded stamp', { stamp })
