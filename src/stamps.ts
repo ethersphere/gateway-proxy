@@ -3,6 +3,7 @@ import client from 'prom-client'
 import type { StampsConfig, StampsConfigAutobuy } from './config'
 import { sleep } from './utils'
 import { logger } from './logger'
+import { register } from './metrics'
 
 const DEFAULT_POLLING_FREQUENCY = 1_000
 const DEFAULT_STAMP_USABLE_TIMEOUT = 120_000
@@ -16,16 +17,19 @@ const stampPurchaseCounter = new client.Counter({
   name: 'stamp_purchase_counter',
   help: 'How many stamps were purchased'
 })
+register.registerMetric(stampPurchaseCounter)
 
 const stampCheckCounter = new client.Counter({
   name: 'stamp_check_counter',
   help: 'How many times were stamps retrieved from server'
 })
+register.registerMetric(stampCheckCounter)
 
 const stampGetCounter = new client.Counter({
   name: 'stamp_get_counter',
   help: 'How many times was get postageStamp called'
 })
+register.registerMetric(stampGetCounter)
 
 /**
  * Wait until a given postage stamp is usable

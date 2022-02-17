@@ -1,6 +1,6 @@
 global:
   scrape_interval: 5s
 scrape_configs:
-  - job_name: "nodejs-app"
+  - job_name: "gateway-proxy"
     static_configs:
-      - targets: ["nodejs-app:4000"]
+      - targets: ["gateway-proxy:4000"]
