@@ -1,4 +1,5 @@
 import { BeeDebug, DebugPostageBatch, BatchId } from '@ethersphere/bee-js'
+import client from 'prom-client'
 import type { StampsConfig, StampsConfigAutobuy } from './config'
 import { sleep } from './utils'
 import { logger } from './logger'
@@ -10,6 +11,21 @@ interface Options {
   pollingFrequency?: number
   timeout?: number
 }
+
+const stampPurchaseCounter = new client.Counter({
+  name: 'stamp_purchase_counter',
+  help: 'How many stamps were purchased'
+})
+
+const stampCheckCounter = new client.Counter({
+  name: 'stamp_check_counter',
+  help: 'How many times were stamps retrieved from server'
+})
+
+const stampGetCounter = new client.Counter({
+  name: 'stamp_get_counter',
+  help: 'How many times was get postageStamp called'
+})
 
 /**
  * Wait until a given postage stamp is usable
@@ -105,6 +121,7 @@ export async function buyNewStamp(
   beeDebug: BeeDebug,
   options: Options = {},
 ): Promise<DebugPostageBatch> {
+  stampPurchaseCounter.inc()
   const batchId = await beeDebug.createPostageBatch(amount, depth)
 
   return await waitUntilStampUsable(batchId, beeDebug, options)
@@ -123,6 +140,7 @@ export class StampsManager {
    * @throws Error if there is no postage stamp
    */
   get postageStamp(): string {
+    stampGetCounter.inc()
     if (this.stamp) {
       const stamp = this.stamp
       logger.info('using hardcoded stamp', { stamp })
@@ -148,6 +166,7 @@ export class StampsManager {
    */
   public async refreshStamps(config: StampsConfigAutobuy, beeDebug: BeeDebug): Promise<void> {
     try {
+      stampCheckCounter.inc()
       logger.info('checking postage stamps')
       const stamps = await beeDebug.getAllPostageBatch()
       logger.debug('retrieved stamps', stamps)
