@@ -167,7 +167,7 @@ export class StampsManager {
         logger.info('successfully bought new stamp', { stamp })
 
         // Once bought, should check if it maybe does not need to be used already
-        this.refreshStamps(config, beeDebug)
+        await this.refreshStamps(config, beeDebug)
       }
     } catch (e) {
       logger.error('failed to refresh postage stamp', e)
@@ -184,10 +184,10 @@ export class StampsManager {
     else {
       this.stop()
 
-      const f = async () => this.refreshStamps(config, new BeeDebug(config.beeDebugApiUrl))
-      await f()
+      const refreshStamps = async () => this.refreshStamps(config, new BeeDebug(config.beeDebugApiUrl))
+      await refreshStamps()
 
-      this.interval = setInterval(f, config.refreshPeriod)
+      this.interval = setInterval(refreshStamps, config.refreshPeriod)
     }
   }
 

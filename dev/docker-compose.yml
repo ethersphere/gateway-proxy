@@ -1,7 +1,7 @@
 version: '3.8'
 networks:
   swarm-test-network:
-    external: true # This expects that the network already exists (created by bee-factory)
+    external: true # To be used with bee factory, it connects to its network, disable when using with bee dev
     driver: bridge
 volumes:
     prometheus_data: {}
@@ -45,12 +45,14 @@ services:
       - ../:/usr/src/app
     environment:
       - PORT=4000
-      - BEE_API_URL=http://swarm-test-queen:1633
-      - BEE_DEBUG_API_URL=http://swarm-test-queen:1635
-      - POSTAGE_DEPTH=20
+      - BEE_API_URL=http://swarm-test-queen:1633 # http://bee:1633 for bee dev
+      - BEE_DEBUG_API_URL=http://swarm-test-queen:1635 # http://bee:1635 for bee dev
+      - POSTAGE_DEPTH=17
       - POSTAGE_AMOUNT=10000000
       - POSTAGE_USAGE_THRESHOLD=0.49
       - POSTAGE_USAGE_MAX=0.74
+      - POSTAGE_TTL_MIN=-2 # this is a hack to work with bee dev and bee-factory, see https://github.com/ethersphere/bee-factory/issues/74
+      - LOG_LEVEL=debug
     ports:
       - 4000:4000
     expose:
@@ -60,7 +62,7 @@ services:
     container_name: gateway-proxy
     command: npm start
 
-  # Disabled as bee dev mode does not produce valid stamps
+  # To use with bee dev enable
   # bee:
   #   image: ethersphere/bee:1.4.3
   #   container_name: bee
