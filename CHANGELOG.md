@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.3.0...v0.4.0) (2022-02-17)
+
+
+### Features
+
+* add bytes, chunks, feeds and soc endpoints ([#110](https://www.github.com/ethersphere/gateway-proxy/issues/110)) ([aba5c1e](https://www.github.com/ethersphere/gateway-proxy/commit/aba5c1e361b607f158c663d7566d74db3b14e771))
+* add prometheus metrics ([#112](https://www.github.com/ethersphere/gateway-proxy/issues/112)) ([e4dd39c](https://www.github.com/ethersphere/gateway-proxy/commit/e4dd39cd6713a7b030371f93eb9d397e98c4a0fe))
+
 ## [0.3.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.2.0...v0.3.0) (2022-02-09)
 
 
