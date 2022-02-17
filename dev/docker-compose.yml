@@ -1,0 +1,77 @@
+version: '3.8'
+networks:
+  swarm-test-network:
+    external: true # To be used with bee factory, it connects to its network, disable when using with bee dev
+    driver: bridge
+volumes:
+    prometheus_data: {}
+    grafana_data: {}
+services:
+  prometheus:
+    image: prom/prometheus:v2.20.1
+    container_name: prometheus
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    ports:
+      - 9090:9090
+    expose:
+      - 9090
+    networks:
+      - swarm-test-network
+
+  grafana:
+    image: grafana/grafana:7.1.5
+    container_name: grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    ports:
+      - 9091:3000
+    expose:
+      - 9091
+    networks:
+      - swarm-test-network
+
+  gateway-proxy:
+    build:
+      context: ../
+      dockerfile: ./dev/Dockerfile.dev
+    volumes:
+      - ../:/usr/src/app
+    environment:
+      - PORT=4000
+      - BEE_API_URL=http://swarm-test-queen:1633 # http://bee:1633 for bee dev
+      - BEE_DEBUG_API_URL=http://swarm-test-queen:1635 # http://bee:1635 for bee dev
+      - POSTAGE_DEPTH=17
+      - POSTAGE_AMOUNT=10000000
+      - POSTAGE_USAGE_THRESHOLD=0.49
+      - POSTAGE_USAGE_MAX=0.74
+      - POSTAGE_TTL_MIN=-2 # this is a hack to work with bee dev and bee-factory, see https://github.com/ethersphere/bee-factory/issues/74
+      - LOG_LEVEL=debug
+    ports:
+      - 4000:4000
+    expose:
+      - 4000
+    networks:
+      - swarm-test-network
+    container_name: gateway-proxy
+    command: npm start
+
+  # To use with bee dev enable
+  # bee:
+  #   image: ethersphere/bee:1.4.3
+  #   container_name: bee
+  #   command: dev
+  #   ports:
+  #     - 1633:1633
+  #     - 1635:1635
+  #   expose:
+  #     - 1633
+  #     - 1635
+  #   networks:
+  #     - swarm-test-network

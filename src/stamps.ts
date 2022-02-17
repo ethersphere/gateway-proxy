@@ -1,7 +1,9 @@
 import { BeeDebug, DebugPostageBatch, BatchId } from '@ethersphere/bee-js'
+import client from 'prom-client'
 import type { StampsConfig, StampsConfigAutobuy } from './config'
 import { sleep } from './utils'
 import { logger } from './logger'
+import { register } from './metrics'
 
 const DEFAULT_POLLING_FREQUENCY = 1_000
 const DEFAULT_STAMP_USABLE_TIMEOUT = 120_000
@@ -10,6 +12,36 @@ interface Options {
   pollingFrequency?: number
   timeout?: number
 }
+
+const stampPurchaseCounter = new client.Counter({
+  name: 'stamp_purchase_counter',
+  help: 'How many stamps were purchased',
+})
+register.registerMetric(stampPurchaseCounter)
+
+const stampCheckCounter = new client.Counter({
+  name: 'stamp_check_counter',
+  help: 'How many times were stamps retrieved from server',
+})
+register.registerMetric(stampCheckCounter)
+
+const stampGetCounter = new client.Counter({
+  name: 'stamp_get_counter',
+  help: 'How many times was get postageStamp called',
+})
+register.registerMetric(stampGetCounter)
+
+const stampTtlGauge = new client.Gauge({
+  name: 'stamp_ttl_gauge',
+  help: 'TTL on the selected automanaged stamp',
+})
+register.registerMetric(stampTtlGauge)
+
+const stampUsageGauge = new client.Gauge({
+  name: 'stamp_usage_gauge',
+  help: 'Usage on the selected automanaged stamp',
+})
+register.registerMetric(stampUsageGauge)
 
 /**
  * Wait until a given postage stamp is usable
@@ -105,6 +137,7 @@ export async function buyNewStamp(
   beeDebug: BeeDebug,
   options: Options = {},
 ): Promise<DebugPostageBatch> {
+  stampPurchaseCounter.inc()
   const batchId = await beeDebug.createPostageBatch(amount, depth)
 
   return await waitUntilStampUsable(batchId, beeDebug, options)
@@ -123,6 +156,8 @@ export class StampsManager {
    * @throws Error if there is no postage stamp
    */
   get postageStamp(): string {
+    stampGetCounter.inc()
+
     if (this.stamp) {
       const stamp = this.stamp
       logger.info('using hardcoded stamp', { stamp })
@@ -148,6 +183,7 @@ export class StampsManager {
    */
   public async refreshStamps(config: StampsConfigAutobuy, beeDebug: BeeDebug): Promise<void> {
     try {
+      stampCheckCounter.inc()
       logger.info('checking postage stamps')
       const stamps = await beeDebug.getAllPostageBatch()
       logger.debug('retrieved stamps', stamps)
@@ -158,16 +194,18 @@ export class StampsManager {
       this.usableStamps = filterUsableStamps(stamps, depth, amount, usageMax, ttlMin)
       logger.debug('usable stamps', this.usableStamps)
 
-      // Check if the least used stamps is starting to get full and if so purchase new stamp
       const leastUsed = this.usableStamps[this.usableStamps.length - 1]
+      stampTtlGauge.set(leastUsed ? leastUsed.batchTTL : 0)
+      stampUsageGauge.set(leastUsed ? getUsage(leastUsed) : 0)
 
+      // Check if the least used stamps is starting to get full and if so purchase new stamp
       if (!leastUsed || getUsage(leastUsed) > usageTreshold) {
         logger.info('buying new stamp')
         const stamp = await buyNewStamp(depth, amount, beeDebug)
         logger.info('successfully bought new stamp', { stamp })
 
         // Once bought, should check if it maybe does not need to be used already
-        this.refreshStamps(config, beeDebug)
+        await this.refreshStamps(config, beeDebug)
       }
     } catch (e) {
       logger.error('failed to refresh postage stamp', e)
@@ -184,10 +222,10 @@ export class StampsManager {
     else {
       this.stop()
 
-      const f = async () => this.refreshStamps(config, new BeeDebug(config.beeDebugApiUrl))
-      await f()
+      const refreshStamps = async () => this.refreshStamps(config, new BeeDebug(config.beeDebugApiUrl))
+      await refreshStamps()
 
-      this.interval = setInterval(f, config.refreshPeriod)
+      this.interval = setInterval(refreshStamps, config.refreshPeriod)
     }
   }
 

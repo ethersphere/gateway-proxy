@@ -4,6 +4,7 @@ import type { AppConfig } from './config'
 import type { StampsManager } from './stamps'
 import { logger } from './logger'
 import * as bzzLink from './bzz-link'
+import { register } from './metrics'
 
 const SWARM_STAMP_HEADER = 'swarm-postage-batch-id'
 
@@ -56,6 +57,11 @@ export const createApp = (
 
     app.use(bzzLink.errorHandler)
   }
+
+  app.get('/metrics', async (_req, res) => {
+    res.write(await register.metrics())
+    res.end()
+  })
 
   // Health endpoint
   app.get('/health', (_req, res) => res.send('OK'))
