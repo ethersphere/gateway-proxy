@@ -31,6 +31,18 @@ const stampGetCounter = new client.Counter({
 })
 register.registerMetric(stampGetCounter)
 
+const stampTtlGauge = new client.Gauge({
+  name: 'stamp_ttl_gauge',
+  help: 'TTL on the selected automanaged stamp'
+})
+register.registerMetric(stampTtlGauge)
+
+const stampUsageGauge = new client.Gauge({
+  name: 'stamp_usage_gauge',
+  help: 'Usage on the selected automanaged stamp'
+})
+register.registerMetric(stampUsageGauge)
+
 /**
  * Wait until a given postage stamp is usable
  *
@@ -181,9 +193,11 @@ export class StampsManager {
       this.usableStamps = filterUsableStamps(stamps, depth, amount, usageMax, ttlMin)
       logger.debug('usable stamps', this.usableStamps)
 
-      // Check if the least used stamps is starting to get full and if so purchase new stamp
       const leastUsed = this.usableStamps[this.usableStamps.length - 1]
+      stampTtlGauge.set(leastUsed.batchTTL)
+      stampUsageGauge.set(getUsage(leastUsed))
 
+      // Check if the least used stamps is starting to get full and if so purchase new stamp
       if (!leastUsed || getUsage(leastUsed) > usageTreshold) {
         logger.info('buying new stamp')
         const stamp = await buyNewStamp(depth, amount, beeDebug)
