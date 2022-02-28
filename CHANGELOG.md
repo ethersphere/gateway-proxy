@@ -1,5 +1,13 @@
 # Changelog
 
+### [0.4.1](https://www.github.com/ethersphere/gateway-proxy/compare/v0.4.0...v0.4.1) (2022-02-28)
+
+
+### Bug Fixes
+
+* add public folder to docker image ([#130](https://www.github.com/ethersphere/gateway-proxy/issues/130)) ([59171b1](https://www.github.com/ethersphere/gateway-proxy/commit/59171b107e655a91c5d39f6b8df006e00616db65))
+* docker image name typo ([#124](https://www.github.com/ethersphere/gateway-proxy/issues/124)) ([35f6955](https://www.github.com/ethersphere/gateway-proxy/commit/35f6955dc5b7021f393abcbd9878fb459d1abc85))
+
 ## [0.4.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.3.0...v0.4.0) (2022-02-17)
 
 
