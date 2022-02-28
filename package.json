@@ -1,6 +1,6 @@
 {
   "name": "@ethersphere/gateway-proxy",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Swarm proxy server that can play role of a gateway",
   "keywords": [
     "bee",
@@ -44,7 +44,7 @@
     "@typescript-eslint/eslint-plugin": "^5.10.1",
     "@typescript-eslint/parser": "^5.10.1",
     "depcheck": "^1.4.3",
-    "eslint": "^8.7.0",
+    "eslint": "^8.10.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-jest": "^26.0.0",
     "eslint-plugin-prettier": "^4.0.0",
