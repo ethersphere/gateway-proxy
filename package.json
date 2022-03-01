@@ -37,7 +37,7 @@
     "@fluffy-spoon/substitute": "^1.208.0",
     "@jest/types": "^27.4.2",
     "@types/express": "^4.17.13",
-    "@types/jest": "^27.0.3",
+    "@types/jest": "^27.4.1",
     "@types/node": "^17.0.21",
     "@types/request-stats": "^3.0.0",
     "@types/supertest": "^2.0.11",
