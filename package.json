@@ -41,7 +41,7 @@
     "@types/node": "^17.0.12",
     "@types/request-stats": "^3.0.0",
     "@types/supertest": "^2.0.11",
-    "@typescript-eslint/eslint-plugin": "^5.10.1",
+    "@typescript-eslint/eslint-plugin": "^5.13.0",
     "@typescript-eslint/parser": "^5.13.0",
     "depcheck": "^1.4.3",
     "eslint": "^8.10.0",
@@ -62,7 +62,7 @@
   "dependencies": {
     "@ethersphere/bee-js": "^3.1.0",
     "@ethersphere/swarm-cid": "^0.1.0",
-    "express": "^4.17.2",
+    "express": "^4.17.3",
     "http-proxy-middleware": "^2.0.2",
     "prom-client": "^14.0.1",
     "request-stats": "^3.0.0",
