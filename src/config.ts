@@ -4,6 +4,7 @@ export interface AppConfig {
   hostname?: string
   cidSubdomains?: boolean
   ensSubdomains?: boolean
+  removePinHeader?: boolean
 }
 
 export interface ServerConfig {
@@ -45,6 +46,9 @@ export type EnvironmentVariables = Partial<{
   CID_SUBDOMAINS: string
   ENS_SUBDOMAINS: string
 
+  // Headers manipulation
+  REMOVE_PIN_HEADER: string
+
   // Stamps
   BEE_DEBUG_API_URL: string
   POSTAGE_STAMP: string
@@ -78,6 +82,7 @@ export function getAppConfig({
   CID_SUBDOMAINS,
   ENS_SUBDOMAINS,
   HOSTNAME,
+  REMOVE_PIN_HEADER,
 }: EnvironmentVariables = {}): AppConfig {
   return {
     hostname: HOSTNAME || DEFAULT_HOSTNAME,
@@ -85,6 +90,7 @@ export function getAppConfig({
     authorization: AUTH_SECRET,
     cidSubdomains: CID_SUBDOMAINS === 'true',
     ensSubdomains: ENS_SUBDOMAINS === 'true',
+    removePinHeader: REMOVE_PIN_HEADER ? REMOVE_PIN_HEADER === 'true' : true,
   }
 }
 

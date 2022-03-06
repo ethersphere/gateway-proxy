@@ -8,8 +8,17 @@ import { register } from './metrics'
 
 const SWARM_STAMP_HEADER = 'swarm-postage-batch-id'
 
+export const GET_PROXY_ENDPOINTS = [
+  '/bzz/:reference',
+  '/bzz/:reference/*',
+  '/bytes/:reference',
+  '/chunks/:reference',
+  '/feeds/:owner/:topic',
+]
+export const POST_PROXY_ENDPOINTS = ['/bzz', '/bytes', '/chunks', '/feeds/:owner/:topic', '/soc/:owner/:id']
+
 export const createApp = (
-  { hostname, beeApiUrl, authorization, cidSubdomains, ensSubdomains }: AppConfig,
+  { hostname, beeApiUrl, authorization, cidSubdomains, ensSubdomains, removePinHeader }: AppConfig,
   stampManager: StampsManager | undefined = undefined,
 ): Application => {
   const commonOptions: Options = {
@@ -84,17 +93,20 @@ export const createApp = (
   )
 
   // Download file/collection/chunk proxy
-  app.get(
-    ['/bzz/:reference', '/bzz/:reference/*', '/bytes/:reference', '/chunks/:reference', '/feeds/:owner/:topic'],
-    createProxyMiddleware(commonOptions),
-  )
+  app.get(GET_PROXY_ENDPOINTS, createProxyMiddleware(commonOptions))
 
-  const options = stampManager
+  const options: Options = stampManager
     ? { ...commonOptions, headers: { [SWARM_STAMP_HEADER]: stampManager.postageStamp } }
     : commonOptions
 
+  if (removePinHeader) {
+    options.onProxyReq = proxyReq => {
+      proxyReq.removeHeader('swarm-pin')
+    }
+  }
+
   // Upload file/collection proxy
-  app.post(['/bzz', '/bytes', '/chunks', '/feeds/:owner/:topic', '/soc/:owner/:id'], createProxyMiddleware(options))
+  app.post(POST_PROXY_ENDPOINTS, createProxyMiddleware(options))
 
   app.use(express.static('public'))
   app.use((_req, res) => res.sendStatus(404))

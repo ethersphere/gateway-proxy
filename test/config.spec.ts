@@ -27,6 +27,20 @@ describe('getAppConfig', () => {
     expect(config.beeApiUrl).toEqual(BEE_API_URL)
     expect(config.authorization).toEqual(AUTH_SECRET)
   })
+
+  it('should set removePinHeader correctly', () => {
+    const configDefault = getAppConfig()
+
+    expect(configDefault.removePinHeader).toEqual(true)
+
+    const configTrue = getAppConfig({ REMOVE_PIN_HEADER: 'true' })
+
+    expect(configTrue.removePinHeader).toEqual(true)
+
+    const configFalse = getAppConfig({ REMOVE_PIN_HEADER: 'false' })
+
+    expect(configFalse.removePinHeader).toEqual(false)
+  })
 })
 
 describe('getServerConfig', () => {

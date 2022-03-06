@@ -1,10 +1,11 @@
-import { createApp } from '../src/server'
+import { createApp, POST_PROXY_ENDPOINTS } from '../src/server'
 import request from 'supertest'
 import { Bee } from '@ethersphere/bee-js'
 import type { Server } from 'http'
 
 import { bee, getPostageBatch, makeCollectionFromFS } from './utils'
 import { StampsManager } from '../src/stamps'
+import { createHeaderCheckMockServer } from './header-check.mockserver'
 
 const beeApiUrl = process.env.BEE_API_URL || 'http://localhost:1633'
 const beeApiUrlWrong = process.env.BEE_API_URL_WRONG || 'http://localhost:2021'
@@ -21,6 +22,9 @@ let proxyWithStamp: Server
 let beeProxy: Bee
 let _beeProxyAuth: Bee
 let beeWithStamp: Bee
+
+let headerServer: Server
+let headerProxy: Server
 
 beforeAll(async () => {
   proxy = await new Promise((resolve, _reject) => {
@@ -44,6 +48,14 @@ beforeAll(async () => {
   })
   const portAuth = (proxy.address() as AddressInfo).port
   _beeProxyAuth = new Bee(`http://localhost:${portAuth}`)
+
+  headerServer = await createHeaderCheckMockServer()
+  const headerServerPort = (headerServer.address() as AddressInfo).port
+  headerProxy = await new Promise((resolve, _reject) => {
+    const server = createApp({ beeApiUrl: `http://localhost:${headerServerPort}`, removePinHeader: true }).listen(
+      async () => resolve(server),
+    )
+  })
 })
 
 afterAll(async () => {
@@ -323,5 +335,22 @@ describe('GET /feeds/:owner/:topic', () => {
     expect(Number(dd1.feedIndex)).toBeGreaterThanOrEqual(0)
     expect(Number(dd1.feedIndexNext)).toBeGreaterThanOrEqual(1)
     expect(Number(dd1.feedIndex) + 1).toEqual(Number(dd1.feedIndexNext))
+  })
+})
+
+describe('remove swarm-pin header', () => {
+  POST_PROXY_ENDPOINTS.forEach(endpoint => {
+    it(`should remove swarm-pin header on ${endpoint}`, async () => {
+      const data = 'hello'
+
+      const headers = {
+        testheader: 'test header content',
+        'swarm-pin': true,
+      }
+      const res = await request(headerProxy).post(endpoint).set(headers).send(data).expect(200)
+      const resHeaders = JSON.parse(res.text)
+      expect(resHeaders).toHaveProperty('testheader', headers.testheader)
+      expect(resHeaders).not.toHaveProperty('swarm-pin')
+    })
   })
 })
