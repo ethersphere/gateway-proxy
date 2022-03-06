@@ -62,6 +62,8 @@ afterAll(async () => {
   await new Promise(resolve => proxy.close(resolve))
   await new Promise(resolve => proxyAuth.close(resolve))
   await new Promise(resolve => proxyWithStamp.close(resolve))
+  await new Promise(resolve => headerServer.close(resolve))
+  await new Promise(resolve => headerProxy.close(resolve))
 })
 
 interface AddressInfo {
