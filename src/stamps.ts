@@ -43,6 +43,12 @@ const stampUsageGauge = new client.Gauge({
 })
 register.registerMetric(stampUsageGauge)
 
+const stampUsableCountGauge = new client.Gauge({
+  name: 'stamp_usable_count_gauge',
+  help: 'How many stamps exist on the bee node that can be used',
+})
+register.registerMetric(stampUsableCountGauge)
+
 /**
  * Wait until a given postage stamp is usable
  *
@@ -195,8 +201,11 @@ export class StampsManager {
       logger.debug('usable stamps', this.usableStamps)
 
       const leastUsed = this.usableStamps[this.usableStamps.length - 1]
-      stampTtlGauge.set(leastUsed ? leastUsed.batchTTL : 0)
-      stampUsageGauge.set(leastUsed ? getUsage(leastUsed) : 0)
+      const mostUsed = this.usableStamps[0]
+
+      stampTtlGauge.set(mostUsed ? mostUsed.batchTTL : 0)
+      stampUsageGauge.set(mostUsed ? getUsage(mostUsed) : 0)
+      stampUsableCountGauge.set(this.usableStamps.length)
 
       // Check if the least used stamps is starting to get full and if so purchase new stamp
       if (!leastUsed || getUsage(leastUsed) > usageTreshold) {
@@ -204,8 +213,9 @@ export class StampsManager {
         const stamp = await buyNewStamp(depth, amount, beeDebug)
         logger.info('successfully bought new stamp', { stamp })
 
-        // Once bought, should check if it maybe does not need to be used already
-        await this.refreshStamps(config, beeDebug)
+        // Add the bought postage stamp
+        this.usableStamps.push(stamp)
+        stampUsableCountGauge.set(this.usableStamps.length)
       }
     } catch (e) {
       logger.error('failed to refresh postage stamp', e)
