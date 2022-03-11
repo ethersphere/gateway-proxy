@@ -153,6 +153,7 @@ export class StampsManager {
   private stamp?: string
   private usableStamps?: DebugPostageBatch[]
   private interval?: ReturnType<typeof setInterval>
+  private isBuyingStamp?: boolean = false
 
   /**
    * Get postage stamp that should be replaced in a the proxy request header
@@ -208,14 +209,21 @@ export class StampsManager {
       stampUsableCountGauge.set(this.usableStamps.length)
 
       // Check if the least used stamps is starting to get full and if so purchase new stamp
-      if (!leastUsed || getUsage(leastUsed) > usageTreshold) {
+      if (!this.isBuyingStamp && (!leastUsed || getUsage(leastUsed) > usageTreshold)) {
+        this.isBuyingStamp = true
         logger.info('buying new stamp')
-        const stamp = await buyNewStamp(depth, amount, beeDebug)
-        logger.info('successfully bought new stamp', { stamp })
+        try {
+          const stamp = await buyNewStamp(depth, amount, beeDebug)
+          logger.info('successfully bought new stamp', { stamp })
 
-        // Add the bought postage stamp
-        this.usableStamps.push(stamp)
-        stampUsableCountGauge.set(this.usableStamps.length)
+          // Add the bought postage stamp
+          this.usableStamps.push(stamp)
+          stampUsableCountGauge.set(this.usableStamps.length)
+        } catch (e) {
+          logger.error('failed to buy postage stamp', e)
+        } finally {
+          this.isBuyingStamp = false
+        }
       }
     } catch (e) {
       logger.error('failed to refresh postage stamp', e)
