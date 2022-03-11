@@ -113,8 +113,9 @@ npm run start
 | POSTAGE_USAGE_MAX       | 0.9                         | Usage percentage at which existing postage stamp should not be considered viable ( values 0 to 1).         |
 | POSTAGE_TTL_MIN         | 5 \* POSTAGE_REFRESH_PERIOD | Minimal time to live for the postage stamps to still be considered for upload (in seconds).                |
 | POSTAGE_REFRESH_PERIOD  | 60                          | How frequently are the postage stamps checked in seconds.                                                  |
-| CID_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for CIDs                                              |
-| ENS_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for ENS                                               |
+| CID_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for CIDs.                                             |
+| ENS_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for ENS.                                              |
+| REMOVE_PIN_HEADER       | true                        | Removes swarm-pin header on all proxy requests.                                                            |
 
 ### Curl
 
