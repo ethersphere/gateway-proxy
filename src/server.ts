@@ -95,13 +95,16 @@ export const createApp = (
   // Download file/collection/chunk proxy
   app.get(GET_PROXY_ENDPOINTS, createProxyMiddleware(commonOptions))
 
-  const options: Options = stampManager
-    ? { ...commonOptions, headers: { [SWARM_STAMP_HEADER]: stampManager.postageStamp } }
-    : commonOptions
+  const options: Options = { ...commonOptions }
 
-  if (removePinHeader) {
-    options.onProxyReq = proxyReq => {
+  options.onProxyReq = proxyReq => {
+    if (removePinHeader) {
       proxyReq.removeHeader('swarm-pin')
+    }
+
+    if (stampManager) {
+      proxyReq.removeHeader(SWARM_STAMP_HEADER)
+      proxyReq.setHeader(SWARM_STAMP_HEADER, stampManager.postageStamp)
     }
   }
 
