@@ -97,14 +97,19 @@ export const createApp = (
 
   const options: Options = { ...commonOptions }
 
-  options.onProxyReq = proxyReq => {
+  options.onProxyReq = (proxyReq, _req, res) => {
     if (removePinHeader) {
       proxyReq.removeHeader('swarm-pin')
     }
 
     if (stampManager) {
       proxyReq.removeHeader(SWARM_STAMP_HEADER)
-      proxyReq.setHeader(SWARM_STAMP_HEADER, stampManager.postageStamp)
+      try {
+        proxyReq.setHeader(SWARM_STAMP_HEADER, stampManager.postageStamp)
+      } catch (e) {
+        // There is no postage stamp to use
+        res.writeHead(503).end('Service Unavailable')
+      }
     }
   }
 
