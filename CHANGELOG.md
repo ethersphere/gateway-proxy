@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.5.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.4.1...v0.5.0) (2022-03-11)
+
+
+### Features
+
+* remove swarm-pin header on the proxy requests ([#150](https://www.github.com/ethersphere/gateway-proxy/issues/150)) ([c5a57fc](https://www.github.com/ethersphere/gateway-proxy/commit/c5a57fcdf12bca7571072aa6e1fc128209fd0aaf))
+
+
+### Bug Fixes
+
+* get postage stamp on each request ([#156](https://www.github.com/ethersphere/gateway-proxy/issues/156)) ([ac68754](https://www.github.com/ethersphere/gateway-proxy/commit/ac6875447c2c297ab8942b8debcab9f369b2d87d))
+* multiple stamps being purchased at the same time and metrics ([#157](https://www.github.com/ethersphere/gateway-proxy/issues/157)) ([fa4b1b9](https://www.github.com/ethersphere/gateway-proxy/commit/fa4b1b9132027893b5e9bd04d76f6da57d217b39))
+* return 503 error when there is no valid postage stamp to use ([#160](https://www.github.com/ethersphere/gateway-proxy/issues/160)) ([0d0c656](https://www.github.com/ethersphere/gateway-proxy/commit/0d0c65635a0540a787bf72ffb4073b22c2517ded))
+
 ### [0.4.1](https://www.github.com/ethersphere/gateway-proxy/compare/v0.4.0...v0.4.1) (2022-02-28)
 
 
