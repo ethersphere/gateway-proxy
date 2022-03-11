@@ -31,6 +31,12 @@ const stampGetCounter = new client.Counter({
 })
 register.registerMetric(stampGetCounter)
 
+const stampGetErrorCounter = new client.Counter({
+  name: 'stamp_get_error_counter',
+  help: 'How many times was get postageStamp called and there was no valid postage stamp',
+})
+register.registerMetric(stampGetErrorCounter)
+
 const stampTtlGauge = new client.Gauge({
   name: 'stamp_ttl_gauge',
   help: 'TTL on the selected automanaged stamp',
@@ -179,6 +185,7 @@ export class StampsManager {
       return stamp.batchID
     }
 
+    stampGetErrorCounter.inc()
     throw new Error('No postage stamp')
   }
 
