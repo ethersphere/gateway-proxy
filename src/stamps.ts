@@ -19,6 +19,12 @@ const stampPurchaseCounter = new client.Counter({
 })
 register.registerMetric(stampPurchaseCounter)
 
+const stampPurchaseFailedCounter = new client.Counter({
+  name: 'stamp_purchase_failed_counter',
+  help: 'How many stamps failed to be purchased',
+})
+register.registerMetric(stampPurchaseFailedCounter)
+
 const stampCheckCounter = new client.Counter({
   name: 'stamp_check_counter',
   help: 'How many times were stamps retrieved from server',
@@ -149,8 +155,8 @@ export async function buyNewStamp(
   beeDebug: BeeDebug,
   options: Options = {},
 ): Promise<DebugPostageBatch> {
-  stampPurchaseCounter.inc()
   const batchId = await beeDebug.createPostageBatch(amount, depth)
+  stampPurchaseCounter.inc()
 
   return await waitUntilStampUsable(batchId, beeDebug, options)
 }
@@ -228,6 +234,7 @@ export class StampsManager {
           stampUsableCountGauge.set(this.usableStamps.length)
         } catch (e) {
           logger.error('failed to buy postage stamp', e)
+          stampPurchaseFailedCounter.inc()
         } finally {
           this.isBuyingStamp = false
         }
