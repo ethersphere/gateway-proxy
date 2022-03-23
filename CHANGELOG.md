@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.5.1](https://www.github.com/ethersphere/gateway-proxy/compare/v0.5.0...v0.5.1) (2022-03-23)
+
+
+### Bug Fixes
+
+* stamp purchase metric and add failed to purchase metric ([#163](https://www.github.com/ethersphere/gateway-proxy/issues/163)) ([88f42a1](https://www.github.com/ethersphere/gateway-proxy/commit/88f42a193f0ac372e844d3a8cb000e4c2a0bcf7b))
+
 ## [0.5.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.4.1...v0.5.0) (2022-03-11)
 
 
