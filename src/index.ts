@@ -10,7 +10,7 @@ async function main() {
   // Configuration
   const stampConfig = getStampsConfig(process.env as EnvironmentVariables)
   const appConfig = getAppConfig(process.env as EnvironmentVariables)
-  const { hostname, port } = getServerConfig(process.env as EnvironmentVariables)
+  const { hostname, port, corsOptions } = getServerConfig(process.env as EnvironmentVariables)
 
   logger.debug('proxy config', appConfig)
   logger.debug('server config', { hostname: hostname, port })
@@ -23,10 +23,10 @@ async function main() {
     logger.info('starting postage stamp manager')
     await stampManager.start(stampConfig)
     logger.info('starting the proxy')
-    app = createApp(appConfig, stampManager)
+    app = createApp(appConfig, stampManager, corsOptions)
   } else {
     logger.info('starting the app without postage stamps management')
-    app = createApp(appConfig)
+    app = createApp(appConfig, undefined, corsOptions)
   }
 
   // Start the Proxy

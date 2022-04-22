@@ -1,3 +1,5 @@
+import type { CorsOptions } from 'cors'
+
 export interface AppConfig {
   beeApiUrl: string
   authorization?: string
@@ -10,6 +12,7 @@ export interface AppConfig {
 export interface ServerConfig {
   hostname: string
   port: number
+  corsOptions: CorsOptions
 }
 
 interface StampsConfigHardcoded {
@@ -41,6 +44,7 @@ export type EnvironmentVariables = Partial<{
   // Server
   PORT: string
   HOSTNAME: string
+  CORS_ORIGIN: string
 
   // CID subdomain support
   CID_SUBDOMAINS: string
@@ -70,6 +74,7 @@ export const DEFAULT_POSTAGE_USAGE_THRESHOLD = 0.7
 export const DEFAULT_POSTAGE_USAGE_MAX = 0.9
 export const DEFAULT_POSTAGE_REFRESH_PERIOD = 60_000
 export const DEFAULT_LOG_LEVEL = 'info'
+export const DEFAULT_CORS_ORIGIN = true
 
 export const logLevel =
   process.env.LOG_LEVEL && SUPPORTED_LEVELS.includes(process.env.LOG_LEVEL as SupportedLevels)
@@ -94,8 +99,12 @@ export function getAppConfig({
   }
 }
 
-export function getServerConfig({ PORT, HOSTNAME }: EnvironmentVariables = {}): ServerConfig {
-  return { hostname: HOSTNAME || DEFAULT_HOSTNAME, port: Number(PORT || DEFAULT_PORT) }
+export function getServerConfig({ PORT, HOSTNAME, CORS_ORIGIN }: EnvironmentVariables = {}): ServerConfig {
+  return {
+    hostname: HOSTNAME || DEFAULT_HOSTNAME,
+    port: Number(PORT || DEFAULT_PORT),
+    corsOptions: { origin: CORS_ORIGIN ?? DEFAULT_CORS_ORIGIN },
+  }
 }
 
 export function getStampsConfig({

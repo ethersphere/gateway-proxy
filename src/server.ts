@@ -5,6 +5,7 @@ import type { StampsManager } from './stamps'
 import { logger } from './logger'
 import * as bzzLink from './bzz-link'
 import { register } from './metrics'
+import cors, { CorsOptions } from 'cors'
 
 const SWARM_STAMP_HEADER = 'swarm-postage-batch-id'
 
@@ -20,6 +21,7 @@ export const POST_PROXY_ENDPOINTS = ['/bzz', '/bytes', '/chunks', '/feeds/:owner
 export const createApp = (
   { hostname, beeApiUrl, authorization, cidSubdomains, ensSubdomains, removePinHeader }: AppConfig,
   stampManager: StampsManager | undefined = undefined,
+  corsOptions: CorsOptions | undefined,
 ): Application => {
   const commonOptions: Options = {
     target: beeApiUrl,
@@ -29,6 +31,8 @@ export const createApp = (
 
   // Create Express Server
   const app = express()
+
+  app.use(cors(corsOptions))
 
   if (hostname) {
     const subdomainOffset = hostname.split('.').length
