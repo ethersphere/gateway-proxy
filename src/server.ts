@@ -83,6 +83,11 @@ export const createApp = (
       pathRewrite: {
         '/readiness': '/',
       },
+      onProxyReq: (_proxyReq, _req, res) => {
+        if (stampManager && !stampManager.postageStamp) {
+          res.writeHead(502).end('Bad Gateway')
+        }
+      },
       onError: (_err, _req, res) => {
         res.writeHead(502).end('Bad Gateway')
       },
