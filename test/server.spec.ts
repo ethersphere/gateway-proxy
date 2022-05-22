@@ -317,7 +317,7 @@ describe('POST /feeds/:owner/:topic', () => {
     expect(Number(dd1.feedIndex)).toBeGreaterThanOrEqual(0)
     expect(Number(dd1.feedIndexNext)).toBeGreaterThanOrEqual(1)
     expect(Number(dd1.feedIndex) + 1).toEqual(Number(dd1.feedIndexNext))
-  })
+  }, 10000)
 })
 
 describe('GET /feeds/:owner/:topic', () => {
@@ -337,7 +337,7 @@ describe('GET /feeds/:owner/:topic', () => {
     expect(Number(dd1.feedIndex)).toBeGreaterThanOrEqual(0)
     expect(Number(dd1.feedIndexNext)).toBeGreaterThanOrEqual(1)
     expect(Number(dd1.feedIndex) + 1).toEqual(Number(dd1.feedIndexNext))
-  })
+  }, 10000)
 })
 
 describe('remove swarm-pin header', () => {
