@@ -64,7 +64,7 @@
   "dependencies": {
     "@ethersphere/bee-js": "^4.0.0",
     "@ethersphere/swarm-cid": "^0.1.0",
-    "express": "^4.17.3",
+    "express": "^4.18.1",
     "http-proxy-middleware": "^2.0.6",
     "prom-client": "^14.0.1",
     "request-stats": "^3.0.0",
