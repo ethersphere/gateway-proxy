@@ -37,7 +37,7 @@
     "@commitlint/cli": "^16.2.3",
     "@ethersphere/bee-factory": "^0.4.1",
     "@fluffy-spoon/substitute": "^1.208.0",
-    "@jest/types": "^27.5.1",
+    "@jest/types": "^28.1.0",
     "@types/express": "^4.17.13",
     "@types/jest": "^27.4.1",
     "@types/node": "^17.0.23",
