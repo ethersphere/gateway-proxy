@@ -229,17 +229,3 @@ describe('filterUsableStamps', () => {
     for (let i = 1; i < res.length; i++) expect(getUsage(res[i - 1])).toBeGreaterThanOrEqual(getUsage(res[i]))
   })
 })
-
-// describe('waitUntilStampUsable', () => {
-//   it('should timeout while waiting for postage stamp to be usable', async () => {
-//     const stamp = buildStamp({ usable: false })
-//     db.add(stamp)
-
-//     const request = async () =>
-//       waitUntilStampUsable(stamp.batchID, new BeeDebug(url), { pollingFrequency: 100, timeout: 300 })
-
-//     await expect(request).rejects.toThrowError('Wait until stamp usable timeout has been reached')
-
-//     await sleep(150) // Need to wait at least one full refresh cycle (100 ms) to not have interval hanging
-//   })
-// })
