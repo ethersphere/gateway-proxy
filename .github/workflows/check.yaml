@@ -58,3 +58,4 @@ jobs:
         if: github.ref == 'refs/heads/master'
         with:
           token: ${{ secrets.REPO_GHA_PAT }}
+          updateEngine: 'true'
