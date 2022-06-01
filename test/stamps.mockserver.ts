@@ -1,20 +1,20 @@
 import express from 'express'
 import type { Server } from 'http'
-import type { DebugPostageBatch, BatchId } from '@ethersphere/bee-js'
+import type { PostageBatch, BatchId } from '@ethersphere/bee-js'
 import { genRandomHex } from './utils'
 
 export class StampDB {
-  stamps: Record<BatchId, DebugPostageBatch> = {}
+  stamps: Record<BatchId, PostageBatch> = {}
 
-  get(batchID: BatchId): DebugPostageBatch {
+  get(batchID: BatchId): PostageBatch {
     return this.stamps[batchID]
   }
 
-  add(stamp: DebugPostageBatch): void {
+  add(stamp: PostageBatch): void {
     this.stamps[stamp.batchID] = stamp
   }
 
-  toArray(): DebugPostageBatch[] {
+  toArray(): PostageBatch[] {
     return Object.values(this.stamps)
   }
 

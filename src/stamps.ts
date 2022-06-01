@@ -1,15 +1,10 @@
-import { BeeDebug, DebugPostageBatch, BatchId } from '@ethersphere/bee-js'
+import { BeeDebug, PostageBatch, BatchId } from '@ethersphere/bee-js'
 import client from 'prom-client'
 import type { StampsConfig, StampsConfigAutobuy } from './config'
-import { sleep } from './utils'
 import { logger } from './logger'
 import { register } from './metrics'
 
-const DEFAULT_POLLING_FREQUENCY = 1_000
-const DEFAULT_STAMP_USABLE_TIMEOUT = 120_000
-
 interface Options {
-  pollingFrequency?: number
   timeout?: number
 }
 
@@ -62,50 +57,11 @@ const stampUsableCountGauge = new client.Gauge({
 register.registerMetric(stampUsableCountGauge)
 
 /**
- * Wait until a given postage stamp is usable
- *
- * @param batchId Postage stamp id to be waited on
- * @param beeDebug Connection to the bee debug service
- * @param options
- *        pollingFrequency (optional) How often should the stamp be checked in ms, default 1000
- *        timeout (optional) How long should the system wait for the stamp to be usable in ms, default to 10000
- */
-export async function waitUntilStampUsable(
-  batchId: BatchId,
-  beeDebug: BeeDebug,
-  options: Options = {},
-): Promise<DebugPostageBatch> | never {
-  const timeout = options.timeout || DEFAULT_STAMP_USABLE_TIMEOUT
-  const pollingFrequency = options.pollingFrequency || DEFAULT_POLLING_FREQUENCY
-  let timeoutReached = false
-
-  const timeoutPromise = async (): Promise<never> =>
-    new Promise((_, reject) =>
-      setTimeout(() => {
-        timeoutReached = true
-        reject(new Error('Wait until stamp usable timeout has been reached'))
-      }, timeout),
-    )
-
-  const stampWaitPromise = async (): Promise<DebugPostageBatch | undefined> | never => {
-    while (!timeoutReached) {
-      const stamp = await beeDebug.getPostageBatch(batchId)
-
-      if (stamp.usable) return stamp
-      await sleep(pollingFrequency)
-    }
-  }
-
-  // The typecasting is needed because technically stampWaitPromise can return undefined but the timeoutPromise would already throw exception
-  return Promise.race([stampWaitPromise(), timeoutPromise()]) as Promise<DebugPostageBatch> | never
-}
-
-/**
  * Calculate usage of a given postage stamp
  *
  * @param stamp Postage stamp which usage should be determined
  */
-export function getUsage({ utilization, depth, bucketDepth }: DebugPostageBatch): number {
+export function getUsage({ utilization, depth, bucketDepth }: PostageBatch): number {
   return utilization / Math.pow(2, depth - bucketDepth)
 }
 
@@ -121,12 +77,12 @@ export function getUsage({ utilization, depth, bucketDepth }: DebugPostageBatch)
  * @returns Filtered stamps soltered by usage
  */
 export function filterUsableStamps(
-  stamps: DebugPostageBatch[],
+  stamps: PostageBatch[],
   depth: number,
   amount: string,
   maxUsage: number,
   minTTL: number,
-): DebugPostageBatch[] {
+): PostageBatch[] {
   const usableStamps = stamps
     // filter to get stamps that have the right depth, amount and are not fully used or expired
     .filter(s => s.usable && s.depth === depth && s.amount === amount && getUsage(s) < maxUsage && s.batchTTL > minTTL)
@@ -144,7 +100,6 @@ export function filterUsableStamps(
  * @param amount Postage stamps amount
  * @param beeDebug Connection to debug endpoint for checking/buying stamps
  * @param options
- *        pollingFrequency (optional) How often should the stamp be checked in ms, default 1000
  *        timeout (optional) How long should the system wait for the stamp to be usable in ms, default to 10000
  *
  * @returns Newly bought postage stamp
@@ -153,17 +108,20 @@ export async function buyNewStamp(
   depth: number,
   amount: string,
   beeDebug: BeeDebug,
-  options: Options = {},
-): Promise<DebugPostageBatch> {
-  const batchId = await beeDebug.createPostageBatch(amount, depth)
+  options?: Options,
+): Promise<BatchId> {
+  const batchId = await beeDebug.createPostageBatch(amount, depth, {
+    waitForUsable: true,
+    waitForUsableTimeout: options?.timeout,
+  })
   stampPurchaseCounter.inc()
 
-  return await waitUntilStampUsable(batchId, beeDebug, options)
+  return batchId
 }
 
 export class StampsManager {
   private stamp?: string
-  private usableStamps?: DebugPostageBatch[]
+  private usableStamps?: PostageBatch[]
   private interval?: ReturnType<typeof setInterval>
   private isBuyingStamp?: boolean = false
 
@@ -226,7 +184,8 @@ export class StampsManager {
         this.isBuyingStamp = true
         logger.info('buying new stamp')
         try {
-          const stamp = await buyNewStamp(depth, amount, beeDebug)
+          const batchId = await buyNewStamp(depth, amount, beeDebug)
+          const stamp = await beeDebug.getPostageBatch(batchId)
           logger.info('successfully bought new stamp', { stamp })
 
           // Add the bought postage stamp
