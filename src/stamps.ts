@@ -4,8 +4,6 @@ import type { StampsConfig, StampsConfigAutobuy } from './config'
 import { logger } from './logger'
 import { register } from './metrics'
 
-const DEFAULT_STAMP_USABLE_TIMEOUT = 120_000
-
 interface Options {
   timeout?: number
 }
@@ -114,7 +112,7 @@ export async function buyNewStamp(
 ): Promise<BatchId> {
   const batchId = await beeDebug.createPostageBatch(amount, depth, {
     waitForUsable: true,
-    waitForUsableTimeout: options?.timeout ?? DEFAULT_STAMP_USABLE_TIMEOUT,
+    waitForUsableTimeout: options?.timeout,
   })
   stampPurchaseCounter.inc()
 
