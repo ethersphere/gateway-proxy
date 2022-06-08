@@ -27,7 +27,6 @@ jobs:
         uses: alexellis/upload-assets@0.3.0
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          ACTIONS_STEP_DEBUG: true
         with:
           asset_paths: '["gateway-proxy_*"]'
       - name: Debug workflow if failed
