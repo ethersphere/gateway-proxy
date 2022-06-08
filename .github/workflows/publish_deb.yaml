@@ -24,11 +24,10 @@ jobs:
           npx node-deb -- dist/ public/
       - name: Upload deb package
         if: success()
-        uses: alexellis/upload-assets@0.3.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: AButler/upload-release-assets@v2.0
         with:
-          asset_paths: '["gateway-proxy_*"]'
+          files: 'gateway-proxy_*'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Debug workflow if failed
         if: failure()
         run: |
