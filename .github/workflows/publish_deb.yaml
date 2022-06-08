@@ -33,7 +33,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          asset_paths: '["./build/gateway-proxy_*", "build/gateway-proxy_*", "./build/*deb", "gateway-proxy_*", "./gateway-proxy_*", "./*deb", "*deb"]'
+          asset_paths: '["/home/runner/work/gateway-proxy/gateway-proxy/gateway-proxy_0.5.1_all.deb"]'
       - name: Debug workflow if failed
         if: failure()
         run: |
