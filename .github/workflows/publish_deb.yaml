@@ -3,6 +3,9 @@ name: Publish deb
 on:
   release:
     types: [published]
+  pull_request:
+    branches:
+      - '**'
 
 jobs:
   docker-release:
