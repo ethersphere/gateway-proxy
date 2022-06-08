@@ -22,12 +22,14 @@ jobs:
         run: |
           npm ci
           npx node-deb -- dist/ public/
+          ls -la gateway-proxy_*
       - name: Upload deb package
         if: success()
-        uses: AButler/upload-release-assets@v2.0
+        uses: alexellis/upload-assets@0.3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: 'gateway-proxy_*'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          asset_paths: '["gateway-proxy_*", ""]'
       - name: Debug workflow if failed
         if: failure()
         run: |
