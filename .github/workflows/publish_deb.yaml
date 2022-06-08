@@ -12,9 +12,10 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Login to Docker and Quay
+      - name: Build deb package
         if: success()
         run: |
+          npm ci
           npx node-deb -- dist/ public/
       - name: Upload deb package
         if: success()
