@@ -23,13 +23,17 @@ jobs:
           npm ci
           npx node-deb -- dist/ public/
           ls -la gateway-proxy_*
+          mkdir build
+          cp gateway-proxy_* build/
+          ls -la gateway-proxy_*
+          ls -la build
       - name: Upload deb package
         if: success()
         uses: alexellis/upload-assets@0.3.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          asset_paths: '["gateway-proxy_*", ""]'
+          asset_paths: '["./build/gateway-proxy_*", "build/gateway-proxy_*", "./build/*deb", "gateway-proxy_*", "./gateway-proxy_*", "./*deb", "*deb"]'
       - name: Debug workflow if failed
         if: failure()
         run: |
