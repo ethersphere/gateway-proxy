@@ -16,7 +16,7 @@ jobs:
         if: success()
         run: |
           npx node-deb -- dist/ public/
-      - name: Upload release binaries
+      - name: Upload deb package
         if: success()
         uses: alexellis/upload-assets@0.3.0
         env:
