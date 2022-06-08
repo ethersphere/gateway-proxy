@@ -24,7 +24,7 @@ jobs:
           npx node-deb -- dist/ public/
       - name: Upload deb package
         if: success()
-        uses: alexellis/upload-assets@0.3.0
+        uses: alexellis/upload-assets@0.2.3
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
