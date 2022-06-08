@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "prepare": "npm run build",
-    "build": "rimraf ./build && tsc",
+    "build": "rimraf ./build && tsc && chmod +x dist/index.js",
     "start": "nodemon --config nodemon.json src/index.ts",
     "start:debug": "nodemon --config nodemon.json --inspect-brk src/index.ts",
     "lint": "eslint --fix \"src/**/*.ts\" \"test/**/*.ts\" && prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -74,5 +74,13 @@
     "node": ">=12.0.0",
     "npm": ">=6.0.0",
     "bee": "1.6.0-6ceadd35"
+  },
+  "node_deb": {
+    "entrypoints": {
+      "daemon": "dist/index.js"
+    },
+    "init": "systemd",
+    "install_strategy": "copy",
+    "package_name": "gateway-proxy"
   }
 }
