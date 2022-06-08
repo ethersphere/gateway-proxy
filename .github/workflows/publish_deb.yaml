@@ -3,9 +3,12 @@ name: Publish deb
 on:
   release:
     types: [published]
+  pull_request:
+    branches:
+      - '**'
 
 jobs:
-  docker-release:
+  publish-deb:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,6 +24,6 @@ jobs:
         if: success()
         uses: alexellis/upload-assets@0.3.0
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           asset_paths: '["./*deb"]'
