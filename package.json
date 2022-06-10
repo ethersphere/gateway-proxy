@@ -81,6 +81,9 @@
     },
     "init": "systemd",
     "install_strategy": "copy",
-    "package_name": "gateway-proxy"
+    "package_name": "gateway-proxy",
+    "templates": {
+      "systemd_service": "packaging/systemd/gateway-proxy.service"
+    }
   }
 }
