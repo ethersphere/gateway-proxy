@@ -95,6 +95,9 @@ export const createApp = (
   // Download file/collection/chunk proxy
   app.get(GET_PROXY_ENDPOINTS, createProxyMiddleware(commonOptions))
 
+  // Allow HEAD requests as well
+  app.head(GET_PROXY_ENDPOINTS, createProxyMiddleware(commonOptions))
+
   const options: Options = { ...commonOptions }
 
   options.onProxyReq = (proxyReq, _req, res) => {
