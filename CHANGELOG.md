@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.5.1...v0.6.0) (2022-06-13)
+
+
+### Features
+
+* build and publish deb package for gateway-proxy ([#254](https://www.github.com/ethersphere/gateway-proxy/issues/254)) ([e28a18c](https://www.github.com/ethersphere/gateway-proxy/commit/e28a18ca8c4ef97ef446be3d20fb791c19905246))
+
+
+### Bug Fixes
+
+* add missing npm ci ([#257](https://www.github.com/ethersphere/gateway-proxy/issues/257)) ([6887382](https://www.github.com/ethersphere/gateway-proxy/commit/6887382cab83f8d64c84bad277a3d1035ce48002))
+* working dir for systemd ([#261](https://www.github.com/ethersphere/gateway-proxy/issues/261)) ([3204e41](https://www.github.com/ethersphere/gateway-proxy/commit/3204e4166eeada5ed218bea05d613d17bce55d29))
+
 ### [0.5.1](https://www.github.com/ethersphere/gateway-proxy/compare/v0.5.0...v0.5.1) (2022-03-23)
 
 
