@@ -16,6 +16,7 @@ jobs:
         if: success()
         run: |
           npm ci
+          npm run build
           npx node-deb -- dist/ public/
       - name: Upload deb package
         if: success()

@@ -1,0 +1,17 @@
+[Unit]
+Description=Swarm proxy server that can play role of a gateway
+Requires=network.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/default/gateway-proxy
+WorkingDirectory=/usr/share/gateway-proxy/app
+ExecStart=/usr/share/gateway-proxy/app/dist/index.js
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+User=gateway-proxy
+PermissionsStartOnly=true
+SyslogIdentifier=gateway-proxy
+
+[Install]
+WantedBy=multi-user.target
