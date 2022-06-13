@@ -1,6 +1,6 @@
 import {
   DEFAULT_BEE_API_URL,
-  DEFAULT_HOST,
+  DEFAULT_HOSTNAME,
   DEFAULT_PORT,
   DEFAULT_POSTAGE_USAGE_THRESHOLD,
   DEFAULT_POSTAGE_USAGE_MAX,
@@ -27,21 +27,35 @@ describe('getAppConfig', () => {
     expect(config.beeApiUrl).toEqual(BEE_API_URL)
     expect(config.authorization).toEqual(AUTH_SECRET)
   })
+
+  it('should set removePinHeader correctly', () => {
+    const configDefault = getAppConfig()
+
+    expect(configDefault.removePinHeader).toEqual(true)
+
+    const configTrue = getAppConfig({ REMOVE_PIN_HEADER: 'true' })
+
+    expect(configTrue.removePinHeader).toEqual(true)
+
+    const configFalse = getAppConfig({ REMOVE_PIN_HEADER: 'false' })
+
+    expect(configFalse.removePinHeader).toEqual(false)
+  })
 })
 
 describe('getServerConfig', () => {
   it('should return default values', () => {
     const config = getServerConfig()
-    expect(config.host).toEqual(DEFAULT_HOST)
+    expect(config.hostname).toEqual(DEFAULT_HOSTNAME)
     expect(config.port).toEqual(DEFAULT_PORT)
   })
 
   it('should set port and host', () => {
-    const HOST = '0.0.0.0'
+    const HOSTNAME = '0.0.0.0'
     const PORT = '5000'
 
-    const config = getServerConfig({ HOST, PORT })
-    expect(config.host).toEqual(HOST)
+    const config = getServerConfig({ HOSTNAME, PORT })
+    expect(config.hostname).toEqual(HOSTNAME)
     expect(config.port).toEqual(Number(PORT))
   })
 })

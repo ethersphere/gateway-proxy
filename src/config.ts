@@ -1,10 +1,14 @@
 export interface AppConfig {
   beeApiUrl: string
   authorization?: string
+  hostname?: string
+  cidSubdomains?: boolean
+  ensSubdomains?: boolean
+  removePinHeader?: boolean
 }
 
 export interface ServerConfig {
-  host: string
+  hostname: string
   port: number
 }
 
@@ -36,7 +40,14 @@ export type EnvironmentVariables = Partial<{
 
   // Server
   PORT: string
-  HOST: string
+  HOSTNAME: string
+
+  // CID subdomain support
+  CID_SUBDOMAINS: string
+  ENS_SUBDOMAINS: string
+
+  // Headers manipulation
+  REMOVE_PIN_HEADER: string
 
   // Stamps
   BEE_DEBUG_API_URL: string
@@ -53,7 +64,7 @@ export const SUPPORTED_LEVELS = ['critical', 'error', 'warn', 'info', 'verbose',
 export type SupportedLevels = typeof SUPPORTED_LEVELS[number]
 
 export const DEFAULT_BEE_API_URL = 'http://localhost:1633'
-export const DEFAULT_HOST = '127.0.0.1'
+export const DEFAULT_HOSTNAME = 'localhost'
 export const DEFAULT_PORT = 3000
 export const DEFAULT_POSTAGE_USAGE_THRESHOLD = 0.7
 export const DEFAULT_POSTAGE_USAGE_MAX = 0.9
@@ -65,12 +76,26 @@ export const logLevel =
     ? process.env.LOG_LEVEL
     : DEFAULT_LOG_LEVEL
 
-export function getAppConfig({ BEE_API_URL, AUTH_SECRET }: EnvironmentVariables = {}): AppConfig {
-  return { beeApiUrl: BEE_API_URL || DEFAULT_BEE_API_URL, authorization: AUTH_SECRET }
+export function getAppConfig({
+  BEE_API_URL,
+  AUTH_SECRET,
+  CID_SUBDOMAINS,
+  ENS_SUBDOMAINS,
+  HOSTNAME,
+  REMOVE_PIN_HEADER,
+}: EnvironmentVariables = {}): AppConfig {
+  return {
+    hostname: HOSTNAME || DEFAULT_HOSTNAME,
+    beeApiUrl: BEE_API_URL || DEFAULT_BEE_API_URL,
+    authorization: AUTH_SECRET,
+    cidSubdomains: CID_SUBDOMAINS === 'true',
+    ensSubdomains: ENS_SUBDOMAINS === 'true',
+    removePinHeader: REMOVE_PIN_HEADER ? REMOVE_PIN_HEADER === 'true' : true,
+  }
 }
 
-export function getServerConfig({ PORT, HOST }: EnvironmentVariables = {}): ServerConfig {
-  return { host: HOST || DEFAULT_HOST, port: Number(PORT || DEFAULT_PORT) }
+export function getServerConfig({ PORT, HOSTNAME }: EnvironmentVariables = {}): ServerConfig {
+  return { hostname: HOSTNAME || DEFAULT_HOSTNAME, port: Number(PORT || DEFAULT_PORT) }
 }
 
 export function getStampsConfig({

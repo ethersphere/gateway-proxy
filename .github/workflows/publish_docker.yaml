@@ -1,0 +1,28 @@
+name: Publish on dockerhub and quay.io
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  docker-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Login to Docker and Quay
+        if: success()
+        run: |
+          printf ${{ secrets.DOCKERHUB_PASSWORD }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+          printf ${{ secrets.QUAY_PASSWORD }} | docker login --username ${{ secrets.QUAY_USERNAME }} quay.io --password-stdin
+          TAG=$(git describe --tags --always)
+          echo TAG=${TAG##v} >> $GITHUB_ENV
+      - name: Build image, retag and push
+        if: success()
+        run: |
+          docker build -t ethersphere/gateway-proxy:${TAG} .
+          docker tag ethersphere/gateway-proxy:${TAG} quay.io/ethersphere/gateway-proxy:${TAG}
+          docker push ethersphere/gateway-proxy:${TAG}
+          docker push quay.io/ethersphere/gateway-proxy:${TAG}
