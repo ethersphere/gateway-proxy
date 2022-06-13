@@ -92,11 +92,22 @@ export const createApp = (
     }),
   )
 
+  commonOptions.onProxyReq = (proxyReq, _req, res) => {
+    logger.info(`removing accept-encoding header`)
+    proxyReq.removeHeader('accept-encoding')
+  }
+
+  const onOptionProxyRes = (_proxyRes: any, _req: any, res: any) => {
+    res.writeHead(200).end('OK')
+  }
+
   // Download file/collection/chunk proxy
   app.get(GET_PROXY_ENDPOINTS, createProxyMiddleware(commonOptions))
 
   // Allow HEAD requests as well
   app.head(GET_PROXY_ENDPOINTS, createProxyMiddleware(commonOptions))
+
+  app.options(GET_PROXY_ENDPOINTS, createProxyMiddleware({ ...commonOptions, onProxyRes: onOptionProxyRes }))
 
   const options: Options = { ...commonOptions }
 
