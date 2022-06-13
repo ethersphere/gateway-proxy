@@ -8,10 +8,11 @@ jobs:
   docker-release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
         with:
-          fetch-depth: 0
+          node-version: 14
+          registry-url: 'https://registry.npmjs.org'
       - name: Build deb package
         if: success()
         run: |
@@ -24,4 +25,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          asset_paths: '["./*deb"]'
+          asset_paths: '["gateway-proxy_*deb"]'
