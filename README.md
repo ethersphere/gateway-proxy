@@ -116,6 +116,7 @@ npm run start
 | CID_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for CIDs.                                             |
 | ENS_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for ENS.                                              |
 | REMOVE_PIN_HEADER       | true                        | Removes swarm-pin header on all proxy requests.                                                            |
+| `LOG_LEVEL`             | info                        | Log level that is outputted (values: `critical`, `error`, `warn`, `info`, `verbose`, `debug`)              |
 
 ### Curl
 
