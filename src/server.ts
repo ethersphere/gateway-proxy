@@ -2,6 +2,7 @@ import express, { Application } from 'express'
 import { createProxyMiddleware, Options } from 'http-proxy-middleware'
 import { AppConfig, DEFAULT_HOSTNAME } from './config'
 import type { StampsManager } from './stamps'
+import { getIdentity } from './identity'
 import { logger } from './logger'
 import * as bzzLink from './bzz-link'
 import { register } from './metrics'
@@ -25,6 +26,9 @@ export const createApp = (
     target: beeApiUrl,
     changeOrigin: true,
     logProvider: () => logger,
+    onProxyRes: res => {
+      res.headers['X-Bee-Node'] = getIdentity()
+    },
   }
 
   // Create Express Server
