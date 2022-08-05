@@ -9,8 +9,6 @@ export function getIdentity(): string {
 }
 
 export function startIdentityBackgroundJob(frequencyMs = 60_000) {
-  logger.info('BEE_DEBUG_API_URL', process.env.BEE_DEBUG_API_URL)
-
   if (process.env.BEE_DEBUG_API_URL) {
     logger.info(`starting identity background job with frequency ${frequencyMs}ms`)
     setInterval(refreshIdentity, frequencyMs)
@@ -22,7 +20,7 @@ async function refreshIdentity() {
   const beeDebug = new BeeDebug(url)
   try {
     const { overlay } = await beeDebug.getNodeAddresses()
-    logger.info('bee debug overlay', overlay)
+    logger.debug('bee debug overlay', overlay)
     const hash = createHash('sha1')
     hash.update(overlay)
     identity = hash.digest('hex')
