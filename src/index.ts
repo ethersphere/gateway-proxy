@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Application } from 'express'
 
-import { initializeIdentity } from './identity'
+import { startIdentityBackgroundJob } from './identity'
 import { createApp } from './server'
 import { StampsManager } from './stamps'
 import { getAppConfig, getServerConfig, getStampsConfig, EnvironmentVariables } from './config'
@@ -12,7 +12,7 @@ async function main() {
   const stampConfig = getStampsConfig(process.env as EnvironmentVariables)
   const appConfig = getAppConfig(process.env as EnvironmentVariables)
   const { hostname, port } = getServerConfig(process.env as EnvironmentVariables)
-  initializeIdentity()
+  startIdentityBackgroundJob()
 
   logger.debug('proxy config', appConfig)
   logger.debug('server config', { hostname: hostname, port })
