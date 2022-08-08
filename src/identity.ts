@@ -2,29 +2,36 @@ import { BeeDebug } from '@ethersphere/bee-js'
 import { createHash } from 'crypto'
 import { logger } from './logger'
 
+let interval: NodeJS.Timer | null
 let identity = 'unknown'
 
 export function getIdentity(): string {
   return identity
 }
 
-export function startIdentityBackgroundJob(frequencyMs = 60_000) {
+export function fetchBeeIdentity(frequencyMs = 15_000) {
   if (process.env.BEE_DEBUG_API_URL) {
-    logger.info(`starting identity background job with frequency ${frequencyMs}ms`)
-    setInterval(refreshIdentity, frequencyMs)
+    logger.info(`fetching bee identity with frequency ${frequencyMs}ms`)
+    interval = setInterval(attemptFetchingBeeIdentity, frequencyMs)
   }
 }
 
-async function refreshIdentity() {
+async function attemptFetchingBeeIdentity() {
   const url = process.env.BEE_DEBUG_API_URL as string
   const beeDebug = new BeeDebug(url)
   try {
     const { overlay } = await beeDebug.getNodeAddresses()
-    logger.debug('bee debug overlay', overlay)
-    const hash = createHash('sha1')
-    hash.update(overlay)
-    identity = hash.digest('hex')
+    identity = mapAddress(overlay)
+    logger.info('bee debug overlay', { overlay, identity })
+    clearInterval(interval as NodeJS.Timer)
   } catch (e) {
-    logger.error('failed to get identity', e)
+    logger.error('failed to fetch identity', e)
   }
+}
+
+function mapAddress(overlay: string): string {
+  const hash = createHash('sha1')
+  hash.update(overlay)
+
+  return hash.digest('hex')
 }
