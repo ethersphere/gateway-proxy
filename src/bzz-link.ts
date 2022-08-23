@@ -21,7 +21,7 @@ export class RedirectCidError extends Error {
  */
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function requestFilter(pathname: string, req: Request): boolean {
-  return req.subdomains.length === 1
+  return (req.subdomains.length === 1 || req.subdomains.length === 2)
 }
 
 /**
@@ -81,7 +81,18 @@ export function errorHandler(err: Error, req: Request, res: Response, next: (e: 
  */
 function subdomainToBzz(req: Request, isCidEnabled: boolean, isEnsEnabled: boolean): string {
   const host = req.hostname.split('.')
-  const subdomain = host[0] // Taking the first subdomain from left
+  const hostname = process.env.HOSTNAME || 'localhost'
+  const subdomainDiffLenght = (req.hostname.split('.').length - hostname.split('.').length)
+  var subdomain = ''
+
+  switch (subdomainDiffLenght) {
+    case 1:
+      subdomain = host[0];
+      break;
+    case 2:
+      subdomain = host[0] + '.' + host[1];
+      break;
+  }
 
   try {
     const result = swarmCid.decodeCid(subdomain)
