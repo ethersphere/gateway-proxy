@@ -1,6 +1,6 @@
 import express, { Application } from 'express'
 import { createProxyMiddleware, Options } from 'http-proxy-middleware'
-import type { AppConfig } from './config'
+import { AppConfig, DEFAULT_HOSTNAME } from './config'
 import type { StampsManager } from './stamps'
 import { logger } from './logger'
 import * as bzzLink from './bzz-link'
@@ -51,9 +51,13 @@ export const createApp = (
       throw new Error('For Bzz.link support you have to configure HOSTNAME env!')
     }
 
-    if (cidSubdomains) logger.info('enabling CID subdomain support')
+    if (hostname === DEFAULT_HOSTNAME) {
+      logger.warn(`bzz.link support is enabled but HOSTNAME is set to the default ${DEFAULT_HOSTNAME}`)
+    }
 
-    if (ensSubdomains) logger.info('enabling ENS subdomain support')
+    if (cidSubdomains) logger.info(`enabling CID subdomain support with hostname ${hostname}`)
+
+    if (ensSubdomains) logger.info(`enabling ENS subdomain support with hostname ${hostname}`)
 
     app.get(
       '*',
@@ -65,6 +69,8 @@ export const createApp = (
     )
 
     app.use(bzzLink.errorHandler)
+  } else {
+    logger.info('starting the app without bzz.link support (see HOSTNAME, ENS_SUBDOMAINS and CID_SUBDOMAINS)')
   }
 
   app.get('/metrics', async (_req, res) => {

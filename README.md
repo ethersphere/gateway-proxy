@@ -58,10 +58,12 @@ In all 3 modes, the proxy can be configured to require authentication secret to 
 
 ### Bzz.link support
 
-Gateway proxy has support for Bzz.link which allows translating [Swarm CIDs](https://github.com/ethersphere/swarm-cid-js) and ENS names
-placed under subdomains into `/bzz` call. This allows to have better security model for your web applications.
+Gateway proxy has support for Bzz.link which allows translating
+[Swarm CIDs](https://github.com/ethersphere/swarm-cid-js) and ENS names placed under subdomains into `/bzz` call. This
+allows to have better security model for your web applications.
 
-In order to use Bzz.link you may need to set up DNS with wildcard subdomain support.
+In order to use Bzz.link, set the `HOSTNAME` environment variable, and either or both of `CID_SUBDOMAINS` and
+`ENS_SUBDOMAINS` according to your requirements. You may also need to set up DNS with wildcard subdomain support.
 
 ### Examples
 
@@ -104,7 +106,7 @@ npm run start
 | BEE_API_URL             | http://localhost:1633       | URL of the Bee node API                                                                                    |
 | BEE_DEBUG_API_URL       | undefined                   | URL of the Bee node Debug API. Only used and required when postage stamps autobuy is enabled.              |
 | AUTH_SECRET             | undefined                   | Authentication secret, disabled if not set (this secret is checked in the request header `authorization`). |
-| HOSTNAME                | localhost                   | Hostname of the proxy.                                                                                     |
+| HOSTNAME                | localhost                   | Hostname of the proxy. Required for Bzz.link support.                                                      |
 | PORT                    | 3000                        | Port of the proxy.                                                                                         |
 | POSTAGE_STAMP           | undefined                   | Postage stamp that should be used for all upload requests. If provided, the autobuy feature is disabled.   |
 | POSTAGE_DEPTH           | undefined                   | Postage stamp depth to be used when buying new stamps or selecting existing stamps.                        |
