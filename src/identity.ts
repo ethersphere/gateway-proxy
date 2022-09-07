@@ -5,7 +5,11 @@ import { logger } from './logger'
 let interval: NodeJS.Timer | null
 let identity = 'unknown'
 
-export function getIdentity(): string {
+/**
+ * Identity is not available during Bee's booting,
+ * so we retry the call until we receive proper identity and then stop the retries.
+ */
+export function getHashedIdentity(): string {
   return identity
 }
 

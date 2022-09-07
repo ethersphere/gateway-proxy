@@ -1,11 +1,11 @@
 import express, { Application } from 'express'
 import { createProxyMiddleware, Options } from 'http-proxy-middleware'
 import { AppConfig, DEFAULT_HOSTNAME } from './config'
-import type { StampsManager } from './stamps'
-import { getIdentity } from './identity'
-import { logger } from './logger'
 import * as bzzLink from './bzz-link'
+import { getHashedIdentity } from './identity'
+import { logger } from './logger'
 import { register } from './metrics'
+import type { StampsManager } from './stamps'
 
 const SWARM_STAMP_HEADER = 'swarm-postage-batch-id'
 
@@ -27,7 +27,7 @@ export const createApp = (
     changeOrigin: true,
     logProvider: () => logger,
     onProxyRes: res => {
-      res.headers['X-Bee-Node'] = getIdentity()
+      res.headers['X-Bee-Node'] = getHashedIdentity()
     },
   }
 
