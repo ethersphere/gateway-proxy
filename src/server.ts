@@ -105,22 +105,14 @@ export const createApp = (
   // Health endpoint
   app.get('/health', (_req, res) => res.send('OK'))
 
-  // Readiness endpoint
-  app.get(
-    '/readiness',
-    createProxyMiddleware({
-      ...commonOptions,
-      pathRewrite: {
-        '/readiness': '/',
-      },
-      onError: (_err, _req, res) => {
-        res.writeHead(502).end('Bad Gateway')
-      },
-      onProxyRes: (_proxyRes, _req, res) => {
-        res.writeHead(200).end('OK')
-      },
-    }),
-  )
+  app.get('/readiness', async (_req, res) => {
+    if (stampManager) {
+      const ready = await tryUploadingSingleChunk(stampManager)
+      res.status(ready ? 200 : 504).json({ ready })
+    } else {
+      res.status(200).json({ ready: true })
+    }
+  })
 
   // Download file/collection/chunk proxy
   app.get(GET_PROXY_ENDPOINTS, createProxyMiddleware(commonOptions))
