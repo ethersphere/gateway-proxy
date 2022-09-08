@@ -105,6 +105,7 @@ export const createApp = (
   // Health endpoint
   app.get('/health', (_req, res) => res.send('OK'))
 
+  // Readiness endpoint
   app.get('/readiness', async (_req, res) => {
     if (stampManager) {
       const ready = await tryUploadingSingleChunk(stampManager)
