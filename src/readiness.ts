@@ -6,7 +6,7 @@ export async function tryUploadingSingleChunk(stampsManager: StampsManager): Pro
   const chunk = makeChunk()
   const bee = new Bee(process.env.BEE_API_URL || 'http://localhost:1633')
   try {
-    await bee.uploadChunk(stampsManager.postageStamp, chunk, { timeout: 3_000, deferred: false })
+    await bee.uploadChunk(stampsManager.postageStamp, chunk, { timeout: 3_000, deferred: true })
 
     return true
   } catch (error) {
