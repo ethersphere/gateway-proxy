@@ -1,5 +1,5 @@
-import { Request, Response } from 'express'
 import * as swarmCid from '@ethersphere/swarm-cid'
+import { Request, Response } from 'express'
 import { logger } from './logger'
 
 export class NotEnabledError extends Error {}
@@ -19,9 +19,8 @@ export class RedirectCidError extends Error {
  * @param pathname
  * @param req
  */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function requestFilter(pathname: string, req: Request): boolean {
-  return req.subdomains.length === 1
+  return req.subdomains.length >= 1
 }
 
 /**
@@ -81,7 +80,7 @@ export function errorHandler(err: Error, req: Request, res: Response, next: (e: 
  */
 function subdomainToBzz(req: Request, isCidEnabled: boolean, isEnsEnabled: boolean): string {
   const host = req.hostname.split('.')
-  const subdomain = host[0] // Taking the first subdomain from left
+  const subdomain = req.subdomains.join('.')
 
   try {
     const result = swarmCid.decodeCid(subdomain)
