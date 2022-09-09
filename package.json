@@ -34,7 +34,7 @@
   },
   "license": "BSD-3-Clause",
   "devDependencies": {
-    "@commitlint/cli": "^17.0.2",
+    "@commitlint/cli": "^17.1.2",
     "@ethersphere/bee-factory": "^0.4.1",
     "@fluffy-spoon/substitute": "^1.208.0",
     "@jest/types": "^28.1.1",
