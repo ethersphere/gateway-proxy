@@ -68,7 +68,7 @@ export type SupportedLevels = typeof SUPPORTED_LEVELS[number]
 
 export const DEFAULT_BEE_API_URL = 'http://localhost:1635'
 export const DEFAULT_HOSTNAME = 'localhost'
-export const DEFAULT_PORT = 3001
+export const DEFAULT_PORT = 3000
 export const DEFAULT_POSTAGE_USAGE_THRESHOLD = 0.7
 export const DEFAULT_POSTAGE_USAGE_MAX = 0.9
 export const DEFAULT_POSTAGE_REFRESH_PERIOD = 60_000
