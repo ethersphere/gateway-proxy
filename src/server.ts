@@ -6,6 +6,7 @@ import { AppConfig, DEFAULT_HOSTNAME } from './config'
 import { fetchBeeIdentity, getHashedIdentity, HASHED_IDENTITY_HEADER } from './identity'
 import { logger } from './logger'
 import { register } from './metrics'
+import { tryUploadingSingleChunk } from './readiness'
 import type { StampsManager } from './stamps'
 
 const SWARM_STAMP_HEADER = 'swarm-postage-batch-id'
