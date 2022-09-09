@@ -109,9 +109,9 @@ export const createApp = (
   app.get('/readiness', async (_req, res) => {
     if (stampManager) {
       const ready = await tryUploadingSingleChunk(stampManager)
-      res.status(ready ? 200 : 504).json({ ready })
+      res.status(ready ? 200 : 504).json(ready ? 'OK' : 'Gateway Timeout')
     } else {
-      res.status(200).json({ ready: true })
+      res.status(200).end('OK')
     }
   })
 
