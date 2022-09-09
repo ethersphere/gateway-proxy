@@ -69,6 +69,7 @@ describe('getStampsConfig', () => {
   const POSTAGE_USAGE_MAX = '0.8'
   const POSTAGE_TTL_MIN = '200'
   const POSTAGE_REFRESH_PERIOD = '10'
+  const POSTAGE_EXTENDSTTL = 'true'
 
   const values: { env: EnvironmentVariables; output: StampsConfig | undefined; description: string }[] = [
     { description: 'undefined for no input', env: {}, output: undefined },
@@ -90,7 +91,7 @@ describe('getStampsConfig', () => {
         depth: Number(POSTAGE_DEPTH),
         amount: POSTAGE_AMOUNT,
         beeDebugApiUrl: BEE_DEBUG_API_URL,
-        usageTreshold: DEFAULT_POSTAGE_USAGE_THRESHOLD,
+        usageThreshold: DEFAULT_POSTAGE_USAGE_THRESHOLD,
         usageMax: DEFAULT_POSTAGE_USAGE_MAX,
         ttlMin: (DEFAULT_POSTAGE_REFRESH_PERIOD / 1000) * 5,
         refreshPeriod: DEFAULT_POSTAGE_REFRESH_PERIOD,
@@ -112,7 +113,7 @@ describe('getStampsConfig', () => {
         depth: Number(POSTAGE_DEPTH),
         amount: POSTAGE_AMOUNT,
         beeDebugApiUrl: BEE_DEBUG_API_URL,
-        usageTreshold: Number(POSTAGE_USAGE_THRESHOLD),
+        usageThreshold: Number(POSTAGE_USAGE_THRESHOLD),
         usageMax: Number(POSTAGE_USAGE_MAX),
         ttlMin: Number(POSTAGE_TTL_MIN),
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
@@ -127,7 +128,40 @@ describe('getStampsConfig', () => {
         depth: Number(POSTAGE_DEPTH),
         amount: POSTAGE_AMOUNT,
         beeDebugApiUrl: BEE_DEBUG_API_URL,
-        usageTreshold: DEFAULT_POSTAGE_USAGE_THRESHOLD,
+        usageThreshold: DEFAULT_POSTAGE_USAGE_THRESHOLD,
+        usageMax: DEFAULT_POSTAGE_USAGE_MAX,
+        ttlMin: (Number(POSTAGE_REFRESH_PERIOD) / 1000) * 5,
+        refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
+      },
+    },
+    {
+      description: '{mode: extendsTTL, ...} with default values',
+      env: {
+        POSTAGE_EXTENDSTTL,
+      },
+      output: {
+        mode: 'extendsTTL',
+        depth: Number(POSTAGE_DEPTH),
+        amount: POSTAGE_AMOUNT,
+        beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_API_URL,
+        usageThreshold: DEFAULT_POSTAGE_USAGE_THRESHOLD,
+        usageMax: DEFAULT_POSTAGE_USAGE_MAX,
+        ttlMin: (Number(POSTAGE_REFRESH_PERIOD) / 1000) * 5,
+        refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
+      },
+    },
+    {
+      description: '{mode: extendsTTL, ...} with BEE_DEBUG_API_URL',
+      env: {
+        BEE_DEBUG_API_URL,
+        POSTAGE_EXTENDSTTL,
+      },
+      output: {
+        mode: 'extendsTTL',
+        depth: Number(POSTAGE_DEPTH),
+        amount: POSTAGE_AMOUNT,
+        beeDebugApiUrl: BEE_DEBUG_API_URL,
+        usageThreshold: DEFAULT_POSTAGE_USAGE_THRESHOLD,
         usageMax: DEFAULT_POSTAGE_USAGE_MAX,
         ttlMin: (Number(POSTAGE_REFRESH_PERIOD) / 1000) * 5,
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),

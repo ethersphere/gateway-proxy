@@ -1,6 +1,6 @@
 import type { Server } from 'http'
 import { BeeDebug, BatchId, PostageBatch } from '@ethersphere/bee-js'
-import { StampsManager, filterUsableStamps, getUsage, buyNewStamp } from '../src/stamps'
+import { StampsManager, filterUsableStamps, getUsage, buyNewStamp, topUpStamp } from '../src/stamps'
 import { getStampsConfig } from '../src/config'
 import { sleep } from '../src/utils'
 import { createStampMockServer, StampDB } from './stamps.mockserver'
@@ -181,7 +181,7 @@ describe('buyNewStamp', () => {
   it('should buy correct stamp and await for it to be usable', async () => {
     const beeDebug = new BeeDebug(url)
     const stampId = await buyNewStamp(defaultDepth, defaultAmount, new BeeDebug(url))
-    const stamp = await beeDebug.getPostageBatch(stampId)
+    const stamp = await beeDebug.getPostageBatch(stampId.batchId)
 
     const [stampFromDb] = db.toArray()
     expect(stamp).toEqual(stampFromDb)
@@ -190,7 +190,7 @@ describe('buyNewStamp', () => {
 
 describe('filterUsableStamps', () => {
   it('should return empty arry if there are no stamps', async () => {
-    const res = filterUsableStamps([], 20, '1000', 0.7, 1_000)
+    const res = filterUsableStamps([], 20, '1000', 0.7, 1_000, 'autobuy')
     expect(res).toEqual(expect.arrayContaining([]))
   })
 
@@ -205,7 +205,7 @@ describe('filterUsableStamps', () => {
 
     const allStamps = [buildStamp({ utilization: 15 }), ...goodStamps, buildStamp({ utilization: 16 })]
 
-    const res = filterUsableStamps(allStamps, defaultDepth, defaultAmount, 0.9, 1_000)
+    const res = filterUsableStamps(allStamps, defaultDepth, defaultAmount, 0.9, 1_000, 'autobuy')
     expect(res).toEqual(expect.arrayContaining(goodStamps))
     for (let i = 1; i < res.length; i++) expect(getUsage(res[i - 1])).toBeGreaterThanOrEqual(getUsage(res[i]))
   })
@@ -224,8 +224,20 @@ describe('filterUsableStamps', () => {
       buildStamp({ utilization: 14, batchTTL: 50_000 }),
     ]
 
-    const res = filterUsableStamps(allStamps, defaultDepth, defaultAmount, 0.9, 100_000)
+    const res = filterUsableStamps(allStamps, defaultDepth, defaultAmount, 0.9, 100_000, 'autobuy')
     expect(res).toEqual(expect.arrayContaining(goodStamps))
     for (let i = 1; i < res.length; i++) expect(getUsage(res[i - 1])).toBeGreaterThanOrEqual(getUsage(res[i]))
+  })
+})
+
+describe('topUpStamp', () => {
+  it('should extend stamp stamp and await for it to extend others', async () => {
+    const beeDebug = new BeeDebug(url)
+    const stamp = await buyNewStamp(defaultDepth, defaultAmount, beeDebug)
+    const extendAmount = '100'
+
+    await topUpStamp(beeDebug, stamp.batchId, extendAmount)
+    const stampExtended = await beeDebug.getPostageBatch(stamp.batchId)
+    expect(Number(stampExtended.amount)).toBeGreaterThan(Number(defaultAmount))
   })
 })

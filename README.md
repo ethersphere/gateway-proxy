@@ -91,6 +91,15 @@ export BEE_DEBUG_API_URL=http://localhost:1635
 npm run start
 ```
 
+#### 4. Extends stmps TTL postage stamps
+
+```sh
+export POSTAGE_EXTENDSTTL=true
+export POSTAGE_AMOUNT=1000000
+
+npm run start
+```
+
 #### Enable authentication
 
 ```sh
