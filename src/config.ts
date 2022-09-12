@@ -98,7 +98,7 @@ export function getAppConfig({
   }
 }
 
-function calculateMinTTL(POSTAGE_TTL_MIN: string | undefined) {
+export function calculateMinTTL(POSTAGE_TTL_MIN: string | undefined) {
   if (Number(POSTAGE_TTL_MIN) >= DEFAULT_POSTAGE_TTL_MINIMUM) {
     return POSTAGE_TTL_MIN
   }

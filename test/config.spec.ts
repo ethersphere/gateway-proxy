@@ -8,6 +8,7 @@ import {
   getAppConfig,
   getServerConfig,
   getStampsConfig,
+  calculateMinTTL,
   EnvironmentVariables,
   StampsConfig,
 } from '../src/config'
@@ -68,7 +69,7 @@ describe('getStampsConfig', () => {
   const POSTAGE_USAGE_THRESHOLD = '0.6'
   const POSTAGE_USAGE_MAX = '0.8'
   const POSTAGE_TTL_MIN = '200'
-  const POSTAGE_REFRESH_PERIOD = '10'
+  const POSTAGE_REFRESH_PERIOD = '60000'
   const POSTAGE_EXTENDSTTL = 'true'
 
   const values: { env: EnvironmentVariables; output: StampsConfig | undefined; description: string }[] = [
@@ -138,15 +139,16 @@ describe('getStampsConfig', () => {
       description: '{mode: extendsTTL, ...} with default values',
       env: {
         POSTAGE_EXTENDSTTL,
+        POSTAGE_AMOUNT,
       },
       output: {
         mode: 'extendsTTL',
-        depth: Number(POSTAGE_DEPTH),
+        depth: NaN,
         amount: POSTAGE_AMOUNT,
         beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_API_URL,
         usageThreshold: DEFAULT_POSTAGE_USAGE_THRESHOLD,
         usageMax: DEFAULT_POSTAGE_USAGE_MAX,
-        ttlMin: (Number(POSTAGE_REFRESH_PERIOD) / 1000) * 5,
+        ttlMin: Number(calculateMinTTL(POSTAGE_TTL_MIN)),
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
       },
     },
@@ -154,16 +156,17 @@ describe('getStampsConfig', () => {
       description: '{mode: extendsTTL, ...} with BEE_DEBUG_API_URL',
       env: {
         BEE_DEBUG_API_URL,
+        POSTAGE_AMOUNT,
         POSTAGE_EXTENDSTTL,
       },
       output: {
         mode: 'extendsTTL',
-        depth: Number(POSTAGE_DEPTH),
+        depth: NaN,
         amount: POSTAGE_AMOUNT,
         beeDebugApiUrl: BEE_DEBUG_API_URL,
         usageThreshold: DEFAULT_POSTAGE_USAGE_THRESHOLD,
         usageMax: DEFAULT_POSTAGE_USAGE_MAX,
-        ttlMin: (Number(POSTAGE_REFRESH_PERIOD) / 1000) * 5,
+        ttlMin: Number(calculateMinTTL(POSTAGE_TTL_MIN)),
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
       },
     },
@@ -190,7 +193,13 @@ describe('getStampsConfig', () => {
       expect(() => {
         getStampsConfig(v)
       }).toThrowError(
-        'config: please provide POSTAGE_DEPTH, POSTAGE_AMOUNT and BEE_DEBUG_API_URL for the autobuy to work',
+        `config: please provide ${
+          !v.POSTAGE_EXTENDSTTL
+            ? 'POSTAGE_DEPTH: ' + v.POSTAGE_DEPTH + ', POSTAGE_AMOUNT: ' + v.POSTAGE_AMOUNT + ' and'
+            : 'POSTAGE_AMOUNT: ' + v.POSTAGE_AMOUNT + ' or (Optional)'
+        } BEE_DEBUG_API_URL: ${v.BEE_DEBUG_API_URL} for the ${
+          v.POSTAGE_EXTENDSTTL ? 'extends TTL' : 'autobuy'
+        } to work`,
       )
     })
   })
