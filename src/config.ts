@@ -63,7 +63,7 @@ export type EnvironmentVariables = Partial<{
   POSTAGE_EXTENDSTTL: string
 }>
 
-export const SUPPORTED_LEVELS = ['critical', 'error', 'warn', 'info', 'verbose', 'debug'] as const
+export const SUPPORTED_LEVELS = ['critical', 'error', 'warn', 'info', 'verbose', 'debug']
 export type SupportedLevels = typeof SUPPORTED_LEVELS[number]
 
 export const DEFAULT_BEE_API_URL = 'http://localhost:1635'
