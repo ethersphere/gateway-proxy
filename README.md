@@ -29,6 +29,7 @@ newer Bee versions is not recommended and may not work. Stay up to date by joini
     - [1. No postage stamp](#1-no-postage-stamp)
     - [2. Hardcoded postage stamp](#2-hardcoded-postage-stamp)
     - [3. Autobuy postage stamps](#3-autobuy-postage-stamps)
+    - [4. Extends stamps TTL](#4-extends-stamps-ttl)
     - [Enable authentication](#enable-authentication)
   - [Environment variables](#environment-variables)
   - [Curl](#curl)
@@ -52,6 +53,8 @@ The proxy can manage postage stamps for you in 3 modes of operation:
 3. It can add/replace the request postage stamp with an auto-bought stamp or existing stamp that fulfils the amount,
    depth and is not too full or about to expire. To enable this, provide at minimum `POSTAGE_DEPTH`, `POSTAGE_AMOUNT`
    and `BEE_DEBUG_API_URL`.
+4. It can extend the TTL of an stamp that is about to expire. To enable this, set `POSTAGE_EXTENDSTTL=true`
+   and provide `POSTAGE_AMOUNT` with the desired amount to use.
 
 In all 3 modes, the proxy can be configured to require authentication secret to forward the requests. Use the
 `AUTH_SECRET` environment variable to enable it.
@@ -91,7 +94,7 @@ export BEE_DEBUG_API_URL=http://localhost:1635
 npm run start
 ```
 
-#### 4. Extends stmps TTL postage stamps
+#### 4. Extends stamps TTL
 
 ```sh
 export POSTAGE_EXTENDSTTL=true
@@ -128,6 +131,7 @@ npm run start
 | ENS_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for ENS.                                              |
 | REMOVE_PIN_HEADER       | true                        | Removes swarm-pin header on all proxy requests.                                                            |
 | `LOG_LEVEL`             | info                        | Log level that is outputted (values: `critical`, `error`, `warn`, `info`, `verbose`, `debug`)              |
+| POSTAGE_EXTENDSTTL      | false                       | Enables extends TTL feature. Works along with POSTAGE_AMOUNT                                               |
 
 ### Curl
 
