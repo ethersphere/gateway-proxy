@@ -23,6 +23,12 @@ export interface StampsConfigExtends {
   ttlMin: number
   depth: number
   amount: string
+  refreshPeriod: number
+  beeDebugApiUrl: string
+}
+
+export interface StampsConfigReupload {
+  mode: 'reupload'
   beeDebugApiUrl: string
   refreshPeriod: number
 }
@@ -218,7 +224,4 @@ export function validateConfigMode(
       }or BEE_DEBUG_API_URL=${BEE_DEBUG_API_URL} for the feature to work`,
     )
   }
-
-  // Stamps rewrite is disabled
-  return undefined
 }
