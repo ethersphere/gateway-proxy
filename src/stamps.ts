@@ -1,6 +1,6 @@
-import { BeeDebug, PostageBatch, BatchId } from '@ethersphere/bee-js'
+import { BeeDebug, PostageBatch, BatchId, Bee } from '@ethersphere/bee-js'
 import client from 'prom-client'
-import type { StampsConfig, StampsConfigAutobuy, StampsConfigExtends } from './config'
+import type { StampsConfig, StampsConfigAutobuy, StampsConfigExtends, StampsConfigReupload } from './config'
 import { logger } from './logger'
 import { register } from './metrics'
 
@@ -154,6 +154,9 @@ export class StampsManager {
   private interval?: ReturnType<typeof setInterval>
   private isBuyingStamp?: boolean = false
   private extendingStamps: string[] = []
+  // private isReuploading?: boolean = false
+
+
   /**
    * Get postage stamp that should be replaced in a the proxy request header
    *
@@ -180,6 +183,27 @@ export class StampsManager {
 
     stampGetErrorCounter.inc()
     throw new Error('No postage stamp')
+  }
+
+  public async refreshStampsReupload(beeApi: Bee): Promise<void> {
+    logger.info('checking pinned content')
+    const pins = await beeApi.getAllPins()
+
+    if (!pins.length) {
+      logger.info(`  no pins found`)
+    } else {
+      pins.forEach(async pin => {
+        const bool = await beeApi.isReferenceRetrievable(pin)
+        logger.info(`pin ${pin} ${bool ? 'is retrievable' : 'is not retrievable'}`)
+        /* const isRetrievable = await beeApi.isReferenceRetrievable(pin)
+
+        if (!isRetrievable && !this.isReuploading) {
+          this.isReuploading = true
+          await beeApi.reuploadPinnedData(pin)
+          this.isReuploading = false
+        } */
+      })
+    }
   }
 
   /**
@@ -262,7 +286,7 @@ export class StampsManager {
   async verifyUsableStamps(
     beeDebug: BeeDebug,
     ttlMin: number,
-    config: StampsConfigAutobuy | StampsConfigExtends,
+    config: StampsConfigAutobuy | StampsConfigExtends | StampsConfigReupload,
     amount: string,
   ) {
     for (let i = 0; i < this.usableStamps!.length; i++) {
@@ -312,8 +336,10 @@ export class StampsManager {
 
       if (config.mode === 'autobuy') {
         refreshStamps = async () => this.refreshStampsAutobuy(config, new BeeDebug(config.beeDebugApiUrl))
-      } else {
+      } else if (config.mode === 'extendsTTL') {
         refreshStamps = async () => this.refreshStampsExtends(config, new BeeDebug(config.beeDebugApiUrl))
+      } else {
+        refreshStamps = async () => this.refreshStampsReupload(new Bee(config.beeDebugApiUrl))
       }
       this.stop()
       await refreshStamps()

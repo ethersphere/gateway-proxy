@@ -24,6 +24,12 @@ export interface StampsConfigExtends {
   ttlMin: number
   depth: number
   amount: string
+  refreshPeriod: number
+  beeDebugApiUrl: string
+}
+
+export interface StampsConfigReupload {
+  mode: 'reupload'
   beeDebugApiUrl: string
   refreshPeriod: number
 }
@@ -39,7 +45,7 @@ export interface StampsConfigAutobuy {
   refreshPeriod: number
 }
 
-export type StampsConfig = StampsConfigHardcoded | StampsConfigAutobuy | StampsConfigExtends
+export type StampsConfig = StampsConfigHardcoded | StampsConfigAutobuy | StampsConfigExtends | StampsConfigReupload
 
 export type EnvironmentVariables = Partial<{
   // Logging
@@ -73,6 +79,7 @@ export type EnvironmentVariables = Partial<{
   POSTAGE_TTL_MIN: string
   POSTAGE_REFRESH_PERIOD: string
   POSTAGE_EXTENDSTTL: string
+  REUPLOAD_PERIOD: string
 }>
 
 export const SUPPORTED_LEVELS = ['critical', 'error', 'warn', 'info', 'verbose', 'debug'] as const
@@ -81,7 +88,7 @@ export type SupportedLevels = typeof SUPPORTED_LEVELS[number]
 export const DEFAULT_BEE_API_URL = 'http://localhost:1633'
 export const DEFAULT_BEE_DEBUG_API_URL = 'http://localhost:1635'
 export const DEFAULT_HOSTNAME = 'localhost'
-export const DEFAULT_PORT = 3000
+export const DEFAULT_PORT = 3001
 export const DEFAULT_POSTAGE_USAGE_THRESHOLD = 0.7
 export const DEFAULT_POSTAGE_USAGE_MAX = 0.9
 export const DEFAULT_POSTAGE_REFRESH_PERIOD = 60_000
@@ -129,6 +136,7 @@ export function getStampsConfig({
   POSTAGE_TTL_MIN,
   POSTAGE_REFRESH_PERIOD,
   POSTAGE_EXTENDSTTL,
+  REUPLOAD_PERIOD,
 }: EnvironmentVariables = {}): StampsConfig | undefined {
   const refreshPeriod = Number(POSTAGE_REFRESH_PERIOD || DEFAULT_POSTAGE_REFRESH_PERIOD)
   const beeDebugApiUrl = BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL
@@ -136,7 +144,33 @@ export function getStampsConfig({
   // Start in hardcoded mode
   if (POSTAGE_STAMP) return { mode: 'hardcoded', stamp: POSTAGE_STAMP }
   // Start autobuy
-  else if (!POSTAGE_EXTENDSTTL && POSTAGE_DEPTH && POSTAGE_AMOUNT && BEE_DEBUG_API_URL) {
+  else {
+    return validateConfigMode(
+      BEE_DEBUG_API_URL,
+      POSTAGE_DEPTH,
+      POSTAGE_AMOUNT,
+      POSTAGE_USAGE_THRESHOLD,
+      POSTAGE_USAGE_MAX,
+      POSTAGE_TTL_MIN,
+      POSTAGE_EXTENDSTTL,
+      REUPLOAD_PERIOD,
+      refreshPeriod,
+    )
+  }
+}
+
+export function validateConfigMode(
+  BEE_DEBUG_API_URL: string | undefined,
+  POSTAGE_DEPTH: string | undefined,
+  POSTAGE_AMOUNT: string | undefined,
+  POSTAGE_USAGE_THRESHOLD: string | undefined,
+  POSTAGE_USAGE_MAX: string | undefined,
+  POSTAGE_TTL_MIN: string | undefined,
+  POSTAGE_EXTENDSTTL: string | undefined,
+  REUPLOAD_PERIOD: string | undefined,
+  refreshPeriod: number,
+): StampsConfig | undefined {
+  if (!POSTAGE_EXTENDSTTL && POSTAGE_DEPTH && POSTAGE_AMOUNT && BEE_DEBUG_API_URL) {
     return {
       mode: 'autobuy',
       depth: Number(POSTAGE_DEPTH),
@@ -160,6 +194,12 @@ export function getStampsConfig({
       amount: POSTAGE_AMOUNT,
       refreshPeriod,
       beeDebugApiUrl,
+    }
+  } else if (REUPLOAD_PERIOD) {
+    return {
+      beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_API_URL,
+      mode: 'reupload',
+      refreshPeriod: Number(REUPLOAD_PERIOD),
     }
   }
   // Missing one of the variables needed for the autobuy or extends TTL
