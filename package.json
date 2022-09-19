@@ -68,7 +68,7 @@
     "http-proxy-middleware": "^2.0.6",
     "prom-client": "^14.1.0",
     "request-stats": "^3.0.0",
-    "winston": "^3.7.2"
+    "winston": "^3.8.2"
   },
   "engines": {
     "node": ">=12.0.0",
