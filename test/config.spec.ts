@@ -1,5 +1,5 @@
 import {
-  DEFAULT_BEE_API_URL,
+  DEFAULT_BEE_DEBUG_API_URL,
   DEFAULT_HOSTNAME,
   DEFAULT_PORT,
   DEFAULT_POSTAGE_USAGE_THRESHOLD,
@@ -16,7 +16,7 @@ import {
 describe('getAppConfig', () => {
   it('should return default values', () => {
     const config = getAppConfig()
-    expect(config.beeApiUrl).toEqual(DEFAULT_BEE_API_URL)
+    expect(config.beeApiUrl).toEqual(DEFAULT_BEE_DEBUG_API_URL)
     expect(config.authorization).toBeUndefined()
   })
 
@@ -138,17 +138,16 @@ describe('getStampsConfig', () => {
     {
       description: '{mode: extendsTTL, ...} with default values',
       env: {
+        POSTAGE_DEPTH,
         POSTAGE_EXTENDSTTL,
         POSTAGE_AMOUNT,
       },
       output: {
         mode: 'extendsTTL',
-        depth: NaN,
+        depth: Number(POSTAGE_DEPTH),
         amount: POSTAGE_AMOUNT,
-        beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_API_URL,
-        usageThreshold: DEFAULT_POSTAGE_USAGE_THRESHOLD,
-        usageMax: DEFAULT_POSTAGE_USAGE_MAX,
-        ttlMin: Number(calculateMinTTL(POSTAGE_TTL_MIN)),
+        beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL,
+        ttlMin: calculateMinTTL(Number(POSTAGE_TTL_MIN)),
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
       },
     },
@@ -156,17 +155,16 @@ describe('getStampsConfig', () => {
       description: '{mode: extendsTTL, ...} with BEE_DEBUG_API_URL',
       env: {
         BEE_DEBUG_API_URL,
+        POSTAGE_DEPTH,
         POSTAGE_AMOUNT,
         POSTAGE_EXTENDSTTL,
       },
       output: {
         mode: 'extendsTTL',
-        depth: NaN,
+        depth: Number(POSTAGE_DEPTH),
         amount: POSTAGE_AMOUNT,
         beeDebugApiUrl: BEE_DEBUG_API_URL,
-        usageThreshold: DEFAULT_POSTAGE_USAGE_THRESHOLD,
-        usageMax: DEFAULT_POSTAGE_USAGE_MAX,
-        ttlMin: Number(calculateMinTTL(POSTAGE_TTL_MIN)),
+        ttlMin: calculateMinTTL(Number(POSTAGE_TTL_MIN)),
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
       },
     },
@@ -193,13 +191,7 @@ describe('getStampsConfig', () => {
       expect(() => {
         getStampsConfig(v)
       }).toThrowError(
-        `config: please provide ${
-          !v.POSTAGE_EXTENDSTTL
-            ? 'POSTAGE_DEPTH: ' + v.POSTAGE_DEPTH + ', POSTAGE_AMOUNT: ' + v.POSTAGE_AMOUNT + ' and'
-            : 'POSTAGE_AMOUNT: ' + v.POSTAGE_AMOUNT + ' or (Optional)'
-        } BEE_DEBUG_API_URL: ${v.BEE_DEBUG_API_URL} for the ${
-          v.POSTAGE_EXTENDSTTL ? 'extends TTL' : 'autobuy'
-        } to work`,
+        `config: please provide POSTAGE_DEPTH, POSTAGE_AMOUNT or BEE_DEBUG_API_URL for the feature to work`,
       )
     })
   })

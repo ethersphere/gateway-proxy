@@ -20,7 +20,6 @@ async function main() {
   let app: Application
 
   if (stampConfig) {
-    logger.info('stampConfig', stampConfig)
     logger.debug('stamp config', stampConfig)
     const stampManager = new StampsManager()
     logger.info('starting postage stamp manager')

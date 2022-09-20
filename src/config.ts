@@ -19,8 +19,17 @@ interface StampsConfigHardcoded {
   stamp: string
 }
 
-export interface IStampsConfig {
-  mode: 'autobuy' | 'extendsTTL'
+export interface StampsConfigExtends {
+  mode: 'extendsTTL'
+  ttlMin: number
+  depth: number
+  amount: string
+  beeDebugApiUrl: string
+  refreshPeriod: number
+}
+
+export interface StampsConfigAutobuy {
+  mode: 'autobuy'
   depth: number
   amount: string
   beeDebugApiUrl: string
@@ -30,7 +39,7 @@ export interface IStampsConfig {
   refreshPeriod: number
 }
 
-export type StampsConfig = StampsConfigHardcoded | IStampsConfig
+export type StampsConfig = StampsConfigHardcoded | StampsConfigAutobuy | StampsConfigExtends
 
 export type EnvironmentVariables = Partial<{
   // Logging
@@ -63,10 +72,10 @@ export type EnvironmentVariables = Partial<{
   POSTAGE_EXTENDSTTL: string
 }>
 
-export const SUPPORTED_LEVELS = ['critical', 'error', 'warn', 'info', 'verbose', 'debug']
+export const SUPPORTED_LEVELS = ['critical', 'error', 'warn', 'info', 'verbose', 'debug'] as const
 export type SupportedLevels = typeof SUPPORTED_LEVELS[number]
 
-export const DEFAULT_BEE_API_URL = 'http://localhost:1635'
+export const DEFAULT_BEE_DEBUG_API_URL = 'http://localhost:1635'
 export const DEFAULT_HOSTNAME = 'localhost'
 export const DEFAULT_PORT = 3000
 export const DEFAULT_POSTAGE_USAGE_THRESHOLD = 0.7
@@ -90,7 +99,7 @@ export function getAppConfig({
 }: EnvironmentVariables = {}): AppConfig {
   return {
     hostname: HOSTNAME || DEFAULT_HOSTNAME,
-    beeApiUrl: BEE_API_URL || DEFAULT_BEE_API_URL,
+    beeApiUrl: BEE_API_URL || DEFAULT_BEE_DEBUG_API_URL,
     authorization: AUTH_SECRET,
     cidSubdomains: CID_SUBDOMAINS === 'true',
     ensSubdomains: ENS_SUBDOMAINS === 'true',
@@ -98,9 +107,9 @@ export function getAppConfig({
   }
 }
 
-export function calculateMinTTL(POSTAGE_TTL_MIN: string | undefined) {
+export function calculateMinTTL(POSTAGE_TTL_MIN: number | undefined): number {
   if (Number(POSTAGE_TTL_MIN) >= DEFAULT_POSTAGE_TTL_MINIMUM) {
-    return POSTAGE_TTL_MIN
+    return Number(POSTAGE_TTL_MIN)
   }
   logger.warn(`To extend postage stamps, POSTAGE_TTL_MIN needs to be at least ${DEFAULT_POSTAGE_TTL_MINIMUM} seconds.`)
   logger.warn(`ttlMin setting is being increase to this value automatically.`)
@@ -123,51 +132,37 @@ export function getStampsConfig({
   POSTAGE_REFRESH_PERIOD,
   POSTAGE_EXTENDSTTL,
 }: EnvironmentVariables = {}): StampsConfig | undefined {
-  const isExtendsTTLMode = POSTAGE_EXTENDSTTL && POSTAGE_EXTENDSTTL === 'true'
-  const mandatoryAutobuy = POSTAGE_DEPTH && POSTAGE_AMOUNT && BEE_DEBUG_API_URL
+  const refreshPeriod = Number(POSTAGE_REFRESH_PERIOD || DEFAULT_POSTAGE_REFRESH_PERIOD)
 
   // Start in hardcoded mode
   if (POSTAGE_STAMP) return { mode: 'hardcoded', stamp: POSTAGE_STAMP }
   // Start autobuy
-  else if (validateMandatoryValues(isExtendsTTLMode, mandatoryAutobuy, POSTAGE_AMOUNT)) {
-    const refreshPeriod = Number(POSTAGE_REFRESH_PERIOD || DEFAULT_POSTAGE_REFRESH_PERIOD)
-
-    const res = {
-      mode: isExtendsTTLMode ? 'extendsTTL' : 'autobuy',
+  else if (!POSTAGE_EXTENDSTTL && POSTAGE_DEPTH && POSTAGE_AMOUNT && BEE_DEBUG_API_URL) {
+    return {
+      mode: 'autobuy',
       depth: Number(POSTAGE_DEPTH),
       amount: POSTAGE_AMOUNT,
-      beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_API_URL,
+      beeDebugApiUrl: BEE_DEBUG_API_URL,
       usageThreshold: Number(POSTAGE_USAGE_THRESHOLD || DEFAULT_POSTAGE_USAGE_THRESHOLD),
       usageMax: Number(POSTAGE_USAGE_MAX || DEFAULT_POSTAGE_USAGE_MAX),
-      ttlMin: isExtendsTTLMode
-        ? Number(calculateMinTTL(POSTAGE_TTL_MIN))
-        : Number(POSTAGE_TTL_MIN || (refreshPeriod / 1000) * 5),
+      ttlMin: Number(POSTAGE_TTL_MIN || (refreshPeriod / 1000) * 5),
       refreshPeriod,
-    } as IStampsConfig
-
-    return res
+    }
+  } else if (POSTAGE_EXTENDSTTL && POSTAGE_EXTENDSTTL === 'true' && POSTAGE_AMOUNT && POSTAGE_DEPTH) {
+    return {
+      mode: 'extendsTTL',
+      depth: Number(POSTAGE_DEPTH),
+      ttlMin: calculateMinTTL(Number(POSTAGE_TTL_MIN)),
+      beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL,
+      amount: POSTAGE_AMOUNT,
+      refreshPeriod,
+    }
   }
   // Missing one of the variables needed for the autobuy or extends TTL
-  else if (POSTAGE_DEPTH || POSTAGE_AMOUNT || BEE_DEBUG_API_URL || isExtendsTTLMode) {
-    throw new Error(
-      `config: please provide ${
-        !isExtendsTTLMode
-          ? 'POSTAGE_DEPTH: ' + POSTAGE_DEPTH + ', POSTAGE_AMOUNT: ' + POSTAGE_AMOUNT + ' and'
-          : 'POSTAGE_AMOUNT: ' + POSTAGE_AMOUNT + ' or (Optional)'
-      } BEE_DEBUG_API_URL: ${BEE_DEBUG_API_URL} for the ${isExtendsTTLMode ? 'extends TTL' : 'autobuy'} to work`,
-    )
+  else if (POSTAGE_DEPTH || POSTAGE_AMOUNT || BEE_DEBUG_API_URL) {
+    throw new Error('config: please provide POSTAGE_DEPTH, POSTAGE_AMOUNT or BEE_DEBUG_API_URL for the feature to work')
   }
 
   // Stamps rewrite is disabled
   return undefined
-}
-
-function validateMandatoryValues(
-  isExtendsTTLMode: boolean | '' | undefined,
-  mandatoryAutobuy: string | undefined,
-  POSTAGE_AMOUNT: string | undefined,
-) {
-  // if it's autoplay it needs to have POSTAGE_DEPTH && POSTAGE_AMOUNT && BEE_DEBUG_API_URL
-  // if it's extended ttl it needs to have only POSTAGE_AMOUNT
-  return (!isExtendsTTLMode && mandatoryAutobuy) || (isExtendsTTLMode && POSTAGE_AMOUNT)
 }

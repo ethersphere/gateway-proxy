@@ -97,6 +97,7 @@ npm run start
 #### 4. Extends stamps TTL
 
 ```sh
+export POSTAGE_DEPTH=20
 export POSTAGE_EXTENDSTTL=true
 export POSTAGE_AMOUNT=1000000
 
