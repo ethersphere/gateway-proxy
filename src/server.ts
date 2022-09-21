@@ -1,12 +1,12 @@
-import { BeeDebug } from '@ethersphere/bee-js'
+import { Bee, BeeDebug } from '@ethersphere/bee-js'
 import express, { Application } from 'express'
 import { createProxyMiddleware, Options } from 'http-proxy-middleware'
 import { fetchBeeIdentity, getHashedIdentity, HASHED_IDENTITY_HEADER } from './identity'
+import { AppConfig, DEFAULT_HOSTNAME } from './config'
 import * as bzzLink from './bzz-link'
-import { AppConfig, DEFAULT_HOSTNAME, READINESS_TIMEOUT } from './config'
 import { logger } from './logger'
 import { register } from './metrics'
-import { tryUploadingSingleChunk } from './readiness'
+import { checkReadiness } from './readiness'
 import type { StampsManager } from './stamps'
 
 const SWARM_STAMP_HEADER = 'swarm-postage-batch-id'
@@ -39,6 +39,7 @@ export const createApp = (
     logProvider: () => logger,
   }
 
+  const bee = new Bee(beeApiUrl)
   const beeDebug = new BeeDebug(beeDebugApiUrl)
   fetchBeeIdentity(beeDebug)
 
@@ -111,18 +112,8 @@ export const createApp = (
 
   // Readiness endpoint
   app.get('/readiness', async (_req, res) => {
-    if (stampManager) {
-      const ready = await tryUploadingSingleChunk(beeApiUrl, stampManager)
-      res.status(ready ? 200 : 502).end(ready ? 'OK' : 'Bad Gateway')
-    } else {
-      try {
-        const health = await beeDebug.getHealth({ timeout: READINESS_TIMEOUT })
-        const ready = health.status === 'ok'
-        res.status(ready ? 200 : 502).end(ready ? 'OK' : 'Bad Gateway')
-      } catch {
-        res.status(502).end('Bad Gateway')
-      }
-    }
+    const ready = await checkReadiness(bee, beeDebug, stampManager)
+    res.status(ready ? 200 : 502).end(ready ? 'OK' : 'Bad Gateway')
   })
 
   // Download file/collection/chunk proxy
