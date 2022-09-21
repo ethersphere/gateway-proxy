@@ -1,10 +1,11 @@
 import { NotEnabledError, RedirectCidError, requestFilter, routerClosure } from '../src/bzz-link'
 import { Application, Request } from 'express'
 import { Server } from 'http'
-import { createBzzLinkMockServer } from './bzz-link.mockserver'
 import { AddressInfo } from 'net'
-import { createApp } from '../src/server'
 import request from 'supertest'
+import { DEFAULT_BEE_DEBUG_API_URL } from '../src/config'
+import { createApp } from '../src/server'
+import { createBzzLinkMockServer } from './bzz-link.mockserver'
 
 describe('bzz.link', () => {
   describe('mock', () => {
@@ -17,7 +18,13 @@ describe('bzz.link', () => {
       const beeMockPort = (server.address() as AddressInfo).port
       beeMockUrl = `http://localhost:${beeMockPort}`
 
-      app = createApp({ beeApiUrl: beeMockUrl, hostname: 'bzz.link', ensSubdomains: true, cidSubdomains: true })
+      app = createApp({
+        beeApiUrl: beeMockUrl,
+        beeDebugApiUrl: DEFAULT_BEE_DEBUG_API_URL,
+        hostname: 'bzz.link',
+        ensSubdomains: true,
+        cidSubdomains: true,
+      })
       proxy = await new Promise((resolve, _reject) => {
         const server = app.listen(async () => resolve(server))
       })

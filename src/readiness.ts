@@ -1,12 +1,13 @@
 import { Bee, Utils } from '@ethersphere/bee-js'
+import { READINESS_TIMEOUT } from './config'
 import { logger } from './logger'
 import { StampsManager } from './stamps'
 
-export async function tryUploadingSingleChunk(stampsManager: StampsManager): Promise<boolean> {
+export async function tryUploadingSingleChunk(beeApiUrl: string, stampsManager: StampsManager): Promise<boolean> {
   const chunk = makeChunk()
-  const bee = new Bee(process.env.BEE_API_URL || 'http://localhost:1633')
+  const bee = new Bee(beeApiUrl)
   try {
-    await bee.uploadChunk(stampsManager.postageStamp, chunk, { timeout: 3_000, deferred: true })
+    await bee.uploadChunk(stampsManager.postageStamp, chunk, { timeout: READINESS_TIMEOUT, deferred: true })
 
     return true
   } catch (error) {

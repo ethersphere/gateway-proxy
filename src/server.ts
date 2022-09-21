@@ -1,9 +1,9 @@
 import { BeeDebug } from '@ethersphere/bee-js'
 import express, { Application } from 'express'
 import { createProxyMiddleware, Options } from 'http-proxy-middleware'
-import { AppConfig, DEFAULT_HOSTNAME } from './config'
 import { fetchBeeIdentity, getHashedIdentity, HASHED_IDENTITY_HEADER } from './identity'
 import * as bzzLink from './bzz-link'
+import { AppConfig, DEFAULT_HOSTNAME, READINESS_TIMEOUT } from './config'
 import { logger } from './logger'
 import { register } from './metrics'
 import { tryUploadingSingleChunk } from './readiness'
@@ -31,13 +31,16 @@ export const createApp = (
     removePinHeader,
     exposeHashedIdentity,
   }: AppConfig,
-  stampManager: StampsManager | undefined = undefined,
+  stampManager?: StampsManager,
 ): Application => {
   const commonOptions: Options = {
     target: beeApiUrl,
     changeOrigin: true,
     logProvider: () => logger,
   }
+
+  const beeDebug = new BeeDebug(beeDebugApiUrl)
+  fetchBeeIdentity(beeDebug)
 
   // Create Express Server
   const app = express()
@@ -109,10 +112,16 @@ export const createApp = (
   // Readiness endpoint
   app.get('/readiness', async (_req, res) => {
     if (stampManager) {
-      const ready = await tryUploadingSingleChunk(stampManager)
-      res.status(ready ? 200 : 504).json(ready ? 'OK' : 'Gateway Timeout')
+      const ready = await tryUploadingSingleChunk(beeApiUrl, stampManager)
+      res.status(ready ? 200 : 502).end(ready ? 'OK' : 'Bad Gateway')
     } else {
-      res.status(200).end('OK')
+      try {
+        const health = await beeDebug.getHealth({ timeout: READINESS_TIMEOUT })
+        const ready = health.status === 'ok'
+        res.status(ready ? 200 : 502).end(ready ? 'OK' : 'Bad Gateway')
+      } catch {
+        res.status(502).end('Bad Gateway')
+      }
     }
   })
 
