@@ -1,6 +1,6 @@
 import { BeeDebug, PostageBatch, BatchId } from '@ethersphere/bee-js'
 import client from 'prom-client'
-import type { StampsConfig, StampsConfigAutobuy, StampsConfigExtends } from './config'
+import type { StampsConfig, StampsConfigAutobuy } from './config'
 import { logger } from './logger'
 import { register } from './metrics'
 
@@ -76,7 +76,7 @@ export function getUsage({ utilization, depth, bucketDepth }: PostageBatch): num
  *
  * @returns Filtered stamps soltered by usage
  */
-export function filterUsableStampsAutobuy(
+export function filterUsableStamps(
   stamps: PostageBatch[],
   depth: number,
   amount: string,
@@ -88,24 +88,6 @@ export function filterUsableStampsAutobuy(
     .filter(s => s.usable && s.depth === depth && s.amount === amount && getUsage(s) < maxUsage && s.batchTTL > minTTL)
     // sort the stamps by usage
     .sort((a, b) => (getUsage(a) < getUsage(b) ? 1 : -1))
-
-  // return the all usable stamp sorted by usage
-  return usableStamps
-}
-
-/**
- * Filter the stamps and only return those that are usable and sort by from closer to farer expire TTL
- *
- * @param stamps Postage stamps to be filtered
- *
- * @returns Filtered stamps soltered by usage
- */
-export function filterUsableStampsExtends(stamps: PostageBatch[]): PostageBatch[] {
-  const usableStamps = stamps
-    // filter to get stamps that have the right depth, amount and are not fully used or expired
-    .filter(s => s.usable)
-    // sort the stamps by usage
-    .sort((a, b) => (a.batchTTL > b.batchTTL ? 1 : -1))
 
   // return the all usable stamp sorted by usage
   return usableStamps
@@ -127,25 +109,14 @@ export async function buyNewStamp(
   amount: string,
   beeDebug: BeeDebug,
   options?: Options,
-): Promise<{ batchId: BatchId; stamp: PostageBatch }> {
-  logger.info('buying new stamp')
+): Promise<BatchId> {
   const batchId = await beeDebug.createPostageBatch(amount, depth, {
     waitForUsable: true,
     waitForUsableTimeout: options?.timeout,
   })
   stampPurchaseCounter.inc()
 
-  const stamp = await beeDebug.getPostageBatch(batchId)
-  logger.info('successfully bought new stamp', { stamp })
-
-  return { batchId, stamp }
-}
-
-export async function topUpStamp(beeDebug: BeeDebug, postageBatchId: string, amount: string): Promise<PostageBatch> {
-  await beeDebug.topUpBatch(postageBatchId, amount)
-  const stamp = await beeDebug.getPostageBatch(postageBatchId)
-
-  return stamp
+  return batchId
 }
 
 export class StampsManager {
@@ -153,7 +124,7 @@ export class StampsManager {
   private usableStamps?: PostageBatch[]
   private interval?: ReturnType<typeof setInterval>
   private isBuyingStamp?: boolean = false
-  private extendingStamps: string[] = []
+
   /**
    * Get postage stamp that should be replaced in a the proxy request header
    *
@@ -188,17 +159,19 @@ export class StampsManager {
    * @param config Stamps config
    * @param beeDebug Connection to debug endpoint for checking/buying stamps
    */
-  public async refreshStampsAutobuy(config: StampsConfigAutobuy, beeDebug: BeeDebug): Promise<void> {
+  public async refreshStamps(config: StampsConfigAutobuy, beeDebug: BeeDebug): Promise<void> {
     try {
       stampCheckCounter.inc()
       logger.info('checking postage stamps')
       const stamps = await beeDebug.getAllPostageBatch()
       logger.debug('retrieved stamps', stamps)
 
-      const { depth, amount, usageMax, usageThreshold, ttlMin } = config
+      const { depth, amount, usageMax, usageTreshold, ttlMin } = config
 
       // Get all usable stamps sorted by usage from most used to least
-      this.usableStamps = filterUsableStampsAutobuy(stamps, depth, amount, usageMax, ttlMin)
+      this.usableStamps = filterUsableStamps(stamps, depth, amount, usageMax, ttlMin)
+      logger.debug('usable stamps', this.usableStamps)
+
       const leastUsed = this.usableStamps[this.usableStamps.length - 1]
       const mostUsed = this.usableStamps[0]
 
@@ -207,11 +180,13 @@ export class StampsManager {
       stampUsableCountGauge.set(this.usableStamps.length)
 
       // Check if the least used stamps is starting to get full and if so purchase new stamp
-      if (!this.isBuyingStamp && (!leastUsed || getUsage(leastUsed) > usageThreshold)) {
+      if (!this.isBuyingStamp && (!leastUsed || getUsage(leastUsed) > usageTreshold)) {
         this.isBuyingStamp = true
         logger.info('buying new stamp')
         try {
-          const { stamp } = await buyNewStamp(depth, amount, beeDebug)
+          const batchId = await buyNewStamp(depth, amount, beeDebug)
+          const stamp = await beeDebug.getPostageBatch(batchId)
+          logger.info('successfully bought new stamp', { stamp })
 
           // Add the bought postage stamp
           this.usableStamps.push(stamp)
@@ -228,94 +203,17 @@ export class StampsManager {
     }
   }
 
-  public async refreshStampsExtends(config: StampsConfigExtends, beeDebug: BeeDebug): Promise<void> {
-    stampCheckCounter.inc()
-    logger.info('checking postage stamps')
-    const stamps = await beeDebug.getAllPostageBatch()
-    logger.debug('retrieved stamps', stamps)
-
-    const { amount, ttlMin, depth } = config
-
-    // Get all usable stamps sorted by usage from most used to least
-    this.usableStamps = filterUsableStampsExtends(stamps)
-
-    if (!this.isBuyingStamp) {
-      if (this.usableStamps.length === 0) {
-        try {
-          this.isBuyingStamp = true
-          const { stamp: newStamp } = await buyNewStamp(depth, amount, beeDebug)
-
-          // Add the bought postage stamp
-          this.usableStamps.push(newStamp)
-        } catch (e) {
-          logger.error('failed to buy postage stamp', e)
-          stampPurchaseFailedCounter.inc()
-        } finally {
-          this.isBuyingStamp = false
-        }
-      } else {
-        await this.verifyUsableStamps(beeDebug, ttlMin, config, amount)
-      }
-    }
-  }
-
-  async verifyUsableStamps(
-    beeDebug: BeeDebug,
-    ttlMin: number,
-    config: StampsConfigAutobuy | StampsConfigExtends,
-    amount: string,
-  ) {
-    for (let i = 0; i < this.usableStamps!.length; i++) {
-      const stamp = this.usableStamps![i]
-
-      const minTimeThreshold = ttlMin + config.refreshPeriod / 1000
-
-      if (stamp.batchTTL < minTimeThreshold && !this.extendingStamps.includes(stamp.batchID)) {
-        this.extendingStamps.push(stamp.batchID)
-        logger.info(`extending postage stamp ${stamp.batchID}`)
-
-        try {
-          const stampRes = await topUpStamp(beeDebug, stamp.batchID, amount)
-
-          setTimeout(() => this.completeTopUp(stampRes), 60000)
-        } catch (e: any) {
-          // error that indicate that 2 stamps are trying to be extended at the same time. Comes out as a warning
-          if (e && e.responseBody && e.requestOptions && JSON.parse(e.responseBody).code === 429) {
-            const errorStamp = e.requestOptions.path.split('/')[2]
-            const errorStampIndex = this.extendingStamps.indexOf(errorStamp)
-            this.extendingStamps.splice(errorStampIndex, 1)
-            logger.warn(`postage stamp warning ${errorStamp}`)
-          } else {
-            logger.error('failed to topup postage stamp', e)
-          }
-        }
-      }
-    }
-  }
-
-  completeTopUp(stamp: PostageBatch) {
-    logger.info('successfully postage stamp extended', { stamp })
-    // remove stamps from extending stamps array
-    const stampIndex = this.extendingStamps.findIndex(id => stamp.batchID === id)
-    this.extendingStamps.splice(stampIndex, 1)
-  }
-
   /**
    * Start the manager in either hardcoded or autobuy mode
    */
   async start(config: StampsConfig): Promise<void> {
     // Hardcoded stamp mode
     if (config.mode === 'hardcoded') this.stamp = config.stamp
-    // Autobuy or ExtendsTTL mode
+    // Autobuy mode
     else {
-      let refreshStamps: () => Promise<void>
-
-      if (config.mode === 'autobuy') {
-        refreshStamps = async () => this.refreshStampsAutobuy(config, new BeeDebug(config.beeDebugApiUrl))
-      } else {
-        refreshStamps = async () => this.refreshStampsExtends(config, new BeeDebug(config.beeDebugApiUrl))
-      }
       this.stop()
+
+      const refreshStamps = async () => this.refreshStamps(config, new BeeDebug(config.beeDebugApiUrl))
       await refreshStamps()
 
       this.interval = setInterval(refreshStamps, config.refreshPeriod)

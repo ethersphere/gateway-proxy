@@ -53,12 +53,6 @@ export async function createStampMockServer(db: StampDB): Promise<Server> {
     res.send({ batchID: newStamp.batchID })
   })
 
-  app.patch('/stamps/topup/:batchId/:amount', (req, res) => {
-    const stamp = db.get(req.params.batchId as BatchId)
-    stamp.amount = (Number(stamp.amount) + Number(req.params.amount)).toString()
-    res.send({ batchID: stamp.batchID })
-  })
-
   return new Promise(resolve => {
     const server = app.listen(() => {
       resolve(server)

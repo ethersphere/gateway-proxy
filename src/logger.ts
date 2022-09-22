@@ -2,7 +2,7 @@ import { createLogger, format, transports, Logger, Logform } from 'winston'
 import requestStats from 'request-stats'
 import type { Server } from 'http'
 
-import { SupportedLevels, logLevel, SUPPORTED_LEVELS } from './config'
+import { SupportedLevels, SUPPORTED_LEVELS, logLevel } from './config'
 
 const supportedLevels: Record<SupportedLevels, number> = SUPPORTED_LEVELS.reduce(
   (acc, cur, idx) => ({ ...acc, [cur]: idx }),
