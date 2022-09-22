@@ -224,4 +224,7 @@ export function validateConfigMode(
       }or BEE_DEBUG_API_URL=${BEE_DEBUG_API_URL} for the feature to work`,
     )
   }
+
+  // Stamps rewrite is disabled
+  return undefined
 }
