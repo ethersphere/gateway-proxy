@@ -1,5 +1,5 @@
 import {
-  DEFAULT_BEE_API_URL,
+  DEFAULT_BEE_DEBUG_API_URL,
   DEFAULT_HOSTNAME,
   DEFAULT_PORT,
   DEFAULT_POSTAGE_USAGE_THRESHOLD,
@@ -15,7 +15,7 @@ import {
 describe('getAppConfig', () => {
   it('should return default values', () => {
     const config = getAppConfig()
-    expect(config.beeApiUrl).toEqual(DEFAULT_BEE_API_URL)
+    expect(config.beeApiUrl).toEqual(DEFAULT_BEE_DEBUG_API_URL)
     expect(config.authorization).toBeUndefined()
   })
 
@@ -68,7 +68,8 @@ describe('getStampsConfig', () => {
   const POSTAGE_USAGE_THRESHOLD = '0.6'
   const POSTAGE_USAGE_MAX = '0.8'
   const POSTAGE_TTL_MIN = '200'
-  const POSTAGE_REFRESH_PERIOD = '10'
+  const POSTAGE_REFRESH_PERIOD = '60000'
+  const POSTAGE_EXTENDSTTL = 'true'
 
   const values: { env: EnvironmentVariables; output: StampsConfig | undefined; description: string }[] = [
     { description: 'undefined for no input', env: {}, output: undefined },
@@ -90,7 +91,7 @@ describe('getStampsConfig', () => {
         depth: Number(POSTAGE_DEPTH),
         amount: POSTAGE_AMOUNT,
         beeDebugApiUrl: BEE_DEBUG_API_URL,
-        usageTreshold: DEFAULT_POSTAGE_USAGE_THRESHOLD,
+        usageThreshold: DEFAULT_POSTAGE_USAGE_THRESHOLD,
         usageMax: DEFAULT_POSTAGE_USAGE_MAX,
         ttlMin: (DEFAULT_POSTAGE_REFRESH_PERIOD / 1000) * 5,
         refreshPeriod: DEFAULT_POSTAGE_REFRESH_PERIOD,
@@ -112,7 +113,7 @@ describe('getStampsConfig', () => {
         depth: Number(POSTAGE_DEPTH),
         amount: POSTAGE_AMOUNT,
         beeDebugApiUrl: BEE_DEBUG_API_URL,
-        usageTreshold: Number(POSTAGE_USAGE_THRESHOLD),
+        usageThreshold: Number(POSTAGE_USAGE_THRESHOLD),
         usageMax: Number(POSTAGE_USAGE_MAX),
         ttlMin: Number(POSTAGE_TTL_MIN),
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
@@ -127,9 +128,44 @@ describe('getStampsConfig', () => {
         depth: Number(POSTAGE_DEPTH),
         amount: POSTAGE_AMOUNT,
         beeDebugApiUrl: BEE_DEBUG_API_URL,
-        usageTreshold: DEFAULT_POSTAGE_USAGE_THRESHOLD,
+        usageThreshold: DEFAULT_POSTAGE_USAGE_THRESHOLD,
         usageMax: DEFAULT_POSTAGE_USAGE_MAX,
         ttlMin: (Number(POSTAGE_REFRESH_PERIOD) / 1000) * 5,
+        refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
+      },
+    },
+    {
+      description: '{mode: extendsTTL, ...} with default values',
+      env: {
+        POSTAGE_DEPTH,
+        POSTAGE_EXTENDSTTL,
+        POSTAGE_AMOUNT,
+        POSTAGE_TTL_MIN,
+      },
+      output: {
+        mode: 'extendsTTL',
+        depth: Number(POSTAGE_DEPTH),
+        amount: POSTAGE_AMOUNT,
+        beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL,
+        ttlMin: Number(POSTAGE_TTL_MIN),
+        refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
+      },
+    },
+    {
+      description: '{mode: extendsTTL, ...} with BEE_DEBUG_API_URL',
+      env: {
+        BEE_DEBUG_API_URL,
+        POSTAGE_DEPTH,
+        POSTAGE_AMOUNT,
+        POSTAGE_EXTENDSTTL,
+        POSTAGE_TTL_MIN,
+      },
+      output: {
+        mode: 'extendsTTL',
+        depth: Number(POSTAGE_DEPTH),
+        amount: POSTAGE_AMOUNT,
+        beeDebugApiUrl: BEE_DEBUG_API_URL,
+        ttlMin: Number(POSTAGE_TTL_MIN),
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
       },
     },
@@ -156,7 +192,11 @@ describe('getStampsConfig', () => {
       expect(() => {
         getStampsConfig(v)
       }).toThrowError(
-        'config: please provide POSTAGE_DEPTH, POSTAGE_AMOUNT and BEE_DEBUG_API_URL for the autobuy to work',
+        `config: please provide POSTAGE_DEPTH=${v.POSTAGE_DEPTH}, POSTAGE_AMOUNT=${v.POSTAGE_AMOUNT}, POSTAGE_TTL_MIN=${
+          v.POSTAGE_TTL_MIN
+        } ${v.POSTAGE_EXTENDSTTL === 'true' ? 'at least 60 seconds ' : ''}or BEE_DEBUG_API_URL=${
+          v.BEE_DEBUG_API_URL
+        } for the feature to work`,
       )
     })
   })
