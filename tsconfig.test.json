@@ -6,7 +6,6 @@
     "jest.config.ts"
   ],
   "compilerOptions": {
-    "skipLibCheck": true,
     "noEmit": true
   }
 }
