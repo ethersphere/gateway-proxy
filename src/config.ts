@@ -18,6 +18,14 @@ interface StampsConfigHardcoded {
   mode: 'hardcoded'
   stamp: string
 }
+export interface StampsConfigExtends {
+  mode: 'extendsTTL'
+  ttlMin: number
+  depth: number
+  amount: string
+  beeDebugApiUrl: string
+  refreshPeriod: number
+}
 
 export interface StampsConfigExtends {
   mode: 'extendsTTL'

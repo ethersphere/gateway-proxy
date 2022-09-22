@@ -57,7 +57,7 @@ The proxy can manage postage stamps for you in 4 modes of operation:
    provide `POSTAGE_AMOUNT`, `POSTAGE_DEPTH` with the desired amount to use and `POSTAGE_TTL_MIN` above with
    a number above or equal to 60.
 5. It can reupload existing pinned content that appear as not retrievable. To enable this, provide `REAUPLOAD_PERIOD`
-   with the miliseconds to periodicaly check pinned content
+   with the miliseconds that represent the time to periodicaly check pinned content status
 
 In modes 1, 2 and 3, the proxy can be configured to require authentication secret to forward the requests. Use the
 `AUTH_SECRET` environment variable to enable it.
@@ -116,6 +116,7 @@ export REUPLOAD_PERIOD=30000
 
 npm run start
 ```
+
 #### Enable authentication
 
 ```sh
@@ -148,6 +149,7 @@ npm run start
 | EXPOSE_HASHED_IDENTITY  | false                       | Exposes `x-bee-node` header, which is the hashed identity of the Bee node for identification purposes      |
 | REUPLOAD_PERIOD         | undefined                   | How frequently are the pinned contents checked to be
 reupload.                                                            |
+| POSTAGE_EXTENDSTTL      | false                       | Enables extends TTL feature. Works along with POSTAGE_AMOUNT                                               |
 
 ### Curl
 
@@ -193,7 +195,6 @@ curl \
 | `POST /soc/:owner/:id`             | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Single-owner-chunk/paths/~1soc~1{owner}~1{id}/post) |
 | `GET /feeds/:owner/:topic`         | `200`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Feed/paths/~1feeds~1{owner}~1{topic}/get)           |
 | `POST /feeds/:owner/:topic`        | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Feed/paths/~1feeds~1{owner}~1{topic}/post)          |
-
 
 ## Contribute
 
