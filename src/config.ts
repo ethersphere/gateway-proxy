@@ -197,8 +197,8 @@ export function validateConfigMode(
     }
   } else if (REUPLOAD_PERIOD) {
     return {
-      beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_API_URL,
       mode: 'reupload',
+      beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_API_URL,
       refreshPeriod: Number(REUPLOAD_PERIOD),
     }
   }

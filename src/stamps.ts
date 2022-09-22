@@ -154,8 +154,7 @@ export class StampsManager {
   private interval?: ReturnType<typeof setInterval>
   private isBuyingStamp?: boolean = false
   private extendingStamps: string[] = []
-  // private isReuploading?: boolean = false
-
+  private isReuploading?: boolean = false
 
   /**
    * Get postage stamp that should be replaced in a the proxy request header
@@ -193,15 +192,14 @@ export class StampsManager {
       logger.info(`  no pins found`)
     } else {
       pins.forEach(async pin => {
-        const bool = await beeApi.isReferenceRetrievable(pin)
-        logger.info(`pin ${pin} ${bool ? 'is retrievable' : 'is not retrievable'}`)
-        /* const isRetrievable = await beeApi.isReferenceRetrievable(pin)
+        const isRetrievable = await beeApi.isReferenceRetrievable(pin)
+        logger.info(`pin ${pin} ${isRetrievable ? 'is retrievable' : 'is not retrievable'}`)
 
         if (!isRetrievable && !this.isReuploading) {
           this.isReuploading = true
           await beeApi.reuploadPinnedData(pin)
           this.isReuploading = false
-        } */
+        }
       })
     }
   }
