@@ -8,7 +8,6 @@ import {
   getAppConfig,
   getServerConfig,
   getStampsConfig,
-  calculateMinTTL,
   EnvironmentVariables,
   StampsConfig,
 } from '../src/config'
@@ -141,13 +140,14 @@ describe('getStampsConfig', () => {
         POSTAGE_DEPTH,
         POSTAGE_EXTENDSTTL,
         POSTAGE_AMOUNT,
+        POSTAGE_TTL_MIN,
       },
       output: {
         mode: 'extendsTTL',
         depth: Number(POSTAGE_DEPTH),
         amount: POSTAGE_AMOUNT,
         beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL,
-        ttlMin: calculateMinTTL(Number(POSTAGE_TTL_MIN)),
+        ttlMin: Number(POSTAGE_TTL_MIN),
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
       },
     },
@@ -158,13 +158,14 @@ describe('getStampsConfig', () => {
         POSTAGE_DEPTH,
         POSTAGE_AMOUNT,
         POSTAGE_EXTENDSTTL,
+        POSTAGE_TTL_MIN,
       },
       output: {
         mode: 'extendsTTL',
         depth: Number(POSTAGE_DEPTH),
         amount: POSTAGE_AMOUNT,
         beeDebugApiUrl: BEE_DEBUG_API_URL,
-        ttlMin: calculateMinTTL(Number(POSTAGE_TTL_MIN)),
+        ttlMin: Number(POSTAGE_TTL_MIN),
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
       },
     },
@@ -191,7 +192,11 @@ describe('getStampsConfig', () => {
       expect(() => {
         getStampsConfig(v)
       }).toThrowError(
-        `config: please provide POSTAGE_DEPTH, POSTAGE_AMOUNT or BEE_DEBUG_API_URL for the feature to work`,
+        `config: please provide POSTAGE_DEPTH=${v.POSTAGE_DEPTH}, POSTAGE_AMOUNT=${v.POSTAGE_AMOUNT}, POSTAGE_TTL_MIN=${
+          v.POSTAGE_TTL_MIN
+        } ${v.POSTAGE_EXTENDSTTL === 'true' ? 'at least 60 seconds ' : ''}or BEE_DEBUG_API_URL=${
+          v.BEE_DEBUG_API_URL
+        } for the feature to work`,
       )
     })
   })
