@@ -57,7 +57,7 @@ The proxy can manage postage stamps for you in 3 modes of operation:
    provide `POSTAGE_AMOUNT`, `POSTAGE_DEPTH` with the desired amount to use and `POSTAGE_TTL_MIN` above with
    a number above or equal to 60.
 
-In all 3 modes, the proxy can be configured to require authentication secret to forward the requests. Use the
+In modes 1, 2 and 3, the proxy can be configured to require authentication secret to forward the requests. Use the
 `AUTH_SECRET` environment variable to enable it.
 
 ### Bzz.link support
