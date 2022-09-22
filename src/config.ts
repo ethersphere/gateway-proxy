@@ -1,5 +1,3 @@
-import { logger } from './logger'
-
 export interface AppConfig {
   beeApiUrl: string
   authorization?: string
@@ -81,7 +79,6 @@ export const DEFAULT_PORT = 3000
 export const DEFAULT_POSTAGE_USAGE_THRESHOLD = 0.7
 export const DEFAULT_POSTAGE_USAGE_MAX = 0.9
 export const DEFAULT_POSTAGE_REFRESH_PERIOD = 60_000
-export const DEFAULT_POSTAGE_TTL_MINIMUM = 3600
 export const DEFAULT_LOG_LEVEL = 'info'
 
 export const logLevel =
@@ -105,16 +102,6 @@ export function getAppConfig({
     ensSubdomains: ENS_SUBDOMAINS === 'true',
     removePinHeader: REMOVE_PIN_HEADER ? REMOVE_PIN_HEADER === 'true' : true,
   }
-}
-
-export function calculateMinTTL(POSTAGE_TTL_MIN: number | undefined): number {
-  if (Number(POSTAGE_TTL_MIN) >= DEFAULT_POSTAGE_TTL_MINIMUM) {
-    return Number(POSTAGE_TTL_MIN)
-  }
-  logger.warn(`To extend postage stamps, POSTAGE_TTL_MIN needs to be at least ${DEFAULT_POSTAGE_TTL_MINIMUM} seconds.`)
-  logger.warn(`ttlMin setting is being increase to this value automatically.`)
-
-  return DEFAULT_POSTAGE_TTL_MINIMUM
 }
 
 export function getServerConfig({ PORT, HOSTNAME }: EnvironmentVariables = {}): ServerConfig {
@@ -148,19 +135,23 @@ export function getStampsConfig({
       ttlMin: Number(POSTAGE_TTL_MIN || (refreshPeriod / 1000) * 5),
       refreshPeriod,
     }
-  } else if (POSTAGE_EXTENDSTTL && POSTAGE_EXTENDSTTL === 'true' && POSTAGE_AMOUNT && POSTAGE_DEPTH) {
+  } else if (POSTAGE_EXTENDSTTL === 'true' && POSTAGE_AMOUNT && POSTAGE_DEPTH && Number(POSTAGE_TTL_MIN) >= 60) {
     return {
       mode: 'extendsTTL',
       depth: Number(POSTAGE_DEPTH),
-      ttlMin: calculateMinTTL(Number(POSTAGE_TTL_MIN)),
+      ttlMin: Number(POSTAGE_TTL_MIN),
       beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL,
       amount: POSTAGE_AMOUNT,
       refreshPeriod,
     }
   }
   // Missing one of the variables needed for the autobuy or extends TTL
-  else if (POSTAGE_DEPTH || POSTAGE_AMOUNT || BEE_DEBUG_API_URL) {
-    throw new Error('config: please provide POSTAGE_DEPTH, POSTAGE_AMOUNT or BEE_DEBUG_API_URL for the feature to work')
+  else if (POSTAGE_DEPTH || POSTAGE_AMOUNT || POSTAGE_TTL_MIN || BEE_DEBUG_API_URL) {
+    throw new Error(
+      `config: please provide POSTAGE_DEPTH=${POSTAGE_DEPTH}, POSTAGE_AMOUNT=${POSTAGE_AMOUNT}, POSTAGE_TTL_MIN=${POSTAGE_TTL_MIN} ${
+        POSTAGE_EXTENDSTTL === 'true' ? 'at least 60 seconds ' : ''
+      }or BEE_DEBUG_API_URL=${BEE_DEBUG_API_URL} for the feature to work`,
+    )
   }
 
   // Stamps rewrite is disabled

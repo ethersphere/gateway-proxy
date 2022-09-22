@@ -4,9 +4,10 @@ import type { Server } from 'http'
 
 import { SupportedLevels, logLevel, SUPPORTED_LEVELS } from './config'
 
-const supportedLevels: Record<SupportedLevels, number> | undefined = SUPPORTED_LEVELS
-  ? SUPPORTED_LEVELS.reduce((acc, cur, idx) => ({ ...acc, [cur]: idx }), {} as Record<SupportedLevels, number>)
-  : undefined
+const supportedLevels: Record<SupportedLevels, number> = SUPPORTED_LEVELS.reduce(
+  (acc, cur, idx) => ({ ...acc, [cur]: idx }),
+  {} as Record<SupportedLevels, number>,
+)
 
 export const logger: Logger = createLogger({
   // To see more detailed errors, change this to 'debug'
