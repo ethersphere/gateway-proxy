@@ -29,6 +29,7 @@ newer Bee versions is not recommended and may not work. Stay up to date by joini
     - [1. No postage stamp](#1-no-postage-stamp)
     - [2. Hardcoded postage stamp](#2-hardcoded-postage-stamp)
     - [3. Autobuy postage stamps](#3-autobuy-postage-stamps)
+    - [4. Extends stamps TTL](#4-extends-stamps-ttl)
     - [Enable authentication](#enable-authentication)
   - [Environment variables](#environment-variables)
   - [Curl](#curl)
@@ -52,8 +53,11 @@ The proxy can manage postage stamps for you in 3 modes of operation:
 3. It can add/replace the request postage stamp with an auto-bought stamp or existing stamp that fulfils the amount,
    depth and is not too full or about to expire. To enable this, provide at minimum `POSTAGE_DEPTH`, `POSTAGE_AMOUNT`
    and `BEE_DEBUG_API_URL`.
+4. It can extend the TTL of a stamp that is about to expire. To enable this, set `POSTAGE_EXTENDSTTL=true`,
+   provide `POSTAGE_AMOUNT`, `POSTAGE_DEPTH` with the desired amount to use and `POSTAGE_TTL_MIN` above with
+   a number above or equal to 60.
 
-In all 3 modes, the proxy can be configured to require authentication secret to forward the requests. Use the
+In modes 1, 2 and 3, the proxy can be configured to require authentication secret to forward the requests. Use the
 `AUTH_SECRET` environment variable to enable it.
 
 ### Bzz.link support
@@ -91,6 +95,18 @@ export BEE_DEBUG_API_URL=http://localhost:1635
 npm run start
 ```
 
+#### 4. Extends stamps TTL
+
+```sh
+export POSTAGE_EXTENDSTTL=true
+export POSTAGE_TTL_MIN=60
+export POSTAGE_DEPTH=20
+export POSTAGE_AMOUNT=1000000
+export BEE_DEBUG_API_URL=http://localhost:1635
+
+npm run start
+```
+
 #### Enable authentication
 
 ```sh
@@ -113,12 +129,13 @@ npm run start
 | POSTAGE_AMOUNT          | undefined                   | Postage stamp amount to be used when buying new stamps or selecting existing stamps.                       |
 | POSTAGE_USAGE_THRESHOLD | 0.7                         | Usage percentage at which new postage stamp will be bought (value between 0 and 1).                        |
 | POSTAGE_USAGE_MAX       | 0.9                         | Usage percentage at which existing postage stamp should not be considered viable ( values 0 to 1).         |
-| POSTAGE_TTL_MIN         | 5 \* POSTAGE_REFRESH_PERIOD | Minimal time to live for the postage stamps to still be considered for upload (in seconds).                |
+| POSTAGE_TTL_MIN         | `autoplay`: 5 \* POSTAGE_REFRESH_PERIOD. `extends TTL` undefined | In `autobuy`, Minimal time to live for the postage stamps to still be considered for upload (in seconds). In `extends TTL` is mandatory and required to be above 60 seconds  |
 | POSTAGE_REFRESH_PERIOD  | 60                          | How frequently are the postage stamps checked in seconds.                                                  |
 | CID_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for CIDs.                                             |
 | ENS_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for ENS.                                              |
 | REMOVE_PIN_HEADER       | true                        | Removes swarm-pin header on all proxy requests.                                                            |
 | `LOG_LEVEL`             | info                        | Log level that is outputted (values: `critical`, `error`, `warn`, `info`, `verbose`, `debug`)              |
+| POSTAGE_EXTENDSTTL      | false                       | Enables extends TTL feature. Works along with POSTAGE_AMOUNT                                               |
 
 ### Curl
 
@@ -148,22 +165,22 @@ curl \
 
 ## API
 
-| Endpoint                    | Response code     | Response text                                                                                                           |
-| --------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `GET /health`               | `200`             | `OK`                                                                                                                    |
-|                             | `403`             | `Forbidden`                                                                                                             |
-| `GET /readiness`            | `200`             | `OK`                                                                                                                    |
-|                             | `403`             | `Forbidden`                                                                                                             |
-|                             | `502`             | `Bad Gateway` when can not connect to Bee node                                                                          |
-| `GET /bzz/:swarmhash`       | `200`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/BZZ/paths/~1bzz~1{reference}/get)                   |
-| `POST /bzz`                 | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/BZZ/paths/~1bzz/post)                               |
-| `GET /bytes/:swarmhash`     | `200`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Bytes/paths/~1bytes~1{reference}/get)               |
-| `POST /bytes`               | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Bytes/paths/~1bytes/post)                           |
-| `GET /chunks/:swarmhash`    | `200`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Chunk/paths/~1chunks~1{reference}/get)              |
-| `POST /chunks`              | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Chunk/paths/~1chunks/post)                          |
-| `POST /soc/:owner/:id`      | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Single-owner-chunk/paths/~1soc~1{owner}~1{id}/post) |
-| `GET /feeds/:owner/:topic`  | `200`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Feed/paths/~1feeds~1{owner}~1{topic}/get)           |
-| `POST /feeds/:owner/:topic` | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Feed/paths/~1feeds~1{owner}~1{topic}/post)          |
+| Endpoint                           | Response code     | Response text                                                                                                           |
+| ---------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `GET /health`                      | `200`             | `OK`                                                                                                                    |
+|                                    | `403`             | `Forbidden`                                                                                                             |
+| `GET /readiness`                   | `200`             | `OK`                                                                                                                    |
+|                                    | `403`             | `Forbidden`                                                                                                             |
+|                                    | `502`             | `Bad Gateway` when can not connect to Bee node                                                                          |
+| `GET /bzz/:swarmhash`              | `200`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/BZZ/paths/~1bzz~1{reference}/get)                   |
+| `POST /bzz`                        | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/BZZ/paths/~1bzz/post)                               |
+| `GET /bytes/:swarmhash`            | `200`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Bytes/paths/~1bytes~1{reference}/get)               |
+| `POST /bytes`                      | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Bytes/paths/~1bytes/post)                           |
+| `GET /chunks/:swarmhash`           | `200`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Chunk/paths/~1chunks~1{reference}/get)              |
+| `POST /chunks`                     | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Chunk/paths/~1chunks/post)                          |
+| `POST /soc/:owner/:id`             | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Single-owner-chunk/paths/~1soc~1{owner}~1{id}/post) |
+| `GET /feeds/:owner/:topic`         | `200`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Feed/paths/~1feeds~1{owner}~1{topic}/get)           |
+| `POST /feeds/:owner/:topic`        | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Feed/paths/~1feeds~1{owner}~1{topic}/post)          |
 
 
 ## Contribute
