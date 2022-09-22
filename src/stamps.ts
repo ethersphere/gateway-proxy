@@ -97,7 +97,7 @@ export function filterUsableStampsAutobuy(
  * Filter the stamps and only return those that are usable and sort by from closer to farer expire TTL
  *
  * @param stamps Postage stamps to be filtered
- *π
+ *
  * @returns Filtered stamps soltered by usage
  */
 export function filterUsableStampsExtends(stamps: PostageBatch[]): PostageBatch[] {
@@ -150,7 +150,6 @@ export async function topUpStamp(beeDebug: BeeDebug, postageBatchId: string, amo
 
 export class StampsManager {
   private stamp?: string
-  private refreshStamps?: () => Promise<void>
   private usableStamps?: PostageBatch[]
   private interval?: ReturnType<typeof setInterval>
   private isBuyingStamp?: boolean = false
@@ -309,15 +308,17 @@ export class StampsManager {
     if (config.mode === 'hardcoded') this.stamp = config.stamp
     // Autobuy or ExtendsTTL mode
     else {
+      let refreshStamps: () => Promise<void>
+
       if (config.mode === 'autobuy') {
-        this.refreshStamps = async () => this.refreshStampsAutobuy(config, new BeeDebug(config.beeDebugApiUrl))
+        refreshStamps = async () => this.refreshStampsAutobuy(config, new BeeDebug(config.beeDebugApiUrl))
       } else {
-        this.refreshStamps = async () => this.refreshStampsExtends(config, new BeeDebug(config.beeDebugApiUrl))
+        refreshStamps = async () => this.refreshStampsExtends(config, new BeeDebug(config.beeDebugApiUrl))
       }
       this.stop()
-      await this.refreshStamps()
+      await refreshStamps()
 
-      this.interval = setInterval(this.refreshStamps, config.refreshPeriod)
+      this.interval = setInterval(refreshStamps, config.refreshPeriod)
     }
   }
 

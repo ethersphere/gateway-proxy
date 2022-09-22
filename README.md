@@ -129,7 +129,7 @@ npm run start
 | POSTAGE_AMOUNT          | undefined                   | Postage stamp amount to be used when buying new stamps or selecting existing stamps.                       |
 | POSTAGE_USAGE_THRESHOLD | 0.7                         | Usage percentage at which new postage stamp will be bought (value between 0 and 1).                        |
 | POSTAGE_USAGE_MAX       | 0.9                         | Usage percentage at which existing postage stamp should not be considered viable ( values 0 to 1).         |
-| POSTAGE_TTL_MIN         | 5 \* POSTAGE_REFRESH_PERIOD | In `autobuy`, Minimal time to live for the postage stamps to still be considered for upload (in seconds). In `extends TTL` is mandatory and above 60 seconds  |
+| POSTAGE_TTL_MIN         | `autoplay`: 5 \* POSTAGE_REFRESH_PERIOD. `extends TTL` undefined | In `autobuy`, Minimal time to live for the postage stamps to still be considered for upload (in seconds). In `extends TTL` is mandatory and required to be above 60 seconds  |
 | POSTAGE_REFRESH_PERIOD  | 60                          | How frequently are the postage stamps checked in seconds.                                                  |
 | CID_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for CIDs.                                             |
 | ENS_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for ENS.                                              |
@@ -181,7 +181,6 @@ curl \
 | `POST /soc/:owner/:id`             | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Single-owner-chunk/paths/~1soc~1{owner}~1{id}/post) |
 | `GET /feeds/:owner/:topic`         | `200`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Feed/paths/~1feeds~1{owner}~1{topic}/get)           |
 | `POST /feeds/:owner/:topic`        | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Feed/paths/~1feeds~1{owner}~1{topic}/post)          |
-| `PATCH /stamps/topup/:id/:amount`  | `202`, `400`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Postage-Stamps/paths/~1stamps~1topup~1{id}~1{amount}/patch)          |
 
 
 ## Contribute

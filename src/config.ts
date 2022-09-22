@@ -80,6 +80,7 @@ export const DEFAULT_POSTAGE_USAGE_THRESHOLD = 0.7
 export const DEFAULT_POSTAGE_USAGE_MAX = 0.9
 export const DEFAULT_POSTAGE_REFRESH_PERIOD = 60_000
 export const DEFAULT_LOG_LEVEL = 'info'
+export const MINIMAL_EXTENDS_TTL_VALUE = 60
 
 export const logLevel =
   process.env.LOG_LEVEL && SUPPORTED_LEVELS.includes(process.env.LOG_LEVEL as SupportedLevels)
@@ -135,7 +136,12 @@ export function getStampsConfig({
       ttlMin: Number(POSTAGE_TTL_MIN || (refreshPeriod / 1000) * 5),
       refreshPeriod,
     }
-  } else if (POSTAGE_EXTENDSTTL === 'true' && POSTAGE_AMOUNT && POSTAGE_DEPTH && Number(POSTAGE_TTL_MIN) >= 60) {
+  } else if (
+    POSTAGE_EXTENDSTTL === 'true' &&
+    POSTAGE_AMOUNT &&
+    POSTAGE_DEPTH &&
+    Number(POSTAGE_TTL_MIN) >= MINIMAL_EXTENDS_TTL_VALUE
+  ) {
     return {
       mode: 'extendsTTL',
       depth: Number(POSTAGE_DEPTH),
