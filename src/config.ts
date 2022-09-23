@@ -27,22 +27,7 @@ export interface StampsConfigExtends {
   beeDebugApiUrl: string
 }
 
-export interface StampsConfigReupload {
-  mode: 'reupload'
-  beeDebugApiUrl: string
-  refreshPeriod: number
-}
-
-export interface StampsConfigExtends {
-  mode: 'extendsTTL'
-  ttlMin: number
-  depth: number
-  amount: string
-  refreshPeriod: number
-  beeDebugApiUrl: string
-}
-
-export interface StampsConfigReupload {
+export interface ContentsConfigReupload {
   mode: 'reupload'
   beeDebugApiUrl: string
   refreshPeriod: number
@@ -59,7 +44,9 @@ export interface StampsConfigAutobuy {
   refreshPeriod: number
 }
 
-export type StampsConfig = StampsConfigHardcoded | StampsConfigAutobuy | StampsConfigExtends | StampsConfigReupload
+export type StampsConfig = StampsConfigHardcoded | StampsConfigAutobuy | StampsConfigExtends
+
+export type ContentsConfig = ContentsConfigReupload
 
 export type EnvironmentVariables = Partial<{
   // Logging
@@ -102,7 +89,7 @@ export type SupportedLevels = typeof SUPPORTED_LEVELS[number]
 export const DEFAULT_BEE_API_URL = 'http://localhost:1633'
 export const DEFAULT_BEE_DEBUG_API_URL = 'http://localhost:1635'
 export const DEFAULT_HOSTNAME = 'localhost'
-export const DEFAULT_PORT = 3001
+export const DEFAULT_PORT = 3000
 export const DEFAULT_POSTAGE_USAGE_THRESHOLD = 0.7
 export const DEFAULT_POSTAGE_USAGE_MAX = 0.9
 export const DEFAULT_POSTAGE_REFRESH_PERIOD = 60_000
@@ -209,22 +196,26 @@ export function validateConfigMode(
       refreshPeriod,
       beeDebugApiUrl,
     }
-  } else if (REUPLOAD_PERIOD) {
-    return {
-      mode: 'reupload',
-      beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_API_URL,
-      refreshPeriod: Number(REUPLOAD_PERIOD),
-    }
   }
   // Missing one of the variables needed for the autobuy or extends TTL
   else if (POSTAGE_DEPTH || POSTAGE_AMOUNT || POSTAGE_TTL_MIN || BEE_DEBUG_API_URL) {
     throw new Error(
       `config: please provide POSTAGE_DEPTH=${POSTAGE_DEPTH}, POSTAGE_AMOUNT=${POSTAGE_AMOUNT}, POSTAGE_TTL_MIN=${POSTAGE_TTL_MIN} ${
-        POSTAGE_EXTENDSTTL === 'true' ? 'at least 60 seconds ' : ''
-      }or BEE_DEBUG_API_URL=${BEE_DEBUG_API_URL} for the feature to work`,
+        POSTAGE_EXTENDSTTL === 'true' ? 'at least 60 seconds' : ''
+      } or BEE_DEBUG_API_URL=${BEE_DEBUG_API_URL} for the feature to work`,
     )
   }
 
   // Stamps rewrite is disabled
   return undefined
+}
+
+export function getContentsConfig({ BEE_DEBUG_API_URL, REUPLOAD_PERIOD }: EnvironmentVariables = {}):
+  | ContentsConfig
+  | undefined {
+  return {
+    mode: 'reupload',
+    beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_API_URL,
+    refreshPeriod: Number(REUPLOAD_PERIOD),
+  }
 }

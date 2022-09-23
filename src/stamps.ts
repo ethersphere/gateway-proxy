@@ -1,6 +1,6 @@
 import { BeeDebug, PostageBatch, BatchId, Bee } from '@ethersphere/bee-js'
 import client from 'prom-client'
-import type { StampsConfig, StampsConfigAutobuy, StampsConfigExtends, StampsConfigReupload } from './config'
+import type { StampsConfig, StampsConfigAutobuy, StampsConfigExtends } from './config'
 import { logger } from './logger'
 import { register } from './metrics'
 
@@ -284,7 +284,7 @@ export class StampsManager {
   async verifyUsableStamps(
     beeDebug: BeeDebug,
     ttlMin: number,
-    config: StampsConfigAutobuy | StampsConfigExtends | StampsConfigReupload,
+    config: StampsConfigAutobuy | StampsConfigExtends,
     amount: string,
   ) {
     for (let i = 0; i < this.usableStamps!.length; i++) {
@@ -334,10 +334,8 @@ export class StampsManager {
 
       if (config.mode === 'autobuy') {
         refreshStamps = async () => this.refreshStampsAutobuy(config, new BeeDebug(config.beeDebugApiUrl))
-      } else if (config.mode === 'extendsTTL') {
-        refreshStamps = async () => this.refreshStampsExtends(config, new BeeDebug(config.beeDebugApiUrl))
       } else {
-        refreshStamps = async () => this.refreshStampsReupload(new Bee(config.beeDebugApiUrl))
+        refreshStamps = async () => this.refreshStampsExtends(config, new BeeDebug(config.beeDebugApiUrl))
       }
       this.stop()
       await refreshStamps()
