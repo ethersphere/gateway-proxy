@@ -197,8 +197,6 @@ curl \
 | `POST /soc/:owner/:id`      | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Single-owner-chunk/paths/~1soc~1{owner}~1{id}/post) |
 | `GET /feeds/:owner/:topic`  | `200`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Feed/paths/~1feeds~1{owner}~1{topic}/get)           |
 | `POST /feeds/:owner/:topic` | `201`, `403`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Feed/paths/~1feeds~1{owner}~1{topic}/post)          |
-| `PUT /pins`                 | `200`, `400`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Pinning/paths/~1pins/get)          |
-| `PUT /stewardship/:id`      | `200`, `400`, ... | See official [bee documentation](https://docs.ethswarm.org/api/#tag/Stewardship/paths/~1stewardship~1{reference}/put)          |
 
 ## Contribute
 
