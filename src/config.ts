@@ -73,6 +73,7 @@ export type EnvironmentVariables = Partial<{
 export const SUPPORTED_LEVELS = ['critical', 'error', 'warn', 'info', 'verbose', 'debug'] as const
 export type SupportedLevels = typeof SUPPORTED_LEVELS[number]
 
+export const DEFAULT_BEE_API_URL = 'http://localhost:1633'
 export const DEFAULT_BEE_DEBUG_API_URL = 'http://localhost:1635'
 export const DEFAULT_HOSTNAME = 'localhost'
 export const DEFAULT_PORT = 3000
@@ -97,7 +98,7 @@ export function getAppConfig({
 }: EnvironmentVariables = {}): AppConfig {
   return {
     hostname: HOSTNAME || DEFAULT_HOSTNAME,
-    beeApiUrl: BEE_API_URL || DEFAULT_BEE_DEBUG_API_URL,
+    beeApiUrl: BEE_API_URL || DEFAULT_BEE_API_URL,
     authorization: AUTH_SECRET,
     cidSubdomains: CID_SUBDOMAINS === 'true',
     ensSubdomains: ENS_SUBDOMAINS === 'true',
