@@ -112,8 +112,7 @@ npm run start
 #### 5. Reupload pinned content (Live Bee API)
 
 ```sh
-export REUPLOAD_PERIOD=20000
-export BEE_DEBUG_API_URL=http://localhost:1633
+export REUPLOAD_PERIOD=30000
 
 npm run start
 ```
