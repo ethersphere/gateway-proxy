@@ -5,6 +5,8 @@ import { logger } from './logger'
 let interval: NodeJS.Timer | null
 let identity = 'unknown'
 
+export const HASHED_IDENTITY_HEADER = 'X-Bee-Node'
+
 /**
  * Identity is not available during Bee's booting,
  * so we retry the call until we receive proper identity and then stop the retries.
@@ -13,21 +15,22 @@ export function getHashedIdentity(): string {
   return identity
 }
 
-export function fetchBeeIdentity(frequencyMs = 15_000) {
-  if (process.env.BEE_DEBUG_API_URL) {
-    logger.info(`fetching bee identity with frequency ${frequencyMs}ms`)
-    interval = setInterval(attemptFetchingBeeIdentity, frequencyMs)
+export async function fetchBeeIdentity(beeDebug: BeeDebug, frequencyMs = 15_000) {
+  logger.info(`fetching bee identity with frequency ${frequencyMs}ms`)
+
+  if (!(await attemptFetchingBeeIdentity(beeDebug))) {
+    interval = setInterval(async () => attemptFetchingBeeIdentity(beeDebug), frequencyMs)
   }
 }
 
-async function attemptFetchingBeeIdentity() {
-  const url = process.env.BEE_DEBUG_API_URL as string
-  const beeDebug = new BeeDebug(url)
+async function attemptFetchingBeeIdentity(beeDebug: BeeDebug) {
   try {
     const { overlay } = await beeDebug.getNodeAddresses()
     identity = mapAddress(overlay)
     logger.info('bee debug overlay', { overlay, identity })
     clearInterval(interval as NodeJS.Timer)
+
+    return true
   } catch (e) {
     logger.error('failed to fetch identity', e)
   }

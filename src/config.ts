@@ -1,10 +1,12 @@
 export interface AppConfig {
   beeApiUrl: string
+  beeDebugApiUrl?: string
   authorization?: string
   hostname?: string
   cidSubdomains?: boolean
   ensSubdomains?: boolean
   removePinHeader?: boolean
+  exposeHashedIdentity?: boolean
 }
 
 export interface ServerConfig {
@@ -51,6 +53,9 @@ export type EnvironmentVariables = Partial<{
   PORT: string
   HOSTNAME: string
 
+  // Identity
+  EXPOSE_HASHED_IDENTITY: string
+
   // CID subdomain support
   CID_SUBDOMAINS: string
   ENS_SUBDOMAINS: string
@@ -90,19 +95,23 @@ export const logLevel =
 
 export function getAppConfig({
   BEE_API_URL,
+  BEE_DEBUG_API_URL,
   AUTH_SECRET,
   CID_SUBDOMAINS,
   ENS_SUBDOMAINS,
   HOSTNAME,
   REMOVE_PIN_HEADER,
+  EXPOSE_HASHED_IDENTITY,
 }: EnvironmentVariables = {}): AppConfig {
   return {
     hostname: HOSTNAME || DEFAULT_HOSTNAME,
     beeApiUrl: BEE_API_URL || DEFAULT_BEE_API_URL,
+    beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL,
     authorization: AUTH_SECRET,
     cidSubdomains: CID_SUBDOMAINS === 'true',
     ensSubdomains: ENS_SUBDOMAINS === 'true',
     removePinHeader: REMOVE_PIN_HEADER ? REMOVE_PIN_HEADER === 'true' : true,
+    exposeHashedIdentity: EXPOSE_HASHED_IDENTITY === 'true',
   }
 }
 
