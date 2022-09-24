@@ -201,8 +201,8 @@ export function validateConfigMode(
   else if (POSTAGE_DEPTH || POSTAGE_AMOUNT || POSTAGE_TTL_MIN || BEE_DEBUG_API_URL) {
     throw new Error(
       `config: please provide POSTAGE_DEPTH=${POSTAGE_DEPTH}, POSTAGE_AMOUNT=${POSTAGE_AMOUNT}, POSTAGE_TTL_MIN=${POSTAGE_TTL_MIN} ${
-        POSTAGE_EXTENDSTTL === 'true' ? 'at least 60 seconds' : ''
-      } or BEE_DEBUG_API_URL=${BEE_DEBUG_API_URL} for the feature to work`,
+        POSTAGE_EXTENDSTTL === 'true' ? 'at least 60 seconds ' : ''
+      }or BEE_DEBUG_API_URL=${BEE_DEBUG_API_URL} for the feature to work`,
     )
   }
 
