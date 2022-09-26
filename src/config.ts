@@ -122,6 +122,7 @@ export function getStampsConfig({
   POSTAGE_EXTENDSTTL,
 }: EnvironmentVariables = {}): StampsConfig | undefined {
   const refreshPeriod = Number(POSTAGE_REFRESH_PERIOD || DEFAULT_POSTAGE_REFRESH_PERIOD)
+  const beeDebugApiUrl = BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL
 
   // Start in hardcoded mode
   if (POSTAGE_STAMP) return { mode: 'hardcoded', stamp: POSTAGE_STAMP }
@@ -131,11 +132,11 @@ export function getStampsConfig({
       mode: 'autobuy',
       depth: Number(POSTAGE_DEPTH),
       amount: POSTAGE_AMOUNT,
-      beeDebugApiUrl: BEE_DEBUG_API_URL,
       usageThreshold: Number(POSTAGE_USAGE_THRESHOLD || DEFAULT_POSTAGE_USAGE_THRESHOLD),
       usageMax: Number(POSTAGE_USAGE_MAX || DEFAULT_POSTAGE_USAGE_MAX),
       ttlMin: Number(POSTAGE_TTL_MIN || (refreshPeriod / 1000) * 5),
       refreshPeriod,
+      beeDebugApiUrl,
     }
   } else if (
     POSTAGE_EXTENDSTTL === 'true' &&
@@ -147,9 +148,9 @@ export function getStampsConfig({
       mode: 'extendsTTL',
       depth: Number(POSTAGE_DEPTH),
       ttlMin: Number(POSTAGE_TTL_MIN),
-      beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL,
       amount: POSTAGE_AMOUNT,
       refreshPeriod,
+      beeDebugApiUrl,
     }
   }
   // Missing one of the variables needed for the autobuy or extends TTL
