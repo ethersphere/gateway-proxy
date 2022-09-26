@@ -184,26 +184,6 @@ export class StampsManager {
     throw new Error('No postage stamp')
   }
 
-  public async refreshStampsReupload(beeApi: Bee): Promise<void> {
-    const pins = await beeApi.getAllPins()
-
-    if (!pins.length) {
-      logger.info(`no pins found`)
-    } else {
-      logger.info(`checking pinned content (${pins.length} pins)`)
-      pins.forEach(async pin => {
-        const isRetrievable = await beeApi.isReferenceRetrievable(pin)
-
-        if (!isRetrievable && !this.isReuploading) {
-          this.isReuploading = true
-          await beeApi.reuploadPinnedData(pin)
-          this.isReuploading = false
-          logger.info(`pinned content reuploaded: ${pin}`)
-        }
-      })
-    }
-  }
-
   /**
    * Refresh stamps from the bee node and if needed buy new stamp
    *

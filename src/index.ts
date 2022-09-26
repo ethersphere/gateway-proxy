@@ -19,6 +19,13 @@ async function main() {
 
   let app: Application
 
+  if (contentsConfig) {
+    logger.debug('contents config', contentsConfig)
+    const contentsManager = new ContentsManager()
+    logger.info('starting postage content manager')
+    await contentsManager.start(contentsConfig)
+  }
+
   if (stampsConfig) {
     logger.debug('stamps config', stampsConfig)
     const stampManager = new StampsManager()
@@ -26,13 +33,6 @@ async function main() {
     await stampManager.start(stampsConfig)
     logger.info('starting the proxy')
     app = createApp(appConfig, stampManager)
-  } else if (contentsConfig) {
-    logger.debug('contents config', contentsConfig)
-    const contentsManager = new ContentsManager()
-    logger.info('starting postage stamp manager')
-    await contentsManager.start(contentsConfig)
-    logger.info('starting the proxy')
-    app = createApp(appConfig)
   } else {
     logger.info('starting the app without postage stamps management')
     app = createApp(appConfig)
