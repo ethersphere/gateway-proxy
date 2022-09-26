@@ -10,12 +10,13 @@ import {
   getStampsConfig,
   EnvironmentVariables,
   StampsConfig,
+  DEFAULT_BEE_API_URL,
 } from '../src/config'
 
 describe('getAppConfig', () => {
   it('should return default values', () => {
     const config = getAppConfig()
-    expect(config.beeApiUrl).toEqual(DEFAULT_BEE_DEBUG_API_URL)
+    expect(config.beeApiUrl).toEqual(DEFAULT_BEE_API_URL)
     expect(config.authorization).toBeUndefined()
   })
 
