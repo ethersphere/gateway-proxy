@@ -37,19 +37,10 @@ export const createApp = (
     target: beeApiUrl,
     changeOrigin: true,
     logProvider: () => logger,
-    onProxyRes: res => {
-      if (exposeHashedIdentity) {
-        res.headers['X-Bee-Node'] = getHashedIdentity()
-      }
-    },
   }
 
   const bee = new Bee(beeApiUrl)
   const beeDebug = new BeeDebug(beeDebugApiUrl)
-
-  if (exposeHashedIdentity) {
-    fetchBeeIdentity(beeDebug)
-  }
 
   // Create Express Server
   const app = express()
@@ -116,15 +107,12 @@ export const createApp = (
   })
 
   // Health endpoint
-  app.get('/health', (_req, res) => res.set('X-Bee-Node', getHashedIdentity()).send('OK'))
+  app.get('/health', (_req, res) => res.send('OK'))
 
   // Readiness endpoint
   app.get('/readiness', async (_req, res) => {
     const ready = await checkReadiness(bee, beeDebug, stampManager)
-    res
-      .status(ready ? 200 : 502)
-      .set('X-Bee-Node', getHashedIdentity())
-      .end(ready ? 'OK' : 'Bad Gateway')
+    res.status(ready ? 200 : 502).end(ready ? 'OK' : 'Bad Gateway')
   })
 
   // Download file/collection/chunk proxy
