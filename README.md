@@ -120,7 +120,7 @@ npm run start
 | Name                    | Default Value               | Description                                                                                                |
 | ----------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | BEE_API_URL             | http://localhost:1633       | URL of the Bee node API                                                                                    |
-| BEE_DEBUG_API_URL       | undefined                   | URL of the Bee node Debug API. Only used and required when postage stamps autobuy is enabled.              |
+| BEE_DEBUG_API_URL       | http://localhost:1635       | URL of the Bee node Debug API. Required for postage stamps autobuy and hashed identity header.             |
 | AUTH_SECRET             | undefined                   | Authentication secret, disabled if not set (this secret is checked in the request header `authorization`). |
 | HOSTNAME                | localhost                   | Hostname of the proxy. Required for Bzz.link support.                                                      |
 | PORT                    | 3000                        | Port of the proxy.                                                                                         |
@@ -136,6 +136,7 @@ npm run start
 | REMOVE_PIN_HEADER       | true                        | Removes swarm-pin header on all proxy requests.                                                            |
 | `LOG_LEVEL`             | info                        | Log level that is outputted (values: `critical`, `error`, `warn`, `info`, `verbose`, `debug`)              |
 | POSTAGE_EXTENDSTTL      | false                       | Enables extends TTL feature. Works along with POSTAGE_AMOUNT                                               |
+| EXPOSE_HASHED_IDENTITY  | false                       | Exposes `x-bee-node` header, which is the hashed identity of the Bee node for identification purposes      |
 
 ### Curl
 

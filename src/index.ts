@@ -5,14 +5,12 @@ import { createApp } from './server'
 import { StampsManager } from './stamps'
 import { getAppConfig, getServerConfig, getStampsConfig, EnvironmentVariables } from './config'
 import { logger, subscribeLogServerRequests } from './logger'
-import { fetchBeeIdentity } from './identity'
 
 async function main() {
   // Configuration
   const stampConfig = getStampsConfig(process.env as EnvironmentVariables)
   const appConfig = getAppConfig(process.env as EnvironmentVariables)
   const { hostname, port } = getServerConfig(process.env as EnvironmentVariables)
-  fetchBeeIdentity()
 
   logger.debug('proxy config', appConfig)
   logger.debug('server config', { hostname: hostname, port })

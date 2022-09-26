@@ -1,8 +1,9 @@
+import { BeeDebug } from '@ethersphere/bee-js'
 import express, { Application } from 'express'
 import { createProxyMiddleware, Options } from 'http-proxy-middleware'
-import { AppConfig, DEFAULT_HOSTNAME } from './config'
 import * as bzzLink from './bzz-link'
-import { getHashedIdentity } from './identity'
+import { AppConfig, DEFAULT_HOSTNAME } from './config'
+import { fetchBeeIdentity, getHashedIdentity, HASHED_IDENTITY_HEADER } from './identity'
 import { logger } from './logger'
 import { register } from './metrics'
 import type { StampsManager } from './stamps'
@@ -19,20 +20,39 @@ export const GET_PROXY_ENDPOINTS = [
 export const POST_PROXY_ENDPOINTS = ['/bzz', '/bytes', '/chunks', '/feeds/:owner/:topic', '/soc/:owner/:id']
 
 export const createApp = (
-  { hostname, beeApiUrl, authorization, cidSubdomains, ensSubdomains, removePinHeader }: AppConfig,
+  {
+    hostname,
+    beeApiUrl,
+    beeDebugApiUrl,
+    authorization,
+    cidSubdomains,
+    ensSubdomains,
+    removePinHeader,
+    exposeHashedIdentity,
+  }: AppConfig,
   stampManager: StampsManager | undefined = undefined,
 ): Application => {
   const commonOptions: Options = {
     target: beeApiUrl,
     changeOrigin: true,
     logProvider: () => logger,
-    onProxyRes: res => {
-      res.headers['X-Bee-Node'] = getHashedIdentity()
-    },
   }
 
   // Create Express Server
   const app = express()
+
+  // Register hashed identity
+  if (exposeHashedIdentity) {
+    if (!beeDebugApiUrl) {
+      throw Error('BEE_DEBUG_API_URL is not set, but EXPOSE_HASHED_IDENTITY is set to true')
+    }
+    const beeDebug = new BeeDebug(beeDebugApiUrl)
+    fetchBeeIdentity(beeDebug)
+    app.use((_, res, next) => {
+      res.set(HASHED_IDENTITY_HEADER, getHashedIdentity())
+      next()
+    })
+  }
 
   if (hostname) {
     const subdomainOffset = hostname.split('.').length
