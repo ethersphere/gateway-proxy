@@ -36,23 +36,23 @@ export const createApp = (
     target: beeApiUrl,
     changeOrigin: true,
     logProvider: () => logger,
-    onProxyRes: res => {
-      if (exposeHashedIdentity) {
-        res.headers[HASHED_IDENTITY_HEADER] = getHashedIdentity()
-      }
-    },
   }
 
+  // Create Express Server
+  const app = express()
+
+  // Register hashed identity
   if (exposeHashedIdentity) {
     if (!beeDebugApiUrl) {
       throw Error('BEE_DEBUG_API_URL is not set, but EXPOSE_HASHED_IDENTITY is set to true')
     }
     const beeDebug = new BeeDebug(beeDebugApiUrl)
     fetchBeeIdentity(beeDebug)
+    app.use((_, res, next) => {
+      res.set(HASHED_IDENTITY_HEADER, getHashedIdentity())
+      next()
+    })
   }
-
-  // Create Express Server
-  const app = express()
 
   if (hostname) {
     const subdomainOffset = hostname.split('.').length
@@ -103,7 +103,7 @@ export const createApp = (
   })
 
   // Health endpoint
-  app.get('/health', (_req, res) => res.set(HASHED_IDENTITY_HEADER, getHashedIdentity()).send('OK'))
+  app.get('/health', (_req, res) => res.send('OK'))
 
   // Readiness endpoint
   app.get(
