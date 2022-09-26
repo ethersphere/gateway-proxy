@@ -1,4 +1,4 @@
-import { BeeDebug, PostageBatch, BatchId, Bee } from '@ethersphere/bee-js'
+import { BeeDebug, PostageBatch, BatchId } from '@ethersphere/bee-js'
 import client from 'prom-client'
 import type { StampsConfig, StampsConfigAutobuy, StampsConfigExtends } from './config'
 import { logger } from './logger'
