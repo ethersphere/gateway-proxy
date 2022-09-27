@@ -27,7 +27,7 @@ export interface StampsConfigExtends {
   beeDebugApiUrl: string
 }
 
-export interface ContentsConfigReupload {
+export interface ContentConfigReupload {
   beeDebugApiUrl: string
   refreshPeriod: number
 }
@@ -45,7 +45,7 @@ export interface StampsConfigAutobuy {
 
 export type StampsConfig = StampsConfigHardcoded | StampsConfigAutobuy | StampsConfigExtends
 
-export type ContentsConfig = ContentsConfigReupload
+export type ContentConfig = ContentConfigReupload
 
 export type EnvironmentVariables = Partial<{
   // Logging
@@ -182,8 +182,8 @@ export function getStampsConfig({
   return undefined
 }
 
-export function getContentsConfig({ BEE_DEBUG_API_URL, REUPLOAD_PERIOD }: EnvironmentVariables = {}):
-  | ContentsConfig
+export function getContentConfig({ BEE_DEBUG_API_URL, REUPLOAD_PERIOD }: EnvironmentVariables = {}):
+  | ContentConfig
   | undefined {
   return {
     beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_API_URL,

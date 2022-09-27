@@ -3,14 +3,14 @@ import { Application } from 'express'
 
 import { createApp } from './server'
 import { StampsManager } from './stamps'
-import { getAppConfig, getServerConfig, getStampsConfig, EnvironmentVariables, getContentsConfig } from './config'
+import { getAppConfig, getServerConfig, getStampsConfig, EnvironmentVariables, getContentConfig } from './config'
 import { logger, subscribeLogServerRequests } from './logger'
-import { ContentsManager } from './contents'
+import { ContentManager } from './content'
 
 async function main() {
   // Configuration
   const stampsConfig = getStampsConfig(process.env as EnvironmentVariables)
-  const contentsConfig = getContentsConfig(process.env as EnvironmentVariables)
+  const contentConfig = getContentConfig(process.env as EnvironmentVariables)
   const appConfig = getAppConfig(process.env as EnvironmentVariables)
   const { hostname, port } = getServerConfig(process.env as EnvironmentVariables)
 
@@ -19,11 +19,11 @@ async function main() {
 
   let app: Application
 
-  if (contentsConfig) {
-    logger.debug('contents config', contentsConfig)
-    const contentsManager = new ContentsManager()
+  if (contentConfig) {
+    logger.debug('content config', contentConfig)
+    const contentManager = new ContentManager()
     logger.info('starting postage content manager')
-    await contentsManager.start(contentsConfig)
+    await contentManager.start(contentConfig)
   }
 
   if (stampsConfig) {

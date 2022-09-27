@@ -150,7 +150,7 @@ npm run start
 | `LOG_LEVEL`             | info                        | Log level that is outputted (values: `critical`, `error`, `warn`, `info`, `verbose`, `debug`)              |
 | POSTAGE_EXTENDSTTL      | false                       | Enables extends TTL feature. Works along with POSTAGE_AMOUNT                                               |
 | EXPOSE_HASHED_IDENTITY  | false                       | Exposes `x-bee-node` header, which is the hashed identity of the Bee node for identification purposes      |
-| REUPLOAD_PERIOD         | undefined                   | How frequently are the pinned contents checked to be
+| REUPLOAD_PERIOD         | undefined                   | How frequently are the pinned content checked to be
 reupload.                                                            |
 
 ### Curl

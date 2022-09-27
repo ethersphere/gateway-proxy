@@ -1,6 +1,6 @@
 import { Bee } from '@ethersphere/bee-js'
 import client from 'prom-client'
-import type { ContentsConfig } from './config'
+import type { ContentConfig } from './config'
 import { logger } from './logger'
 import { register } from './metrics'
 
@@ -10,7 +10,7 @@ const contentReuploadCounter = new client.Counter({
 })
 register.registerMetric(contentReuploadCounter)
 
-export class ContentsManager {
+export class ContentManager {
   private interval?: ReturnType<typeof setInterval>
   private isReuploading?: boolean = false
   private counter = 0
@@ -41,12 +41,12 @@ export class ContentsManager {
   /**
    * Start the manager to upload pinned content
    */
-  async start(config: ContentsConfig): Promise<void> {
-    const refreshContents = async () => this.refreshContentReupload(new Bee(config.beeDebugApiUrl))
+  async start(config: ContentConfig): Promise<void> {
+    const refreshContent = async () => this.refreshContentReupload(new Bee(config.beeDebugApiUrl))
     this.stop()
-    await refreshContents()
+    await refreshContent()
 
-    this.interval = setInterval(refreshContents, config.refreshPeriod)
+    this.interval = setInterval(refreshContent, config.refreshPeriod)
   }
 
   stop(): void {
