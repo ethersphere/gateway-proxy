@@ -112,7 +112,12 @@ export const createApp = (
   // Readiness endpoint
   app.get('/readiness', async (_req, res) => {
     const ready = await checkReadiness(bee, beeDebug, stampManager)
-    res.status(ready ? 200 : 502).end(ready ? 'OK' : 'Bad Gateway')
+
+    if (ready) {
+      res.end('OK')
+    } else {
+      res.status(502).end('Bad Gateway')
+    }
   })
 
   // Download file/collection/chunk proxy
