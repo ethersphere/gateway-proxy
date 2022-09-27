@@ -209,7 +209,6 @@ export class StampsManager {
       // Check if the least used stamps is starting to get full and if so purchase new stamp
       if (!this.isBuyingStamp && (!leastUsed || getUsage(leastUsed) > usageThreshold)) {
         this.isBuyingStamp = true
-        logger.info('buying new stamp')
         try {
           const { stamp } = await buyNewStamp(depth, amount, beeDebug)
 
