@@ -22,7 +22,7 @@ async function main() {
   if (contentConfig) {
     logger.debug('content config', contentConfig)
     const contentManager = new ContentManager()
-    logger.info('starting postage content manager')
+    logger.info('starting content manager')
     await contentManager.start(contentConfig)
   }
 

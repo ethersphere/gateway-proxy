@@ -13,11 +13,8 @@ register.registerMetric(contentReuploadCounter)
 export class ContentManager {
   private interval?: ReturnType<typeof setInterval>
   private isReuploading?: boolean = false
-  private counter = 0
 
   public async refreshContentReupload(beeApi: Bee): Promise<void> {
-    logger.info(`contador ${this.counter}`)
-    this.counter += 1
     const pins = await beeApi.getAllPins()
 
     if (!pins.length) {
@@ -32,6 +29,7 @@ export class ContentManager {
           this.isReuploading = true
           await beeApi.reuploadPinnedData(pin)
           this.isReuploading = false
+          contentReuploadCounter.inc()
           logger.info(`pinned content reuploaded: ${pin}`)
         }
       }
@@ -39,7 +37,7 @@ export class ContentManager {
   }
 
   /**
-   * Start the manager to upload pinned content
+   * Start the manager that checks for pinned content availability and reuploads the data if needed.
    */
   async start(config: ContentConfig): Promise<void> {
     const refreshContent = async () => this.refreshContentReupload(new Bee(config.beeDebugApiUrl))
