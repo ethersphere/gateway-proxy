@@ -1,5 +1,5 @@
 import { Bee, BeeDebug, Utils } from '@ethersphere/bee-js'
-import { READINESS_TIMEOUT } from './config'
+import { READINESS_TIMEOUT_MS } from './config'
 import { logger } from './logger'
 import { StampsManager } from './stamps'
 
@@ -10,7 +10,7 @@ export async function checkReadiness(bee: Bee, beeDebug: BeeDebug, stampManager?
     return ready
   } else {
     try {
-      const health = await beeDebug.getHealth({ timeout: READINESS_TIMEOUT })
+      const health = await beeDebug.getHealth({ timeout: READINESS_TIMEOUT_MS })
       const ready = health.status === 'ok'
 
       return ready
@@ -23,7 +23,7 @@ export async function checkReadiness(bee: Bee, beeDebug: BeeDebug, stampManager?
 async function tryUploadingSingleChunk(bee: Bee, stampsManager: StampsManager): Promise<boolean> {
   const chunk = makeChunk()
   try {
-    await bee.uploadChunk(stampsManager.postageStamp, chunk, { timeout: READINESS_TIMEOUT, deferred: true })
+    await bee.uploadChunk(stampsManager.postageStamp, chunk, { timeout: READINESS_TIMEOUT_MS, deferred: true })
 
     return true
   } catch (error) {

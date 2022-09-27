@@ -87,7 +87,7 @@ export const DEFAULT_POSTAGE_USAGE_MAX = 0.9
 export const DEFAULT_POSTAGE_REFRESH_PERIOD = 60_000
 export const DEFAULT_LOG_LEVEL = 'info'
 export const MINIMAL_EXTENDS_TTL_VALUE = 60
-export const READINESS_TIMEOUT = 3000
+export const READINESS_TIMEOUT_MS = 3000
 
 export const logLevel =
   process.env.LOG_LEVEL && SUPPORTED_LEVELS.includes(process.env.LOG_LEVEL as SupportedLevels)
