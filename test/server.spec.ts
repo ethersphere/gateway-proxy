@@ -2,6 +2,7 @@ import { createApp, POST_PROXY_ENDPOINTS } from '../src/server'
 import request from 'supertest'
 import { Bee } from '@ethersphere/bee-js'
 import type { Server } from 'http'
+import { DEFAULT_BEE_DEBUG_API_URL } from '../src/config'
 
 import { bee, getPostageBatch, makeCollectionFromFS } from './utils'
 import { StampsManager } from '../src/stamps'
@@ -9,12 +10,13 @@ import { createHeaderCheckMockServer } from './header-check.mockserver'
 
 const beeApiUrl = process.env.BEE_API_URL || 'http://localhost:1633'
 const beeApiUrlWrong = process.env.BEE_API_URL_WRONG || 'http://localhost:2021'
+const beeDebugApiUrl = 'http://localhost:1635'
 const authorization = process.env.AUTH_SECRET || 'super_secret_token'
 
-const app = createApp({ beeApiUrl })
-const appWrong = createApp({ beeApiUrl: beeApiUrlWrong })
-const appAuth = createApp({ beeApiUrl, authorization })
-const appAuthWrong = createApp({ beeApiUrl: beeApiUrlWrong, authorization })
+const app = createApp({ beeApiUrl, beeDebugApiUrl })
+const appWrong = createApp({ beeApiUrl: beeApiUrlWrong, beeDebugApiUrl: beeApiUrlWrong })
+const appAuth = createApp({ beeApiUrl, authorization, beeDebugApiUrl })
+const appAuthWrong = createApp({ beeApiUrl: beeApiUrlWrong, beeDebugApiUrl: beeApiUrlWrong, authorization })
 
 let proxy: Server
 let proxyAuth: Server
@@ -36,7 +38,7 @@ beforeAll(async () => {
   const stamp = getPostageBatch()
   const stampManager = new StampsManager()
   await stampManager.start({ mode: 'hardcoded', stamp })
-  const appWithStamp = createApp({ beeApiUrl }, stampManager)
+  const appWithStamp = createApp({ beeApiUrl, beeDebugApiUrl: DEFAULT_BEE_DEBUG_API_URL }, stampManager)
   proxyWithStamp = await new Promise((resolve, _reject) => {
     const server = appWithStamp.listen(async () => resolve(server))
   })
@@ -52,9 +54,11 @@ beforeAll(async () => {
   headerServer = await createHeaderCheckMockServer()
   const headerServerPort = (headerServer.address() as AddressInfo).port
   headerProxy = await new Promise((resolve, _reject) => {
-    const server = createApp({ beeApiUrl: `http://localhost:${headerServerPort}`, removePinHeader: true }).listen(
-      async () => resolve(server),
-    )
+    const server = createApp({
+      beeApiUrl: `http://localhost:${headerServerPort}`,
+      beeDebugApiUrl,
+      removePinHeader: true,
+    }).listen(async () => resolve(server))
   })
 })
 
@@ -314,9 +318,9 @@ describe('POST /feeds/:owner/:topic', () => {
     const reader = bee.makeFeedReader('sequence', topic, writer.owner)
     const dd1 = await reader.download()
 
-    expect(Number(dd1.feedIndex)).toBeGreaterThanOrEqual(0)
-    expect(Number(dd1.feedIndexNext)).toBeGreaterThanOrEqual(1)
-    expect(Number(dd1.feedIndex) + 1).toEqual(Number(dd1.feedIndexNext))
+    expect(parseInt(dd1.feedIndex, 16)).toBeGreaterThanOrEqual(0)
+    expect(parseInt(dd1.feedIndexNext, 16)).toBeGreaterThanOrEqual(1)
+    expect(parseInt(dd1.feedIndex, 16) + 1).toEqual(parseInt(dd1.feedIndexNext, 16))
   }, 10000)
 })
 
@@ -334,9 +338,9 @@ describe('GET /feeds/:owner/:topic', () => {
     const reader = beeProxy.makeFeedReader('sequence', topic, writer.owner)
     const dd1 = await reader.download()
 
-    expect(Number(dd1.feedIndex)).toBeGreaterThanOrEqual(0)
-    expect(Number(dd1.feedIndexNext)).toBeGreaterThanOrEqual(1)
-    expect(Number(dd1.feedIndex) + 1).toEqual(Number(dd1.feedIndexNext))
+    expect(parseInt(dd1.feedIndex, 16)).toBeGreaterThanOrEqual(0)
+    expect(parseInt(dd1.feedIndexNext, 16)).toBeGreaterThanOrEqual(1)
+    expect(parseInt(dd1.feedIndex, 16) + 1).toEqual(parseInt(dd1.feedIndexNext, 16))
   }, 10000)
 })
 
