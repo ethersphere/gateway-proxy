@@ -3,6 +3,8 @@ import { READINESS_TIMEOUT_MS } from './config'
 import { logger } from './logger'
 import { StampsManager } from './stamps'
 
+const MAX_CHUNK_SIZE = 4096
+
 export async function checkReadiness(bee: Bee, beeDebug: BeeDebug, stampManager?: StampsManager): Promise<boolean> {
   if (stampManager) {
     const ready = await tryUploadingSingleChunk(bee, stampManager)
@@ -33,9 +35,9 @@ async function tryUploadingSingleChunk(bee: Bee, stampsManager: StampsManager): 
   }
 }
 
-function makeChunk(seed = '', length = 4096): Uint8Array {
-  if (length > 4096) {
-    throw Error('Chunk length cannot be greater than 4096')
+function makeChunk(seed = '', length = MAX_CHUNK_SIZE): Uint8Array {
+  if (length > MAX_CHUNK_SIZE) {
+    throw Error(`Chunk length cannot be greater than ${MAX_CHUNK_SIZE}`)
   }
   const data = Buffer.alloc(length)
   let random: Uint8Array = Buffer.from(seed || getDefaultSeed())
