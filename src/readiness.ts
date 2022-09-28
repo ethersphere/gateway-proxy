@@ -34,6 +34,9 @@ async function tryUploadingSingleChunk(bee: Bee, stampsManager: StampsManager): 
 }
 
 function makeChunk(seed = '', length = 4096): Uint8Array {
+  if (length > 4096) {
+    throw Error('Chunk length cannot be greater than 4096')
+  }
   const data = Buffer.alloc(length)
   let random: Uint8Array = Buffer.from(seed || getDefaultSeed())
   let offset = 0
