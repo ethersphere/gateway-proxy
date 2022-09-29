@@ -1,5 +1,5 @@
-import * as swarmCid from '@ethersphere/swarm-cid'
 import { Request, Response } from 'express'
+import * as swarmCid from '@ethersphere/swarm-cid'
 import { logger } from './logger'
 
 export class NotEnabledError extends Error {}
