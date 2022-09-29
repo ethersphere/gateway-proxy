@@ -23,7 +23,7 @@ async function main() {
     logger.debug('content config', contentConfig)
     const contentManager = new ContentManager()
     logger.info('starting content manager')
-    await contentManager.start(contentConfig)
+    contentManager.start(contentConfig)
   }
 
   if (stampsConfig) {

@@ -19,18 +19,20 @@ export class ContentManager {
 
     if (!pins.length) {
       logger.info(`no pins found`)
-    } else {
-      logger.info(`checking pinned content (${pins.length} pins)`)
-      for (const pin of pins) {
-        const isRetrievable = await beeApi.isReferenceRetrievable(pin)
 
-        if (!isRetrievable && !this.isReuploading) {
-          this.isReuploading = true
-          await beeApi.reuploadPinnedData(pin)
-          this.isReuploading = false
-          contentReuploadCounter.inc()
-          logger.info(`pinned content reuploaded: ${pin}`)
-        }
+      return
+    }
+
+    logger.info(`checking pinned content (${pins.length} pins)`)
+    for (const pin of pins) {
+      const isRetrievable = await beeApi.isReferenceRetrievable(pin)
+
+      if (!isRetrievable && !this.isReuploading) {
+        this.isReuploading = true
+        await beeApi.reuploadPinnedData(pin)
+        this.isReuploading = false
+        contentReuploadCounter.inc()
+        logger.info(`pinned content reuploaded: ${pin}`)
       }
     }
   }
@@ -38,10 +40,10 @@ export class ContentManager {
   /**
    * Start the manager that checks for pinned content availability and reuploads the data if needed.
    */
-  async start(config: ContentConfig): Promise<void> {
+  start(config: ContentConfig): void {
     const refreshContent = async () => this.refreshContentReupload(new Bee(config.beeDebugApiUrl))
     this.stop()
-    await refreshContent()
+    refreshContent()
 
     this.interval = setInterval(refreshContent, config.refreshPeriod)
   }
