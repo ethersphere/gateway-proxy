@@ -1,8 +1,8 @@
-import { NotEnabledError, RedirectCidError, requestFilter, routerClosure } from '../src/bzz-link'
 import { Application, Request } from 'express'
 import { Server } from 'http'
 import { AddressInfo } from 'net'
 import request from 'supertest'
+import { NotEnabledError, RedirectCidError, requestFilter, routerClosure } from '../src/bzz-link'
 import { DEFAULT_BEE_DEBUG_API_URL } from '../src/config'
 import { createApp } from '../src/server'
 import { createBzzLinkMockServer } from './bzz-link.mockserver'
@@ -66,35 +66,40 @@ describe('bzz.link', () => {
 
     it('should translate valid CID', async () => {
       const router = routerClosure('http://some.bee', true, true)
-      const req = { hostname: `${MANIFEST.cid}.bzz.link` } as Request
+      const req = { hostname: `${MANIFEST.cid}.bzz.link`, subdomains: [MANIFEST.cid] } as Request
 
       expect(router(req)).toEqual(`http://some.bee/bzz/${MANIFEST.reference}`)
     })
 
     it('should translate valid CID with ENS disabled', async () => {
       const router = routerClosure('http://some.bee', true, false)
-      const req = { hostname: `${MANIFEST.cid}.bzz.link` } as Request
+      const req = { hostname: `${MANIFEST.cid}.bzz.link`, subdomains: [MANIFEST.cid] } as Request
 
       expect(router(req)).toEqual(`http://some.bee/bzz/${MANIFEST.reference}`)
     })
 
     it('should translate valid ENS', async () => {
       const router = routerClosure('http://some.bee', true, true)
-      const req = { hostname: `some-ens-domain.bzz.link` } as Request
+      const req = { hostname: `some-ens-domain.bzz.link`, subdomains: ['some-ens-domain'] } as Request
 
       expect(router(req)).toEqual(`http://some.bee/bzz/some-ens-domain.eth`)
     })
 
     it('should translate valid ENS when CID is disabled', async () => {
       const router = routerClosure('http://some.bee', false, true)
-      const req = { hostname: `some-ens-domain.bzz.link` } as Request
+      const req = { hostname: `some-ens-domain.bzz.link`, subdomains: ['some-ens-domain'] } as Request
 
       expect(router(req)).toEqual(`http://some.bee/bzz/some-ens-domain.eth`)
     })
 
     it('should throw redirection error for legacy CID', async () => {
       const router = routerClosure('http://some.bee', true, true)
-      const req = { hostname: `${MANIFEST.legacyCid}.bzz.link`, protocol: 'http', originalUrl: '/' } as Request
+      const req = {
+        hostname: `${MANIFEST.legacyCid}.bzz.link`,
+        protocol: 'http',
+        originalUrl: '/',
+        subdomains: [MANIFEST.legacyCid],
+      } as Request
 
       try {
         router(req)
@@ -110,14 +115,14 @@ describe('bzz.link', () => {
 
     it('should throw when CID support is disabled', async () => {
       const router = routerClosure('http://some.bee', false, true)
-      const req = { hostname: `${MANIFEST.cid}.bzz.link` } as Request
+      const req = { hostname: `${MANIFEST.cid}.bzz.link`, subdomains: [MANIFEST.cid] } as Request
 
       expect(() => router(req)).toThrow(NotEnabledError)
     })
 
     it('should throw when ENS support is disabled', async () => {
       const router = routerClosure('http://some.bee', true, false)
-      const req = { hostname: `some-ens-domain.bzz.link` } as Request
+      const req = { hostname: `some-ens-domain.bzz.link`, subdomains: ['some-ens-domain'] } as Request
 
       expect(() => router(req)).toThrow(NotEnabledError)
     })
