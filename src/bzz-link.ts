@@ -80,7 +80,7 @@ export function errorHandler(err: Error, req: Request, res: Response, next: (e: 
  */
 function subdomainToBzz(req: Request, isCidEnabled: boolean, isEnsEnabled: boolean): string {
   const host = req.hostname.split('.')
-  const subdomain = req.subdomains.join('.')
+  const subdomain = [...req.subdomains].reverse().join('.')
 
   try {
     const result = swarmCid.decodeCid(subdomain)
