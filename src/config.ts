@@ -18,12 +18,16 @@ interface StampsConfigHardcoded {
   mode: 'hardcoded'
   stamp: string
 }
-
 export interface StampsConfigExtends {
   mode: 'extendsTTL'
   ttlMin: number
   depth: number
   amount: string
+  refreshPeriod: number
+  beeDebugApiUrl: string
+}
+
+export interface ContentConfigReupload {
   beeDebugApiUrl: string
   refreshPeriod: number
 }
@@ -40,6 +44,8 @@ export interface StampsConfigAutobuy {
 }
 
 export type StampsConfig = StampsConfigHardcoded | StampsConfigAutobuy | StampsConfigExtends
+
+export type ContentConfig = ContentConfigReupload
 
 export type EnvironmentVariables = Partial<{
   // Logging
@@ -73,6 +79,7 @@ export type EnvironmentVariables = Partial<{
   POSTAGE_TTL_MIN: string
   POSTAGE_REFRESH_PERIOD: string
   POSTAGE_EXTENDSTTL: string
+  REUPLOAD_PERIOD: string
 }>
 
 export const SUPPORTED_LEVELS = ['critical', 'error', 'warn', 'info', 'verbose', 'debug'] as const
@@ -174,4 +181,11 @@ export function getStampsConfig({
 
   // Stamps rewrite is disabled
   return undefined
+}
+
+export function getContentConfig({ BEE_DEBUG_API_URL, REUPLOAD_PERIOD }: EnvironmentVariables = {}): ContentConfig {
+  return {
+    beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_API_URL,
+    refreshPeriod: Number(REUPLOAD_PERIOD),
+  }
 }

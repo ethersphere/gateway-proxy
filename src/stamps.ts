@@ -154,6 +154,7 @@ export class StampsManager {
   private interval?: ReturnType<typeof setInterval>
   private isBuyingStamp?: boolean = false
   private extendingStamps: string[] = []
+
   /**
    * Get postage stamp that should be replaced in a the proxy request header
    *
