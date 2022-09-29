@@ -12,7 +12,7 @@ register.registerMetric(contentReuploadCounter)
 
 export class ContentManager {
   private interval?: ReturnType<typeof setInterval>
-  private isReuploading?: boolean = false
+  private isReuploading = false
 
   public async refreshContentReupload(beeApi: Bee): Promise<void> {
     const pins = await beeApi.getAllPins()
@@ -21,8 +21,7 @@ export class ContentManager {
       logger.info(`no pins found`)
     } else {
       logger.info(`checking pinned content (${pins.length} pins)`)
-      for (let i = 0; i < pins.length; i++) {
-        const pin = pins[i]
+      for (const pin of pins) {
         const isRetrievable = await beeApi.isReferenceRetrievable(pin)
 
         if (!isRetrievable && !this.isReuploading) {

@@ -182,9 +182,7 @@ export function getStampsConfig({
   return undefined
 }
 
-export function getContentConfig({ BEE_DEBUG_API_URL, REUPLOAD_PERIOD }: EnvironmentVariables = {}):
-  | ContentConfig
-  | undefined {
+export function getContentConfig({ BEE_DEBUG_API_URL, REUPLOAD_PERIOD }: EnvironmentVariables = {}): ContentConfig {
   return {
     beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_API_URL,
     refreshPeriod: Number(REUPLOAD_PERIOD),
