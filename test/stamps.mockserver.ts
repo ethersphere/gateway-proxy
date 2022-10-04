@@ -59,6 +59,12 @@ export async function createStampMockServer(db: StampDB): Promise<Server> {
     res.send({ batchID: stamp.batchID })
   })
 
+  app.patch('/stamps/dilute/:batchId/:depth', (req, res) => {
+    const stamp = db.get(req.params.batchId as BatchId)
+    stamp.depth = Number(req.params.depth)
+    res.send({ batchID: stamp.batchID })
+  })
+
   return new Promise(resolve => {
     const server = app.listen(() => {
       resolve(server)
