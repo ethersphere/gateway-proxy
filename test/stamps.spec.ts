@@ -1,6 +1,6 @@
 import type { Server } from 'http'
-import { BeeDebug, BatchId, PostageBatch } from '@ethersphere/bee-js'
-import { StampsManager, getUsage, buyNewStamp, topUpStamp, filterUsableStampsAutobuy } from '../src/stamps'
+import { BeeDebug, BatchId, PostageBatch, Bee } from '@ethersphere/bee-js'
+import { StampsManager, getUsage, buyNewStamp, topUpStamp, diluteStamp, filterUsableStampsAutobuy } from '../src/stamps'
 import { getStampsConfig } from '../src/config'
 import { sleep } from '../src/utils'
 import { createStampMockServer, StampDB } from './stamps.mockserver'
@@ -239,5 +239,18 @@ describe('topUpStamp', () => {
     await topUpStamp(beeDebug, stamp.batchId, extendAmount)
     const stampExtended = await beeDebug.getPostageBatch(stamp.batchId)
     expect(Number(stampExtended.amount)).toBeGreaterThan(Number(defaultAmount))
+  })
+})
+
+describe('extendsCapacity', () => {
+  it('should extend stamps capacity', async () => {
+    const beeDebug = new BeeDebug(url)
+
+    const stamp = await buyNewStamp(defaultDepth, defaultAmount, beeDebug)
+
+    await topUpStamp(beeDebug, stamp.batchId, (Number(stamp.stamp.amount) * 2).toString())
+    await diluteStamp(beeDebug, stamp.batchId, stamp.stamp.depth + 1)
+    const stampExtended = await beeDebug.getPostageBatch(stamp.batchId)
+    expect(stampExtended.depth).toBeGreaterThan(defaultDepth)
   })
 })

@@ -18,7 +18,8 @@ interface StampsConfigHardcoded {
   mode: 'hardcoded'
   stamp: string
 }
-export interface StampsConfigExtends {
+
+export interface StampsConfigExtendsTTL {
   mode: 'extendsTTL'
   ttlMin: number
   depth: number
@@ -43,7 +44,18 @@ export interface StampsConfigAutobuy {
   refreshPeriod: number
 }
 
-export type StampsConfig = StampsConfigHardcoded | StampsConfigAutobuy | StampsConfigExtends
+export interface StampsConfigExtendsCapacity {
+  mode: 'extendsCapacity'
+  beeDebugApiUrl: string
+  usageThreshold: number
+  refreshPeriod: number
+}
+
+export type StampsConfig =
+  | StampsConfigHardcoded
+  | StampsConfigAutobuy
+  | StampsConfigExtendsTTL
+  | StampsConfigExtendsCapacity
 
 export type ContentConfig = ContentConfigReupload
 
@@ -80,6 +92,7 @@ export type EnvironmentVariables = Partial<{
   POSTAGE_REFRESH_PERIOD: string
   POSTAGE_EXTENDSTTL: string
   REUPLOAD_PERIOD: string
+  POSTAGE_EXTENDS_CAPACITY: string
 }>
 
 export const SUPPORTED_LEVELS = ['critical', 'error', 'warn', 'info', 'verbose', 'debug'] as const
@@ -138,6 +151,7 @@ export function getStampsConfig({
   POSTAGE_TTL_MIN,
   POSTAGE_REFRESH_PERIOD,
   POSTAGE_EXTENDSTTL,
+  POSTAGE_EXTENDS_CAPACITY,
 }: EnvironmentVariables = {}): StampsConfig | undefined {
   const refreshPeriod = Number(POSTAGE_REFRESH_PERIOD || DEFAULT_POSTAGE_REFRESH_PERIOD)
   const beeDebugApiUrl = BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL
@@ -145,7 +159,35 @@ export function getStampsConfig({
   // Start in hardcoded mode
   if (POSTAGE_STAMP) return { mode: 'hardcoded', stamp: POSTAGE_STAMP }
   // Start autobuy
-  else if (!POSTAGE_EXTENDSTTL && POSTAGE_DEPTH && POSTAGE_AMOUNT && BEE_DEBUG_API_URL) {
+  else {
+    return validateStampPostageConfig(
+      BEE_DEBUG_API_URL,
+      POSTAGE_DEPTH,
+      POSTAGE_AMOUNT,
+      POSTAGE_USAGE_THRESHOLD,
+      POSTAGE_USAGE_MAX,
+      POSTAGE_TTL_MIN,
+      POSTAGE_EXTENDSTTL,
+      POSTAGE_EXTENDS_CAPACITY,
+      refreshPeriod,
+      beeDebugApiUrl,
+    )
+  }
+}
+
+export function validateStampPostageConfig(
+  BEE_DEBUG_API_URL: string | undefined,
+  POSTAGE_DEPTH: string | undefined,
+  POSTAGE_AMOUNT: string | undefined,
+  POSTAGE_USAGE_THRESHOLD: string | undefined,
+  POSTAGE_USAGE_MAX: string | undefined,
+  POSTAGE_TTL_MIN: string | undefined,
+  POSTAGE_EXTENDSTTL: string | undefined,
+  POSTAGE_EXTENDS_CAPACITY: string | undefined,
+  refreshPeriod: number,
+  beeDebugApiUrl: string,
+): StampsConfig | undefined {
+  if (!POSTAGE_EXTENDSTTL && POSTAGE_DEPTH && POSTAGE_AMOUNT && BEE_DEBUG_API_URL) {
     return {
       mode: 'autobuy',
       depth: Number(POSTAGE_DEPTH),
@@ -167,6 +209,13 @@ export function getStampsConfig({
       depth: Number(POSTAGE_DEPTH),
       ttlMin: Number(POSTAGE_TTL_MIN),
       amount: POSTAGE_AMOUNT,
+      refreshPeriod,
+      beeDebugApiUrl,
+    }
+  } else if (POSTAGE_EXTENDS_CAPACITY === 'true') {
+    return {
+      mode: 'extendsCapacity',
+      usageThreshold: Number(POSTAGE_USAGE_THRESHOLD || DEFAULT_POSTAGE_USAGE_THRESHOLD),
       refreshPeriod,
       beeDebugApiUrl,
     }
