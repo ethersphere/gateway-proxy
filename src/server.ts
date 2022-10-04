@@ -111,12 +111,12 @@ export const createApp = (
 
   // Readiness endpoint
   app.get('/readiness', async (_req, res) => {
-    const ready = await checkReadiness(bee, beeDebug, stampManager)
+    const readinessStatus = await checkReadiness(bee, beeDebug, stampManager)
 
-    if (ready) {
+    if (readinessStatus === 'OK') {
       res.end('OK')
     } else {
-      res.status(502).end('Bad Gateway')
+      res.status(502).end(readinessStatus)
     }
   })
 

@@ -5,7 +5,13 @@ import { StampsManager } from './stamps'
 
 const MAX_CHUNK_SIZE = 4096
 
-export async function checkReadiness(bee: Bee, beeDebug: BeeDebug, stampManager?: StampsManager): Promise<boolean> {
+type ReadinessStatus = 'OK' | 'NO_STAMP' | 'HEALTH_CHECK_FAILED' | 'OTHER_ERROR'
+
+export async function checkReadiness(
+  bee: Bee,
+  beeDebug: BeeDebug,
+  stampManager?: StampsManager,
+): Promise<ReadinessStatus> {
   if (stampManager) {
     const ready = await tryUploadingSingleChunk(bee, stampManager)
 
@@ -15,23 +21,27 @@ export async function checkReadiness(bee: Bee, beeDebug: BeeDebug, stampManager?
       const health = await beeDebug.getHealth({ timeout: READINESS_TIMEOUT_MS })
       const ready = health.status === 'ok'
 
-      return ready
+      return ready ? 'OK' : 'HEALTH_CHECK_FAILED'
     } catch {
-      return false
+      return 'OTHER_ERROR'
     }
   }
 }
 
-async function tryUploadingSingleChunk(bee: Bee, stampsManager: StampsManager): Promise<boolean> {
+async function tryUploadingSingleChunk(bee: Bee, stampsManager: StampsManager): Promise<ReadinessStatus> {
   const chunk = makeChunk()
   try {
     await bee.uploadChunk(stampsManager.postageStamp, chunk, { timeout: READINESS_TIMEOUT_MS, deferred: true })
 
-    return true
+    return 'OK'
   } catch (error) {
     logger.error('unable to upload chunk to bee', error)
 
-    return false
+    if (error && Reflect.get(error, 'message') === 'No postage stamp') {
+      return 'NO_STAMP'
+    }
+
+    return 'OTHER_ERROR'
   }
 }
 
