@@ -2,12 +2,13 @@ import { Bee, BeeDebug } from '@ethersphere/bee-js'
 import express, { Application } from 'express'
 import { createProxyMiddleware, Options } from 'http-proxy-middleware'
 import * as bzzLink from './bzz-link'
-import { AppConfig, DEFAULT_HOSTNAME } from './config'
+import { AppConfig, DEFAULT_HOSTNAME, ERROR_NO_STAMP } from './config'
 import { fetchBeeIdentity, getHashedIdentity, HASHED_IDENTITY_HEADER } from './identity'
 import { logger } from './logger'
 import { register } from './metrics'
 import { checkReadiness, ReadinessStatus } from './readiness'
 import type { StampsManager } from './stamps'
+import { getErrorMessage } from './utils'
 
 const SWARM_STAMP_HEADER = 'swarm-postage-batch-id'
 
@@ -136,9 +137,14 @@ export const createApp = (
       proxyReq.removeHeader(SWARM_STAMP_HEADER)
       try {
         proxyReq.setHeader(SWARM_STAMP_HEADER, stampManager.postageStamp)
-      } catch (e) {
-        // There is no postage stamp to use
-        res.writeHead(503).end('Service Unavailable')
+      } catch (error) {
+        logger.error('proxy failure', error)
+
+        if (getErrorMessage(error) === ERROR_NO_STAMP) {
+          res.writeHead(402).end(ERROR_NO_STAMP)
+        } else {
+          res.writeHead(503).end('Service Unavailable')
+        }
       }
     }
   }

@@ -1,6 +1,6 @@
 import { BeeDebug, PostageBatch, BatchId } from '@ethersphere/bee-js'
 import client from 'prom-client'
-import type { StampsConfig, StampsConfigAutobuy, StampsConfigExtends } from './config'
+import { ERROR_NO_STAMP, StampsConfig, StampsConfigAutobuy, StampsConfigExtends } from './config'
 import { logger } from './logger'
 import { register } from './metrics'
 
@@ -180,7 +180,7 @@ export class StampsManager {
     }
 
     stampGetErrorCounter.inc()
-    throw new Error('No postage stamp')
+    throw new Error(ERROR_NO_STAMP)
   }
 
   /**

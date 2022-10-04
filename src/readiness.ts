@@ -1,5 +1,5 @@
 import { Bee, BeeDebug, Utils } from '@ethersphere/bee-js'
-import { READINESS_TIMEOUT_MS } from './config'
+import { ERROR_NO_STAMP, READINESS_TIMEOUT_MS } from './config'
 import { logger } from './logger'
 import { StampsManager } from './stamps'
 import { getErrorMessage } from './utils'
@@ -44,7 +44,7 @@ async function tryUploadingSingleChunk(bee: Bee, stampsManager: StampsManager): 
     const errorMessage = getErrorMessage(error)
     logger.error('unable to upload readiness-check chunk to bee', errorMessage)
 
-    if (errorMessage === 'No postage stamp') {
+    if (errorMessage === ERROR_NO_STAMP) {
       return ReadinessStatus.NO_STAMP
     }
 
