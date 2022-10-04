@@ -41,7 +41,11 @@ async function tryUploadingSingleChunk(bee: Bee, stampsManager: StampsManager): 
 
     return ReadinessStatus.OK
   } catch (error) {
-    logger.error('unable to upload chunk to bee', error)
+    if (error) {
+      // do not log the binary chunk data
+      Reflect.deleteProperty(error, 'requestOptions')
+    }
+    logger.error('unable to upload readiness-check chunk to bee', error)
 
     if (getErrorMessage(error) === 'No postage stamp') {
       return ReadinessStatus.NO_STAMP
