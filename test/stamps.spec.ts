@@ -1,5 +1,5 @@
 import type { Server } from 'http'
-import { BeeDebug, BatchId, PostageBatch, Bee } from '@ethersphere/bee-js'
+import { BeeDebug, BatchId, PostageBatch } from '@ethersphere/bee-js'
 import { StampsManager, getUsage, buyNewStamp, topUpStamp, diluteStamp, filterUsableStampsAutobuy } from '../src/stamps'
 import { getStampsConfig } from '../src/config'
 import { sleep } from '../src/utils'
