@@ -102,10 +102,10 @@ describe('GET /readiness', () => {
 
     expect(res.text).toEqual('OK')
   })
-  it('should return 502 & Bad Gateway', async () => {
+  it('should return 502', async () => {
     const res = await request(appWrong).get(`/readiness`).expect(502)
 
-    expect(res.text).toEqual('Bad Gateway')
+    expect(res.text).toEqual('OTHER_ERROR')
   })
 
   it('with authorization enabled should return 403 & Forbidden', async () => {
@@ -114,10 +114,10 @@ describe('GET /readiness', () => {
     expect(res.text).toEqual('Forbidden')
   })
 
-  it('with authorization enabled should return 502 & Bad Gateway', async () => {
+  it('with authorization enabled should return 502', async () => {
     const res = await request(appAuthWrong).get(`/readiness`).set('authorization', authorization).expect(502)
 
-    expect(res.text).toEqual('Bad Gateway')
+    expect(res.text).toEqual('OTHER_ERROR')
   })
 
   it('with authorization enabled should return 200 & OK', async () => {
