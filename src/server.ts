@@ -6,7 +6,7 @@ import { AppConfig, DEFAULT_HOSTNAME } from './config'
 import { fetchBeeIdentity, getHashedIdentity, HASHED_IDENTITY_HEADER } from './identity'
 import { logger } from './logger'
 import { register } from './metrics'
-import { checkReadiness } from './readiness'
+import { checkReadiness, ReadinessStatus } from './readiness'
 import type { StampsManager } from './stamps'
 
 const SWARM_STAMP_HEADER = 'swarm-postage-batch-id'
@@ -113,8 +113,10 @@ export const createApp = (
   app.get('/readiness', async (_req, res) => {
     const readinessStatus = await checkReadiness(bee, beeDebug, stampManager)
 
-    if (readinessStatus === 'OK') {
+    if (readinessStatus === ReadinessStatus.OK) {
       res.end('OK')
+    } else if (readinessStatus === ReadinessStatus.NO_STAMP) {
+      res.status(503).end(readinessStatus)
     } else {
       res.status(502).end(readinessStatus)
     }
