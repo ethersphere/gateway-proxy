@@ -141,7 +141,7 @@ export const createApp = (
         logger.error('proxy failure', error)
 
         if (getErrorMessage(error) === ERROR_NO_STAMP) {
-          res.writeHead(402).end(ERROR_NO_STAMP)
+          res.writeHead(503).end(ERROR_NO_STAMP)
         } else {
           res.writeHead(503).end('Service Unavailable')
         }
