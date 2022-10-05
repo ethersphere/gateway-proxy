@@ -16,5 +16,5 @@ export function getErrorMessage(error: unknown): string | undefined {
     return error
   }
 
-  return undefined
+  return String(error)
 }
