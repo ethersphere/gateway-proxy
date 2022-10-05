@@ -138,7 +138,7 @@ export function getStampsConfig({
   POSTAGE_REFRESH_PERIOD,
   POSTAGE_EXTENDSTTL,
 }: EnvironmentVariables = {}): StampsConfig | undefined {
-  const refreshPeriod = Number(POSTAGE_REFRESH_PERIOD || DEFAULT_POSTAGE_REFRESH_PERIOD)
+  const refreshPeriod = Number(POSTAGE_REFRESH_PERIOD) || DEFAULT_POSTAGE_REFRESH_PERIOD
   const beeDebugApiUrl = BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL
 
   // Start in hardcoded mode
