@@ -30,7 +30,7 @@ async function main() {
     logger.debug('stamps config', stampsConfig)
     const stampManager = new StampsManager()
     logger.info('starting postage stamp manager')
-    await stampManager.start(stampsConfig)
+    stampManager.start(stampsConfig)
     logger.info('starting the proxy')
     app = createApp(appConfig, stampManager)
   } else {
