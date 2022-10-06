@@ -158,8 +158,8 @@ npm run start
 | ENS_SUBDOMAINS           | false                       | Enables Bzz.link subdomain translation functionality for ENS.                                              |
 | REMOVE_PIN_HEADER        | true                        | Removes swarm-pin header on all proxy requests.                                                            |
 | `LOG_LEVEL`              | info                        | Log level that is outputted (values: `critical`, `error`, `warn`, `info`, `verbose`, `debug`)              |
-| POSTAGE_EXTENDSTTL       | false                       | Enables extends TTL feature. Works along with POSTAGE_AMOUNT                                               |
-| POSTAGE_EXTENDS_CAPACITY | false                       | Enables extends stamp capacity
+| POSTAGE_EXTENDSTTL       | false                       | Enables extending TTL feature. Works along with POSTAGE_AMOUNT                                               |
+| POSTAGE_EXTENDS_CAPACITY | false                       | Enables extending stamp capacity
 feature.                                                |
 | EXPOSE_HASHED_IDENTITY   | false                       | Exposes `x-bee-node` header, which is the hashed identity of the Bee node for identification purposes      |
 | REUPLOAD_PERIOD         | undefined                   | How frequently are the pinned content checked to be reuploaded.                                            |
