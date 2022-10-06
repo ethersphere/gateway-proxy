@@ -159,66 +159,25 @@ export function getStampsConfig({
   // Start in hardcoded mode
   if (POSTAGE_STAMP) return { mode: 'hardcoded', stamp: POSTAGE_STAMP }
   // Start autobuy
-  else {
-    return validateStampPostageConfig(
-      BEE_DEBUG_API_URL,
+  else if (!POSTAGE_EXTENDSTTL && POSTAGE_DEPTH && POSTAGE_AMOUNT && BEE_DEBUG_API_URL) {
+    return createAutoBuyStampsConfig(
       POSTAGE_DEPTH,
       POSTAGE_AMOUNT,
       POSTAGE_USAGE_THRESHOLD,
       POSTAGE_USAGE_MAX,
       POSTAGE_TTL_MIN,
-      POSTAGE_EXTENDSTTL,
-      POSTAGE_EXTENDS_CAPACITY,
       refreshPeriod,
       beeDebugApiUrl,
     )
-  }
-}
-
-export function validateStampPostageConfig(
-  BEE_DEBUG_API_URL: string | undefined,
-  POSTAGE_DEPTH: string | undefined,
-  POSTAGE_AMOUNT: string | undefined,
-  POSTAGE_USAGE_THRESHOLD: string | undefined,
-  POSTAGE_USAGE_MAX: string | undefined,
-  POSTAGE_TTL_MIN: string | undefined,
-  POSTAGE_EXTENDSTTL: string | undefined,
-  POSTAGE_EXTENDS_CAPACITY: string | undefined,
-  refreshPeriod: number,
-  beeDebugApiUrl: string,
-): StampsConfig | undefined {
-  if (!POSTAGE_EXTENDSTTL && POSTAGE_DEPTH && POSTAGE_AMOUNT && BEE_DEBUG_API_URL) {
-    return {
-      mode: 'autobuy',
-      depth: Number(POSTAGE_DEPTH),
-      amount: POSTAGE_AMOUNT,
-      usageThreshold: Number(POSTAGE_USAGE_THRESHOLD || DEFAULT_POSTAGE_USAGE_THRESHOLD),
-      usageMax: Number(POSTAGE_USAGE_MAX || DEFAULT_POSTAGE_USAGE_MAX),
-      ttlMin: Number(POSTAGE_TTL_MIN || (refreshPeriod / 1000) * 5),
-      refreshPeriod,
-      beeDebugApiUrl,
-    }
   } else if (
     POSTAGE_EXTENDSTTL === 'true' &&
     POSTAGE_AMOUNT &&
     POSTAGE_DEPTH &&
     Number(POSTAGE_TTL_MIN) >= MINIMAL_EXTENDS_TTL_VALUE
   ) {
-    return {
-      mode: 'extendsTTL',
-      depth: Number(POSTAGE_DEPTH),
-      ttlMin: Number(POSTAGE_TTL_MIN),
-      amount: POSTAGE_AMOUNT,
-      refreshPeriod,
-      beeDebugApiUrl,
-    }
+    return createExtendsTTLConfig(POSTAGE_DEPTH, POSTAGE_TTL_MIN, POSTAGE_AMOUNT, refreshPeriod, beeDebugApiUrl)
   } else if (POSTAGE_EXTENDS_CAPACITY === 'true') {
-    return {
-      mode: 'extendsCapacity',
-      usageThreshold: Number(POSTAGE_USAGE_THRESHOLD || DEFAULT_POSTAGE_USAGE_THRESHOLD),
-      refreshPeriod,
-      beeDebugApiUrl,
-    }
+    return createExtendsCapacityConfig(POSTAGE_USAGE_THRESHOLD, refreshPeriod, beeDebugApiUrl)
   }
   // Missing one of the variables needed for the autobuy or extends TTL
   else if (POSTAGE_DEPTH || POSTAGE_AMOUNT || POSTAGE_TTL_MIN || BEE_DEBUG_API_URL) {
@@ -231,6 +190,57 @@ export function validateStampPostageConfig(
 
   // Stamps rewrite is disabled
   return undefined
+}
+
+export function createAutoBuyStampsConfig(
+  POSTAGE_DEPTH: string,
+  POSTAGE_AMOUNT: string,
+  POSTAGE_USAGE_THRESHOLD: string | undefined,
+  POSTAGE_USAGE_MAX: string | undefined,
+  POSTAGE_TTL_MIN: string | undefined,
+  refreshPeriod: number,
+  beeDebugApiUrl: string,
+): StampsConfigAutobuy {
+  return {
+    mode: 'autobuy',
+    depth: Number(POSTAGE_DEPTH),
+    amount: POSTAGE_AMOUNT,
+    usageThreshold: Number(POSTAGE_USAGE_THRESHOLD || DEFAULT_POSTAGE_USAGE_THRESHOLD),
+    usageMax: Number(POSTAGE_USAGE_MAX || DEFAULT_POSTAGE_USAGE_MAX),
+    ttlMin: Number(POSTAGE_TTL_MIN || (refreshPeriod / 1000) * 5),
+    refreshPeriod,
+    beeDebugApiUrl,
+  }
+}
+
+export function createExtendsTTLConfig(
+  POSTAGE_DEPTH: string,
+  POSTAGE_TTL_MIN: string | undefined,
+  POSTAGE_AMOUNT: string,
+  refreshPeriod: number,
+  beeDebugApiUrl: string,
+): StampsConfigExtendsTTL {
+  return {
+    mode: 'extendsTTL',
+    depth: Number(POSTAGE_DEPTH),
+    ttlMin: Number(POSTAGE_TTL_MIN),
+    amount: POSTAGE_AMOUNT,
+    refreshPeriod,
+    beeDebugApiUrl,
+  }
+}
+
+export function createExtendsCapacityConfig(
+  POSTAGE_USAGE_THRESHOLD: string | undefined,
+  refreshPeriod: number,
+  beeDebugApiUrl: string,
+): StampsConfigExtendsCapacity {
+  return {
+    mode: 'extendsCapacity',
+    usageThreshold: Number(POSTAGE_USAGE_THRESHOLD || DEFAULT_POSTAGE_USAGE_THRESHOLD),
+    refreshPeriod,
+    beeDebugApiUrl,
+  }
 }
 
 export function getContentConfig({ BEE_API_URL, REUPLOAD_PERIOD }: EnvironmentVariables = {}): ContentConfig | false {

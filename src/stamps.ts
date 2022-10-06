@@ -127,7 +127,7 @@ export function filterUsableStampsExtendsTTL(stamps: PostageBatch[]): PostageBat
  */
 export function filterUsableStampsExtendsCapacity(stamps: PostageBatch[], usageThreshold: number): PostageBatch[] {
   const usableStamps = stamps
-    // filter to get stamps that have the right depth, amount and are not fully used or expired
+    // filter to get stamps that have been used over the usageThreshold set
     .filter(s => s.usable && getUsage(s) > usageThreshold)
     // sort the stamps by usage
     .sort((a, b) => (getUsage(a) < getUsage(b) ? 1 : -1))
@@ -168,10 +168,6 @@ export async function topUpStamp(beeDebug: BeeDebug, postageBatchId: string, amo
   const stamp = await beeDebug.getPostageBatch(postageBatchId)
 
   return stamp
-}
-
-export async function diluteStamp(beeDebug: BeeDebug, postageBatchId: string, depth: number) {
-  await beeDebug.diluteBatch(postageBatchId, depth)
 }
 
 export class StampsManager {
@@ -330,8 +326,8 @@ export class StampsManager {
     for (const stamp of this.usableStamps) {
       try {
         logger.debug(`extending stamp capacity: ${stamp.batchID}`)
-        await topUpStamp(beeDebug, stamp.batchID, (Number(stamp.amount) * 2).toString())
-        await diluteStamp(beeDebug, stamp.batchID, stamp.depth + 1)
+        await topUpStamp(beeDebug, stamp.batchID, (BigInt(stamp.amount) * BigInt(2)).toString())
+        await beeDebug.diluteBatch(stamp.batchID, stamp.depth + 1)
         logger.info(`capacity extended for stamp ${stamp.batchID}`)
       } catch (err) {
         logger.error('failed to extend stamp capacity', err)
