@@ -231,31 +231,33 @@ export class StampsManager {
   public async refreshStampsExtends(config: StampsConfigExtends, beeDebug: BeeDebug): Promise<void> {
     stampCheckCounter.inc()
     logger.info('checking postage stamps')
-    const stamps = await beeDebug.getAllPostageBatch()
-    logger.debug('retrieved stamps', stamps)
 
-    const { amount, ttlMin, depth } = config
+    try {
+      const stamps = await beeDebug.getAllPostageBatch()
+      logger.debug('retrieved stamps', stamps)
 
-    // Get all usable stamps sorted by usage from most used to least
-    this.usableStamps = filterUsableStampsExtends(stamps)
+      const { amount, ttlMin, depth } = config
 
-    if (!this.isBuyingStamp) {
-      if (this.usableStamps.length === 0) {
-        try {
+      // Get all usable stamps sorted by usage from most used to least
+      this.usableStamps = filterUsableStampsExtends(stamps)
+
+      if (!this.isBuyingStamp) {
+        if (this.usableStamps.length === 0) {
           this.isBuyingStamp = true
-          const { stamp: newStamp } = await buyNewStamp(depth, amount, beeDebug)
+          try {
+            const { stamp: newStamp } = await buyNewStamp(depth, amount, beeDebug)
 
-          // Add the bought postage stamp
-          this.usableStamps.push(newStamp)
-        } catch (e) {
-          logger.error('failed to buy postage stamp', e)
-          stampPurchaseFailedCounter.inc()
-        } finally {
-          this.isBuyingStamp = false
+            // Add the bought postage stamp
+            this.usableStamps.push(newStamp)
+          } finally {
+            this.isBuyingStamp = false
+          }
+        } else {
+          await this.verifyUsableStamps(beeDebug, ttlMin, config, amount)
         }
-      } else {
-        await this.verifyUsableStamps(beeDebug, ttlMin, config, amount)
       }
+    } catch (e) {
+      logger.error('failed to refresh on extends postage stamps', e)
     }
   }
 
@@ -280,21 +282,16 @@ export class StampsManager {
           setTimeout(() => this.completeTopUp(stampRes), 60000)
         } catch (e: any) {
           // error that indicate that 2 stamps are trying to be extended at the same time. Comes out as a warning
-          if (e && e.responseBody && e.requestOptions && JSON.parse(e.responseBody).code === 429) {
-            const errorStamp = e.requestOptions.path.split('/')[2]
-            const errorStampIndex = this.extendingStamps.indexOf(errorStamp)
-            this.extendingStamps.splice(errorStampIndex, 1)
-            logger.warn(`postage stamp warning ${errorStamp}`)
-          } else {
-            logger.error('failed to topup postage stamp', e)
-          }
+          const errorStampIndex = this.extendingStamps.indexOf(stamp.batchID)
+          this.extendingStamps.splice(errorStampIndex, 1)
+          logger.error('failed to topup postage stamp', e)
         }
       }
     }
   }
 
   completeTopUp(stamp: PostageBatch) {
-    logger.info('successfully postage stamp extended', { stamp })
+    logger.info('successfully extended postage stamp', { stamp })
     // remove stamps from extending stamps array
     const stampIndex = this.extendingStamps.findIndex(id => stamp.batchID === id)
     this.extendingStamps.splice(stampIndex, 1)
