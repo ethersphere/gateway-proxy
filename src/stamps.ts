@@ -244,18 +244,20 @@ export class StampsManager {
       if (!this.isBuyingStamp) {
         if (this.usableStamps.length === 0) {
           this.isBuyingStamp = true
-          const { stamp: newStamp } = await buyNewStamp(depth, amount, beeDebug)
+          try {
+            const { stamp: newStamp } = await buyNewStamp(depth, amount, beeDebug)
 
-          // Add the bought postage stamp
-          this.usableStamps.push(newStamp)
+            // Add the bought postage stamp
+            this.usableStamps.push(newStamp)
+          } finally {
+            this.isBuyingStamp = false
+          }
         } else {
           await this.verifyUsableStamps(beeDebug, ttlMin, config, amount)
         }
       }
     } catch (e) {
       logger.error('failed to refresh on extends postage stamps', e)
-    } finally {
-      this.isBuyingStamp = false
     }
   }
 
