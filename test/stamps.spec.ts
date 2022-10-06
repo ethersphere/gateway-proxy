@@ -1,6 +1,6 @@
 import type { Server } from 'http'
 import { BeeDebug, BatchId, PostageBatch } from '@ethersphere/bee-js'
-import { StampsManager, getUsage, buyNewStamp, topUpStamp, diluteStamp, filterUsableStampsAutobuy } from '../src/stamps'
+import { StampsManager, getUsage, buyNewStamp, topUpStamp, filterUsableStampsAutobuy } from '../src/stamps'
 import { getStampsConfig } from '../src/config'
 import { sleep } from '../src/utils'
 import { createStampMockServer, StampDB } from './stamps.mockserver'
