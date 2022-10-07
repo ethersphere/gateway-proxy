@@ -50,6 +50,12 @@ describe('bzz.link', () => {
       expect(requestFilter('', req)).toStrictEqual(true)
     })
 
+    it('should return true for multilevel subdomain', async () => {
+      const req = { subdomains: ['swarm', 'book'] } as Request
+
+      expect(requestFilter('', req)).toStrictEqual(true)
+    })
+
     it('should return false for no subdomain', async () => {
       const req = { subdomains: [] as string[] } as Request
 
@@ -83,6 +89,13 @@ describe('bzz.link', () => {
       const req = { hostname: `some-ens-domain.bzz.link`, subdomains: ['some-ens-domain'] } as Request
 
       expect(router(req)).toEqual(`http://some.bee/bzz/some-ens-domain.eth`)
+    })
+
+    it('should translate valid ENS with subdomain', async () => {
+      const router = routerClosure('http://some.bee', true, true)
+      const req = { hostname: `book.swarm.bzz.link`, subdomains: ['swarm', 'book'] } as Request
+
+      expect(router(req)).toEqual(`http://some.bee/bzz/book.swarm.eth`)
     })
 
     it('should translate valid ENS when CID is disabled', async () => {
