@@ -1,3 +1,5 @@
+import { BeeDebug } from '@ethersphere/bee-js'
+
 /**
  * Sleep for N miliseconds
  *
@@ -17,4 +19,19 @@ export function getErrorMessage(error: unknown): string | undefined {
   }
 
   return String(error)
+}
+
+export async function waitForStampUsable(beeDebug: BeeDebug, batchId: string): Promise<void> {
+  for (let tries = 0; tries < 60; tries++) {
+    try {
+      const batch = await beeDebug.getPostageBatch(batchId)
+
+      if (batch.usable) {
+        return
+      }
+    } catch {
+      await sleep(3000)
+    }
+  }
+  throw Error(`Stamp not found/usable: ${batchId}`)
 }
