@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.6.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.5.1...v0.6.0) (2022-10-10)
+
+
+### Features
+
+* add multilevel ens subdomain support ([#328](https://www.github.com/ethersphere/gateway-proxy/issues/328)) ([17380cf](https://www.github.com/ethersphere/gateway-proxy/commit/17380cf86279446f481793f504071e4f9664c10a))
+* add support for extending existing postage stamp TTL ([#329](https://www.github.com/ethersphere/gateway-proxy/issues/329)) ([276f260](https://www.github.com/ethersphere/gateway-proxy/commit/276f260b6d94991eaf718abaeead66564d3cd495))
+* build and publish deb package for gateway-proxy ([#254](https://www.github.com/ethersphere/gateway-proxy/issues/254)) ([e28a18c](https://www.github.com/ethersphere/gateway-proxy/commit/e28a18ca8c4ef97ef446be3d20fb791c19905246))
+* expose sha1 of bee overlay address in response header ([#294](https://www.github.com/ethersphere/gateway-proxy/issues/294)) ([b302cfb](https://www.github.com/ethersphere/gateway-proxy/commit/b302cfb62886a565207dba43c8a5a34135735590))
+* print custom error when no stamp is available ([#365](https://www.github.com/ethersphere/gateway-proxy/issues/365)) ([e4cda76](https://www.github.com/ethersphere/gateway-proxy/commit/e4cda760aaa4f3f93c9bdcaacfa436bcf47a43f3))
+* reupload pinned content periodically ([#340](https://www.github.com/ethersphere/gateway-proxy/issues/340)) ([de50873](https://www.github.com/ethersphere/gateway-proxy/commit/de50873bfedab66a187765b6a81d9a017fd0bd7e))
+* upload chunk for readiness check ([#327](https://www.github.com/ethersphere/gateway-proxy/issues/327)) ([4e2e83a](https://www.github.com/ethersphere/gateway-proxy/commit/4e2e83af4646e30324a8fbe029aefe3d6d6dbed4))
+
+
+### Bug Fixes
+
+* add missing npm ci ([#257](https://www.github.com/ethersphere/gateway-proxy/issues/257)) ([6887382](https://www.github.com/ethersphere/gateway-proxy/commit/6887382cab83f8d64c84bad277a3d1035ce48002))
+* disable reupload when not configured ([#367](https://www.github.com/ethersphere/gateway-proxy/issues/367)) ([#368](https://www.github.com/ethersphere/gateway-proxy/issues/368)) ([7bd74a5](https://www.github.com/ethersphere/gateway-proxy/commit/7bd74a583fd89089edd5dcd5c6d7aa5326f086c6))
+* do not log readiness chunk request body ([#366](https://www.github.com/ethersphere/gateway-proxy/issues/366)) ([d19ae94](https://www.github.com/ethersphere/gateway-proxy/commit/d19ae94d435fee12a2af33cc521f63a15cf3e888))
+* exception error handling on stamps manager ([#369](https://www.github.com/ethersphere/gateway-proxy/issues/369)) ([0934ae4](https://www.github.com/ethersphere/gateway-proxy/commit/0934ae48fc703bafa6c2ba60ef97bcc94fb6bbb0))
+* fix content manager port and error handling ([#355](https://www.github.com/ethersphere/gateway-proxy/issues/355)) ([493ab33](https://www.github.com/ethersphere/gateway-proxy/commit/493ab33feac1d31728f1d17f7f7b1446bf9d31b7))
+* proper usage of default bee urls ([#343](https://www.github.com/ethersphere/gateway-proxy/issues/343)) ([33db7d2](https://www.github.com/ethersphere/gateway-proxy/commit/33db7d2753c519bee84a05d8252df21b240c1b82))
+* remove double logging buying new stamp ([#348](https://www.github.com/ethersphere/gateway-proxy/issues/348)) ([2d15bd9](https://www.github.com/ethersphere/gateway-proxy/commit/2d15bd9d0c48418ab54492095e56c8434e809b57))
+* start server before stamp manager is ready ([#363](https://www.github.com/ethersphere/gateway-proxy/issues/363)) ([2e28ee3](https://www.github.com/ethersphere/gateway-proxy/commit/2e28ee328e9b73334bd4c2e287c1a19162b2841f))
+* wait for stamp to be usable ([#375](https://www.github.com/ethersphere/gateway-proxy/issues/375)) ([1240b90](https://www.github.com/ethersphere/gateway-proxy/commit/1240b909ef13c3a40b951af626a30d3ca5938f73))
+* working dir for systemd ([#261](https://www.github.com/ethersphere/gateway-proxy/issues/261)) ([3204e41](https://www.github.com/ethersphere/gateway-proxy/commit/3204e4166eeada5ed218bea05d613d17bce55d29))
+
 ### [0.5.1](https://www.github.com/ethersphere/gateway-proxy/compare/v0.5.0...v0.5.1) (2022-03-23)
 
 
