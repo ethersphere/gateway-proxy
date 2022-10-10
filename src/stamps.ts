@@ -3,6 +3,7 @@ import client from 'prom-client'
 import { ERROR_NO_STAMP, StampsConfig, StampsConfigAutobuy, StampsConfigExtends } from './config'
 import { logger } from './logger'
 import { register } from './metrics'
+import { waitForStampUsable } from './utils'
 
 interface Options {
   timeout?: number
@@ -126,13 +127,10 @@ export async function buyNewStamp(
   depth: number,
   amount: string,
   beeDebug: BeeDebug,
-  options?: Options,
 ): Promise<{ batchId: BatchId; stamp: PostageBatch }> {
   logger.info('buying new stamp')
-  const batchId = await beeDebug.createPostageBatch(amount, depth, {
-    waitForUsable: true,
-    waitForUsableTimeout: options?.timeout,
-  })
+  const batchId = await beeDebug.createPostageBatch(amount, depth, { waitForUsable: false })
+  await waitForStampUsable(beeDebug, batchId)
   stampPurchaseCounter.inc()
 
   const stamp = await beeDebug.getPostageBatch(batchId)
