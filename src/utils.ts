@@ -29,6 +29,8 @@ export async function waitForStampUsable(beeDebug: BeeDebug, batchId: string): P
 
       if (batch.usable) {
         return
+      } else {
+        await sleep(3000)
       }
     } catch {
       await sleep(3000)
