@@ -137,7 +137,7 @@ describe('POST /bytes', () => {
 
     const downloadedData = await bee.downloadData(reference)
 
-    expect(Buffer.from(downloadedData).toString()).toEqual(data)
+    expect(downloadedData.text()).toEqual(data)
   })
 
   it('should store and retrieve actual data with environment defined postage stamp', async () => {
@@ -149,7 +149,7 @@ describe('POST /bytes', () => {
 
     const downloadedData = await bee.downloadData(reference)
 
-    expect(Buffer.from(downloadedData).toString()).toEqual(data)
+    expect(downloadedData.text()).toEqual(data)
   })
 })
 
@@ -163,7 +163,7 @@ describe('GET /bytes/:reference/', () => {
 
     const downloadedData = await beeProxy.downloadData(reference)
 
-    expect(Buffer.from(downloadedData).toString()).toEqual(data)
+    expect(downloadedData.text()).toEqual(data)
   })
 
   it('with authorization enabled should return 403 & Forbidden', async () => {

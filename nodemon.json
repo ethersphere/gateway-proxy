@@ -3,10 +3,10 @@
   "ignore": [".git", "node_modules/", "dist/", "coverage/"],
   "watch": ["src/"],
   "execMap": {
-    "ts": "node -r ts-node/register"
+    "ts": "ts-node-esm --experimentalSpecifierResolution=node"
   },
   "env": {
     "NODE_ENV": "development"
   },
-  "ext": "js,json,ts"
+  "ext": "js,json,ts,mjs"
 }

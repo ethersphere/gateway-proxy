@@ -1,6 +1,7 @@
 {
   "name": "@ethersphere/gateway-proxy",
   "version": "0.6.0",
+  "type": "module",
   "description": "Swarm proxy server that can play role of a gateway",
   "keywords": [
     "bee",
@@ -61,7 +62,7 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@ethersphere/bee-js": "^5.0.0",
+    "@ethersphere/bee-js": "^6.0.0-pre.0",
     "@ethersphere/swarm-cid": "^0.1.0",
     "express": "^4.18.1",
     "http-proxy-middleware": "^2.0.6",
