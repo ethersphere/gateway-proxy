@@ -19,11 +19,12 @@ interface StampsConfigHardcoded {
   stamp: string
 }
 
-export interface StampsConfigExtendsTTL {
-  mode: 'extendsTTL'
+export interface StampsConfigExtends {
+  mode: 'extends'
   ttlMin: number
   depth: number
   amount: string
+  usageThreshold: number
   refreshPeriod: number
   beeDebugApiUrl: string
 }
@@ -44,18 +45,7 @@ export interface StampsConfigAutobuy {
   refreshPeriod: number
 }
 
-export interface StampsConfigExtendsCapacity {
-  mode: 'extendsCapacity'
-  beeDebugApiUrl: string
-  usageThreshold: number
-  refreshPeriod: number
-}
-
-export type StampsConfig =
-  | StampsConfigHardcoded
-  | StampsConfigAutobuy
-  | StampsConfigExtendsTTL
-  | StampsConfigExtendsCapacity
+export type StampsConfig = StampsConfigHardcoded | StampsConfigAutobuy | StampsConfigExtends
 
 export type ContentConfig = ContentConfigReupload
 
@@ -170,14 +160,20 @@ export function getStampsConfig({
       beeDebugApiUrl,
     )
   } else if (
-    POSTAGE_EXTENDSTTL === 'true' &&
-    POSTAGE_AMOUNT &&
-    POSTAGE_DEPTH &&
-    Number(POSTAGE_TTL_MIN) >= MINIMAL_EXTENDS_TTL_VALUE
+    (POSTAGE_EXTENDSTTL === 'true' &&
+      POSTAGE_AMOUNT &&
+      POSTAGE_DEPTH &&
+      Number(POSTAGE_TTL_MIN) >= MINIMAL_EXTENDS_TTL_VALUE) ||
+    POSTAGE_EXTENDS_CAPACITY === 'true'
   ) {
-    return createExtendsTTLConfig(POSTAGE_DEPTH, POSTAGE_TTL_MIN, POSTAGE_AMOUNT, refreshPeriod, beeDebugApiUrl)
-  } else if (POSTAGE_EXTENDS_CAPACITY === 'true') {
-    return createExtendsCapacityConfig(POSTAGE_USAGE_THRESHOLD, refreshPeriod, beeDebugApiUrl)
+    return createExtendsConfig(
+      POSTAGE_DEPTH,
+      POSTAGE_TTL_MIN,
+      POSTAGE_AMOUNT,
+      POSTAGE_USAGE_THRESHOLD,
+      refreshPeriod,
+      beeDebugApiUrl,
+    )
   }
   // Missing one of the variables needed for the autobuy or extends TTL
   else if (POSTAGE_DEPTH || POSTAGE_AMOUNT || POSTAGE_TTL_MIN || BEE_DEBUG_API_URL) {
@@ -213,30 +209,19 @@ export function createAutoBuyStampsConfig(
   }
 }
 
-export function createExtendsTTLConfig(
-  POSTAGE_DEPTH: string,
+export function createExtendsConfig(
+  POSTAGE_DEPTH: string | undefined,
   POSTAGE_TTL_MIN: string | undefined,
-  POSTAGE_AMOUNT: string,
-  refreshPeriod: number,
-  beeDebugApiUrl: string,
-): StampsConfigExtendsTTL {
-  return {
-    mode: 'extendsTTL',
-    depth: Number(POSTAGE_DEPTH),
-    ttlMin: Number(POSTAGE_TTL_MIN),
-    amount: POSTAGE_AMOUNT,
-    refreshPeriod,
-    beeDebugApiUrl,
-  }
-}
-
-export function createExtendsCapacityConfig(
+  POSTAGE_AMOUNT: string | undefined,
   POSTAGE_USAGE_THRESHOLD: string | undefined,
   refreshPeriod: number,
   beeDebugApiUrl: string,
-): StampsConfigExtendsCapacity {
+): StampsConfigExtends {
   return {
-    mode: 'extendsCapacity',
+    mode: 'extends',
+    depth: Number(POSTAGE_DEPTH),
+    ttlMin: Number(POSTAGE_TTL_MIN),
+    amount: POSTAGE_AMOUNT ?? '0',
     usageThreshold: Number(POSTAGE_USAGE_THRESHOLD || DEFAULT_POSTAGE_USAGE_THRESHOLD),
     refreshPeriod,
     beeDebugApiUrl,
