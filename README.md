@@ -57,7 +57,8 @@ The proxy can manage postage stamps for you in 4 modes of operation:
    provide `POSTAGE_AMOUNT`, `POSTAGE_DEPTH` with the desired amount to use and `POSTAGE_TTL_MIN` above with
    a number above or equal to 60.
 5. It can extends the postage stamp capacity to those that are about to be fulfill. To enable this, set
-   `POSTAGE_EXTENDS_CAPACITY=true`
+   `POSTAGE_EXTENDS_CAPACITY=true`. You can also set the env variable `POSTAGE_USAGE_THRESHOLD=0.7` to determine
+   the maximum usage level to check if the stamp needs to be extended
 
 In modes 1, 2 and 3, the proxy can be configured to require authentication secret to forward the requests. Use the
 `AUTH_SECRET` environment variable to enable it.
@@ -150,7 +151,7 @@ npm run start
 | POSTAGE_STAMP            | undefined                   | Postage stamp that should be used for all upload requests. If provided, the autobuy feature is disabled.   |
 | POSTAGE_DEPTH            | undefined                   | Postage stamp depth to be used when buying new stamps or selecting existing stamps.                        |
 | POSTAGE_AMOUNT           | undefined                   | Postage stamp amount to be used when buying new stamps or selecting existing stamps.                       |
-| POSTAGE_USAGE_THRESHOLD  | 0.7                         | Usage percentage at which new postage stamp will be bought (value between 0 and 1).                        |
+| POSTAGE_USAGE_THRESHOLD  | 0.7                         | In `autobuy` Usage percentage at which new postage stamp will be bought. In `extends capacity` feature is use to identify which stamps have been use more than the set value. Value most be between 0 and 1 |
 | POSTAGE_USAGE_MAX        | 0.9                         | Usage percentage at which existing postage stamp should not be considered viable ( values 0 to 1).         |
 | POSTAGE_TTL_MIN          | `autoplay`: 5 \* POSTAGE_REFRESH_PERIOD. `extends TTL` undefined | In `autobuy`, Minimal time to live for the postage stamps to still be considered for upload (in seconds). In `extends TTL` is mandatory and required to be above 60 seconds  |
 | POSTAGE_REFRESH_PERIOD   | 60                          | How frequently are the postage stamps checked in seconds.                                                  |

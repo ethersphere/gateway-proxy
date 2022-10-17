@@ -170,6 +170,7 @@ export function getStampsConfig({
       POSTAGE_DEPTH,
       POSTAGE_TTL_MIN,
       POSTAGE_AMOUNT,
+      POSTAGE_EXTENDS_CAPACITY,
       POSTAGE_USAGE_THRESHOLD,
       refreshPeriod,
       beeDebugApiUrl,
@@ -213,6 +214,7 @@ export function createExtendsConfig(
   POSTAGE_DEPTH: string | undefined,
   POSTAGE_TTL_MIN: string | undefined,
   POSTAGE_AMOUNT: string | undefined,
+  POSTAGE_EXTENDS_CAPACITY: string | undefined,
   POSTAGE_USAGE_THRESHOLD: string | undefined,
   refreshPeriod: number,
   beeDebugApiUrl: string,
@@ -222,7 +224,9 @@ export function createExtendsConfig(
     depth: Number(POSTAGE_DEPTH),
     ttlMin: Number(POSTAGE_TTL_MIN),
     amount: POSTAGE_AMOUNT ?? '0',
-    usageThreshold: Number(POSTAGE_USAGE_THRESHOLD || DEFAULT_POSTAGE_USAGE_THRESHOLD),
+    usageThreshold: Number(
+      POSTAGE_USAGE_THRESHOLD || (POSTAGE_EXTENDS_CAPACITY === 'true' ? DEFAULT_POSTAGE_USAGE_THRESHOLD : '0'),
+    ),
     refreshPeriod,
     beeDebugApiUrl,
   }
