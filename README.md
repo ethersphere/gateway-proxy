@@ -30,6 +30,7 @@ newer Bee versions is not recommended and may not work. Stay up to date by joini
     - [2. Hardcoded postage stamp](#2-hardcoded-postage-stamp)
     - [3. Autobuy postage stamps](#3-autobuy-postage-stamps)
     - [4. Extends stamps TTL](#4-extends-stamps-ttl)
+    - [5. Extends stamps capacity](#5-extends-stamps-capacity)
     - [Enable authentication](#enable-authentication)
   - [Environment variables](#environment-variables)
   - [Curl](#curl)
