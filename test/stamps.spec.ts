@@ -241,3 +241,16 @@ describe('topUpStamp', () => {
     expect(Number(stampExtended.amount)).toBeGreaterThan(Number(defaultAmount))
   })
 })
+
+describe('extendsCapacity', () => {
+  it('should extend stamps capacity', async () => {
+    const beeDebug = new BeeDebug(url)
+
+    const stamp = await buyNewStamp(defaultDepth, defaultAmount, beeDebug)
+
+    await topUpStamp(beeDebug, stamp.batchId, (Number(stamp.stamp.amount) * 2).toString())
+    await beeDebug.diluteBatch(stamp.batchId, stamp.stamp.depth + 1)
+    const stampExtended = await beeDebug.getPostageBatch(stamp.batchId)
+    expect(stampExtended.depth).toBeGreaterThan(defaultDepth)
+  })
+})

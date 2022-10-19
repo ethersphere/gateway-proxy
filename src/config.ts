@@ -18,11 +18,13 @@ interface StampsConfigHardcoded {
   mode: 'hardcoded'
   stamp: string
 }
+
 export interface StampsConfigExtends {
-  mode: 'extendsTTL'
+  mode: 'extends'
   ttlMin: number
   depth: number
   amount: string
+  usageThreshold: number
   refreshPeriod: number
   beeDebugApiUrl: string
 }
@@ -80,6 +82,7 @@ export type EnvironmentVariables = Partial<{
   POSTAGE_REFRESH_PERIOD: string
   POSTAGE_EXTENDSTTL: string
   REUPLOAD_PERIOD: string
+  POSTAGE_EXTENDS_CAPACITY: string
 }>
 
 export const SUPPORTED_LEVELS = ['critical', 'error', 'warn', 'info', 'verbose', 'debug'] as const
@@ -138,6 +141,7 @@ export function getStampsConfig({
   POSTAGE_TTL_MIN,
   POSTAGE_REFRESH_PERIOD,
   POSTAGE_EXTENDSTTL,
+  POSTAGE_EXTENDS_CAPACITY,
 }: EnvironmentVariables = {}): StampsConfig | undefined {
   const refreshPeriod = Number(POSTAGE_REFRESH_PERIOD || DEFAULT_POSTAGE_REFRESH_PERIOD)
   const beeDebugApiUrl = BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL
@@ -145,7 +149,25 @@ export function getStampsConfig({
   // Start in hardcoded mode
   if (POSTAGE_STAMP) return { mode: 'hardcoded', stamp: POSTAGE_STAMP }
   // Start autobuy
-  else if (!POSTAGE_EXTENDSTTL && POSTAGE_DEPTH && POSTAGE_AMOUNT && BEE_DEBUG_API_URL) {
+  else if (
+    (POSTAGE_EXTENDSTTL === 'true' &&
+      POSTAGE_AMOUNT &&
+      POSTAGE_DEPTH &&
+      Number(POSTAGE_TTL_MIN) >= MINIMAL_EXTENDS_TTL_VALUE) ||
+    POSTAGE_EXTENDS_CAPACITY === 'true'
+  ) {
+    return {
+      mode: 'extends',
+      depth: Number(POSTAGE_DEPTH),
+      ttlMin: Number(POSTAGE_TTL_MIN),
+      amount: POSTAGE_AMOUNT ?? '0',
+      usageThreshold: Number(
+        POSTAGE_USAGE_THRESHOLD || (POSTAGE_EXTENDS_CAPACITY === 'true' ? DEFAULT_POSTAGE_USAGE_THRESHOLD : '0'),
+      ),
+      refreshPeriod,
+      beeDebugApiUrl,
+    }
+  } else if (POSTAGE_DEPTH && POSTAGE_AMOUNT && BEE_DEBUG_API_URL) {
     return {
       mode: 'autobuy',
       depth: Number(POSTAGE_DEPTH),
@@ -153,20 +175,6 @@ export function getStampsConfig({
       usageThreshold: Number(POSTAGE_USAGE_THRESHOLD || DEFAULT_POSTAGE_USAGE_THRESHOLD),
       usageMax: Number(POSTAGE_USAGE_MAX || DEFAULT_POSTAGE_USAGE_MAX),
       ttlMin: Number(POSTAGE_TTL_MIN || (refreshPeriod / 1000) * 5),
-      refreshPeriod,
-      beeDebugApiUrl,
-    }
-  } else if (
-    POSTAGE_EXTENDSTTL === 'true' &&
-    POSTAGE_AMOUNT &&
-    POSTAGE_DEPTH &&
-    Number(POSTAGE_TTL_MIN) >= MINIMAL_EXTENDS_TTL_VALUE
-  ) {
-    return {
-      mode: 'extendsTTL',
-      depth: Number(POSTAGE_DEPTH),
-      ttlMin: Number(POSTAGE_TTL_MIN),
-      amount: POSTAGE_AMOUNT,
       refreshPeriod,
       beeDebugApiUrl,
     }

@@ -30,6 +30,7 @@ newer Bee versions is not recommended and may not work. Stay up to date by joini
     - [2. Hardcoded postage stamp](#2-hardcoded-postage-stamp)
     - [3. Autobuy postage stamps](#3-autobuy-postage-stamps)
     - [4. Extends stamps TTL](#4-extends-stamps-ttl)
+    - [5. Extends stamps capacity](#5-extends-stamps-capacity)
     - [Enable authentication](#enable-authentication)
   - [Environment variables](#environment-variables)
   - [Curl](#curl)
@@ -56,6 +57,9 @@ The proxy can manage postage stamps for you in 4 modes of operation:
 4. It can extend the TTL of a stamp that is about to expire. To enable this, set `POSTAGE_EXTENDSTTL=true`,
    provide `POSTAGE_AMOUNT`, `POSTAGE_DEPTH` with the desired amount to use and `POSTAGE_TTL_MIN` above with
    a number above or equal to 60.
+5. It can extends the postage stamp capacity to those that are about to be fulfill. To enable this, set
+   `POSTAGE_EXTENDS_CAPACITY=true`. You can also set the env variable `POSTAGE_USAGE_THRESHOLD=0.7` to determine
+   the maximum usage level to check if the stamp needs to be extended
 
 In modes 1, 2 and 3, the proxy can be configured to require authentication secret to forward the requests. Use the
 `AUTH_SECRET` environment variable to enable it.
@@ -112,6 +116,14 @@ export BEE_DEBUG_API_URL=http://localhost:1635
 npm run start
 ```
 
+#### 5. Extends stamps capacity
+
+```sh
+export POSTAGE_EXTENDS_CAPACITY=true
+
+npm run start
+```
+
 #### Reupload pinned content
 
 ```sh
@@ -149,6 +161,8 @@ npm run start
 | REMOVE_PIN_HEADER       | true                        | Removes swarm-pin header on all proxy requests.                                                            |
 | `LOG_LEVEL`             | info                        | Log level that is outputted (values: `critical`, `error`, `warn`, `info`, `verbose`, `debug`)              |
 | POSTAGE_EXTENDSTTL      | false                       | Enables extends TTL feature. Works along with POSTAGE_AMOUNT                                               |
+| POSTAGE_EXTENDS_CAPACITY | false                       | Enables extending stamp capacity
+feature.                                                |
 | EXPOSE_HASHED_IDENTITY  | false                       | Exposes `x-bee-node` header, which is the hashed identity of the Bee node for identification purposes      |
 | REUPLOAD_PERIOD         | undefined                   | How frequently are the pinned content checked to be reuploaded.                                            |
 

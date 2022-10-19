@@ -144,9 +144,10 @@ describe('getStampsConfig', () => {
         POSTAGE_TTL_MIN,
       },
       output: {
-        mode: 'extendsTTL',
+        mode: 'extends',
         depth: Number(POSTAGE_DEPTH),
         amount: POSTAGE_AMOUNT,
+        usageThreshold: 0,
         beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL,
         ttlMin: Number(POSTAGE_TTL_MIN),
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
@@ -162,9 +163,10 @@ describe('getStampsConfig', () => {
         POSTAGE_TTL_MIN,
       },
       output: {
-        mode: 'extendsTTL',
+        mode: 'extends',
         depth: Number(POSTAGE_DEPTH),
         amount: POSTAGE_AMOUNT,
+        usageThreshold: 0,
         beeDebugApiUrl: BEE_DEBUG_API_URL,
         ttlMin: Number(POSTAGE_TTL_MIN),
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
