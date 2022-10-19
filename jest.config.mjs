@@ -2,9 +2,8 @@
  * For a detailed explanation regarding each configuration property and type check, visit:
  * https://jestjs.io/docs/en/configuration.html
  */
-import type { Config } from '@jest/types'
 
-export default async (): Promise<Config.InitialOptions> => {
+export default async () => {
   return {
     preset: 'ts-jest',
     testEnvironment: 'node',
