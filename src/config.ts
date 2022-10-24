@@ -1,3 +1,5 @@
+import { getAmount, getDepth, getTTLMin, getUsageThreshold } from './utils'
+
 export interface AppConfig {
   beeApiUrl: string
   beeDebugApiUrl: string
@@ -156,14 +158,21 @@ export function getStampsConfig({
       Number(POSTAGE_TTL_MIN) >= MINIMAL_EXTENDS_TTL_VALUE) ||
     POSTAGE_EXTENDS_CAPACITY === 'true'
   ) {
+    const amount = getAmount(POSTAGE_AMOUNT)
+    const usageThreshold = getUsageThreshold(
+      POSTAGE_USAGE_THRESHOLD,
+      POSTAGE_EXTENDS_CAPACITY === 'true',
+      DEFAULT_POSTAGE_USAGE_THRESHOLD,
+    )
+    const ttlMin = getTTLMin(POSTAGE_TTL_MIN)
+    const depth = getDepth(POSTAGE_DEPTH)
+
     return {
       mode: 'extends',
-      depth: Number(POSTAGE_DEPTH),
-      ttlMin: Number(POSTAGE_TTL_MIN),
-      amount: POSTAGE_AMOUNT ?? '0',
-      usageThreshold: Number(
-        POSTAGE_USAGE_THRESHOLD || (POSTAGE_EXTENDS_CAPACITY === 'true' ? DEFAULT_POSTAGE_USAGE_THRESHOLD : '0'),
-      ),
+      depth,
+      ttlMin,
+      amount,
+      usageThreshold,
       refreshPeriod,
       beeDebugApiUrl,
     }

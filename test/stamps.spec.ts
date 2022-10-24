@@ -1,10 +1,12 @@
 import type { Server } from 'http'
 import { BeeDebug, BatchId, PostageBatch } from '@ethersphere/bee-js'
-import { StampsManager, getUsage, buyNewStamp, topUpStamp, filterUsableStampsAutobuy } from '../src/stamps'
 import { getStampsConfig } from '../src/config'
-import { sleep } from '../src/utils'
+import { buyNewStamp, getUsage, sleep } from '../src/utils'
 import { createStampMockServer, StampDB } from './stamps.mockserver'
 import { genRandomHex } from './utils'
+import { topUpStamp } from '../src/stamps/extends'
+import { filterUsableStampsAutobuy } from '../src/stamps/autobuy'
+import { HardcodedStampsManager } from '../src/stamps'
 
 interface AddressInfo {
   address: string
@@ -59,7 +61,7 @@ const buildStamp = (overwrites: Partial<PostageBatch>) => {
 describe('postageStamp', () => {
   it('should return correct hardcoded single postage stamp', async () => {
     const stamp = '0000000000000000000000000000000000000000000000000000000000000000'
-    const stampManager = new StampsManager()
+    const stampManager = new HardcodedStampsManager()
     await stampManager.start(getStampsConfig({ POSTAGE_STAMP: stamp })!)
     expect(stampManager.postageStamp).toEqual(stamp)
   })
@@ -67,7 +69,7 @@ describe('postageStamp', () => {
   it('should return existing stamp', async () => {
     const stamp = buildStamp({ utilization: 0 })
     db.add(stamp)
-    const manager = new StampsManager()
+    const manager = new HardcodedStampsManager()
     await manager.start(
       getStampsConfig({
         POSTAGE_DEPTH: defaultDepth.toString(),
@@ -86,7 +88,7 @@ describe('postageStamp', () => {
   })
 
   it('should start without any postage stamp and create new one', async () => {
-    const manager = new StampsManager()
+    const manager = new HardcodedStampsManager()
     await manager.start(
       getStampsConfig({
         POSTAGE_DEPTH: defaultDepth.toString(),
@@ -107,7 +109,7 @@ describe('postageStamp', () => {
     const stamp = buildStamp({ utilization: 14 })
     db.add(stamp)
 
-    const manager = new StampsManager()
+    const manager = new HardcodedStampsManager()
     await manager.start(
       getStampsConfig({
         POSTAGE_DEPTH: defaultDepth.toString(),
@@ -129,7 +131,7 @@ describe('postageStamp', () => {
     const stamp = buildStamp({ utilization: 5 })
     db.add(stamp)
 
-    const manager = new StampsManager()
+    const manager = new HardcodedStampsManager()
     await manager.start(
       getStampsConfig({
         POSTAGE_DEPTH: defaultDepth.toString(),

@@ -15,7 +15,7 @@ export class ContentManager {
   private isReuploading = false
 
   public async refreshContentReupload(beeApi: Bee): Promise<void> {
-    try{
+    try {
       const pins = await beeApi.getAllPins()
 
       if (!pins.length) {

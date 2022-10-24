@@ -7,7 +7,7 @@ import { fetchBeeIdentity, getHashedIdentity, HASHED_IDENTITY_HEADER } from './i
 import { logger } from './logger'
 import { register } from './metrics'
 import { checkReadiness, ReadinessStatus } from './readiness'
-import type { StampsManager } from './stamps'
+import { AutoBuyStampsManager, ExtendsStampManager, HardcodedStampsManager } from './stamps'
 import { getErrorMessage } from './utils'
 
 const SWARM_STAMP_HEADER = 'swarm-postage-batch-id'
@@ -32,7 +32,7 @@ export const createApp = (
     removePinHeader,
     exposeHashedIdentity,
   }: AppConfig,
-  stampManager?: StampsManager,
+  stampManager?: AutoBuyStampsManager | ExtendsStampManager | HardcodedStampsManager,
 ): Application => {
   const commonOptions: Options = {
     target: beeApiUrl,
