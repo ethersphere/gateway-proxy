@@ -1,3 +1,4 @@
+import { sleep } from '../src/utils'
 import {
   DEFAULT_BEE_DEBUG_API_URL,
   DEFAULT_HOSTNAME,
@@ -14,8 +15,9 @@ import {
 } from '../src/config'
 
 describe('getAppConfig', () => {
-  it('should return default values', () => {
+  it('should return default values', async () => {
     const config = getAppConfig()
+    await sleep(1_000)
     expect(config.beeApiUrl).toEqual(DEFAULT_BEE_API_URL)
     expect(config.authorization).toBeUndefined()
   })

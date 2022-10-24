@@ -2,16 +2,12 @@ import { createLogger, format, transports, Logger, Logform } from 'winston'
 import requestStats from 'request-stats'
 import type { Server } from 'http'
 
-import { SupportedLevels, logLevel } from './config'
+import { SupportedLevels, logLevel, SUPPORTED_LEVELS } from './config'
 
-const supportedLevels: Record<SupportedLevels, number> = [
-  'critical',
-  'error',
-  'warn',
-  'info',
-  'verbose',
-  'debug',
-].reduce((acc, cur, idx) => ({ ...acc, [cur]: idx }), {} as Record<SupportedLevels, number>)
+const supportedLevels: Record<SupportedLevels, number> = SUPPORTED_LEVELS.reduce(
+  (acc, cur, idx) => ({ ...acc, [cur]: idx }),
+  {} as Record<SupportedLevels, number>,
+)
 
 export const logger: Logger = createLogger({
   // To see more detailed errors, change this to 'debug'
