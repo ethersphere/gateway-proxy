@@ -109,10 +109,10 @@ export class ExtendsStampManager extends BaseStampManager implements StampsManag
 
     const stamps = await beeDebug.getAllPostageBatch()
 
-    const { depth, amount, ttlMin, refreshPeriod, usageThreshold, ttl, capacity } = config
+    const { depth, amount, ttlMin, refreshPeriod, usageThreshold, enableTtl, enableCapacity } = config
 
     // Get all usable stamps sorted by usage from most used to least
-    if (!this.isBuyingStamp && ttl) {
+    if (!this.isBuyingStamp && enableTtl) {
       const minTimeThreshold = ttlMin + refreshPeriod / 1000
       usableStampsExtendsTTL = filterUsableStampsExtendsTTL(stamps, minTimeThreshold)
 
@@ -132,7 +132,7 @@ export class ExtendsStampManager extends BaseStampManager implements StampsManag
       }
     }
 
-    if (capacity) {
+    if (enableCapacity) {
       usableStampsExtendsCapacity = filterUsableStampsExtendsCapacity(stamps, usageThreshold)
 
       for (const stamp of usableStampsExtendsCapacity) {

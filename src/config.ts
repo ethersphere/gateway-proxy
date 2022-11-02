@@ -34,8 +34,8 @@ export interface StampsConfigAutobuy {
 
 export interface StampsConfigExtends {
   mode: 'extends'
-  ttl: boolean
-  capacity: boolean
+  enableTtl: boolean
+  enableCapacity: boolean
   ttlMin: number
   depth: number
   amount: string
@@ -230,8 +230,8 @@ export function createExtendsStampsConfig(
 
   return {
     mode: 'extends',
-    ttl: POSTAGE_EXTENDSTTL === 'true',
-    capacity: POSTAGE_EXTENDS_CAPACITY === 'true',
+    enableTtl: POSTAGE_EXTENDSTTL === 'true',
+    enableCapacity: POSTAGE_EXTENDS_CAPACITY === 'true',
     depth,
     ttlMin,
     amount,
