@@ -153,6 +153,8 @@ describe('getStampsConfig', () => {
         beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL,
         ttlMin: Number(POSTAGE_TTL_MIN),
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
+        ttl: true,
+        capacity: false,
       },
     },
     {
@@ -172,6 +174,8 @@ describe('getStampsConfig', () => {
         beeDebugApiUrl: BEE_DEBUG_API_URL,
         ttlMin: Number(POSTAGE_TTL_MIN),
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
+        ttl: true,
+        capacity: false,
       },
     },
   ]
