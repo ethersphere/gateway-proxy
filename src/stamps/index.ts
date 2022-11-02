@@ -1,7 +1,4 @@
-import { HardcodedStampsManager } from './hardcoded'
-import { AutoBuyStampsManager } from './autobuy'
-import { ExtendsStampManager } from './extends'
-
-export { HardcodedStampsManager }
-export { AutoBuyStampsManager }
-export { ExtendsStampManager }
+export { HardcodedStampsManager } from './hardcoded'
+export { AutoBuyStampsManager } from './autobuy'
+export { ExtendsStampManager } from './extends'
+export { StampsManager } from './base'

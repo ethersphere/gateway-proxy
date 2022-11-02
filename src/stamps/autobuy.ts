@@ -9,7 +9,7 @@ import {
   stampUsableCountGauge,
   stampUsageGauge,
 } from './counters'
-import { BaseStampManager } from './base'
+import { BaseStampManager, StampsManager } from './base'
 
 /**
  * Filter the stamps and only return those that are usable, have correct amount, depth, are not close to beying maxUsage or close to expire
@@ -39,19 +39,14 @@ export function filterUsableStampsAutobuy(
   return usableStamps
 }
 
-export class AutoBuyStampsManager extends BaseStampManager {
-  public isBuyingStamp?: boolean = false
-  /**
-   * Start the manager in either hardcoded or autobuy mode
-   */
-  async start(config: StampsConfigAutobuy): Promise<void> {
+export class AutoBuyStampsManager extends BaseStampManager implements StampsManager {
+  private isBuyingStamp?: boolean = false
+
+  constructor(config: StampsConfigAutobuy) {
+    super()
     // Autobuy mode
-    const refreshStamps = async () => this.refreshStampsAutobuy(config, new BeeDebug(config.beeDebugApiUrl))
-
-    this.stop()
-    await refreshStamps()
-
-    this.interval = setInterval(refreshStamps, config.refreshPeriod)
+    const refreshStamps = async () => this.refreshStamps(config, new BeeDebug(config.beeDebugApiUrl))
+    this.startFeature(config, refreshStamps)
   }
 
   /**
@@ -60,7 +55,7 @@ export class AutoBuyStampsManager extends BaseStampManager {
    * @param config Stamps config
    * @param beeDebug Connection to debug endpoint for checking/buying stamps
    */
-  public async refreshStampsAutobuy(config: StampsConfigAutobuy, beeDebug: BeeDebug): Promise<void> {
+  private async refreshStamps(config: StampsConfigAutobuy, beeDebug: BeeDebug): Promise<void> {
     try {
       stampCheckCounter.inc()
       logger.info('checking postage stamps')

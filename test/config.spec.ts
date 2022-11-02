@@ -68,7 +68,7 @@ describe('getStampsConfig', () => {
   const POSTAGE_AMOUNT = '100'
   const POSTAGE_DEPTH = '20'
   const BEE_DEBUG_API_URL = 'http://localhost:1635'
-  const POSTAGE_USAGE_THRESHOLD = '0.6'
+  const POSTAGE_USAGE_THRESHOLD = '0.7'
   const POSTAGE_USAGE_MAX = '0.8'
   const POSTAGE_TTL_MIN = '200'
   const POSTAGE_REFRESH_PERIOD = '60000'
@@ -149,7 +149,7 @@ describe('getStampsConfig', () => {
         mode: 'extends',
         depth: Number(POSTAGE_DEPTH),
         amount: POSTAGE_AMOUNT,
-        usageThreshold: 0,
+        usageThreshold: Number(POSTAGE_USAGE_THRESHOLD),
         beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL,
         ttlMin: Number(POSTAGE_TTL_MIN),
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
@@ -168,7 +168,7 @@ describe('getStampsConfig', () => {
         mode: 'extends',
         depth: Number(POSTAGE_DEPTH),
         amount: POSTAGE_AMOUNT,
-        usageThreshold: 0,
+        usageThreshold: Number(POSTAGE_USAGE_THRESHOLD),
         beeDebugApiUrl: BEE_DEBUG_API_URL,
         ttlMin: Number(POSTAGE_TTL_MIN),
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),

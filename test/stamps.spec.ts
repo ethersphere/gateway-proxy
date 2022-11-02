@@ -1,10 +1,16 @@
 import type { Server } from 'http'
 import { BeeDebug, BatchId, PostageBatch } from '@ethersphere/bee-js'
 import { buyNewStamp, getUsage, sleep } from '../src/utils'
-import { getStampsConfig } from '../src/config'
+import { getStampsConfig, StampsConfig, StampsConfigAutobuy, StampsConfigExtends } from '../src/config'
 import { createStampMockServer, StampDB } from './stamps.mockserver'
 import { genRandomHex } from './utils'
-import { topUpStamp } from '../src/stamps/extends'
+import {
+  extendsCapacity,
+  ExtendsStampManager,
+  filterUsableStampsExtendsCapacity,
+  filterUsableStampsExtendsTTL,
+  topUpStamp,
+} from '../src/stamps/extends'
 import { AutoBuyStampsManager, filterUsableStampsAutobuy } from '../src/stamps/autobuy'
 import { HardcodedStampsManager } from '../src/stamps'
 
@@ -34,6 +40,7 @@ afterEach(() => {
 const defaultAmount = '1000000'
 const defaultDepth = 20
 const defaultTTL = Number(defaultAmount)
+const defaultUsageThreshold = 0.7
 const defaultStamp: PostageBatch = {
   batchID: genRandomHex(64) as BatchId,
   utilization: 0,
@@ -63,104 +70,91 @@ describe('postageStamp', () => {
     const stamp = '0000000000000000000000000000000000000000000000000000000000000000'
     const stampManager = new HardcodedStampsManager()
     await stampManager.start(getStampsConfig({ POSTAGE_STAMP: stamp })!)
-    expect(stampManager.postageStamp).toEqual(stamp)
+    expect(stampManager.postageStamp()).toEqual(stamp)
   })
 
   it('should return existing stamp', async () => {
     const stamp = buildStamp({ utilization: 0 })
     db.add(stamp)
-    const manager = new AutoBuyStampsManager()
     const stampConfig = getStampsConfig({
       POSTAGE_DEPTH: defaultDepth.toString(),
       POSTAGE_AMOUNT: defaultAmount.toString(),
       POSTAGE_REFRESH_PERIOD: '200',
       BEE_DEBUG_API_URL: url,
-    })!
+    }) as StampsConfigAutobuy
+    const manager = new AutoBuyStampsManager(stampConfig)
 
-    if (stampConfig.mode === 'autobuy') {
-      await manager.start(stampConfig)
-      await sleep(1_000)
-      expect(db.toArray().length).toEqual(1)
+    await sleep(1_000)
+    expect(db.toArray().length).toEqual(1)
 
-      const batchId = manager.postageStamp
-      expect(batchId).toBe(stamp.batchID)
-      manager.stop()
-      await sleep(250) // Needed as there could be the wait for posage stamp usable process in progress
-    }
+    const batchId = manager.postageStamp()
+    expect(batchId).toBe(stamp.batchID)
+    manager.stop()
+    await sleep(250) // Needed as there could be the wait for posage stamp usable process in progress
   })
 
   it('should start without any postage stamp and create new one', async () => {
-    const manager = new AutoBuyStampsManager()
     const stampConfig = getStampsConfig({
       POSTAGE_DEPTH: defaultDepth.toString(),
       POSTAGE_AMOUNT: defaultAmount.toString(),
       POSTAGE_REFRESH_PERIOD: '200',
       BEE_DEBUG_API_URL: url,
-    })!
+    }) as StampsConfigAutobuy
+    const manager = new AutoBuyStampsManager(stampConfig)
 
-    if (stampConfig.mode === 'autobuy') {
-      await manager.start(stampConfig)
-      await sleep(1_000)
-      expect(db.toArray().length).toEqual(1)
+    await sleep(4_000)
+    expect(db.toArray().length).toEqual(1)
 
-      expect(manager.postageStamp).toEqual(db.toArray()[0].batchID)
-      manager.stop()
-      await sleep(250) // Needed as there could be the wait for posage stamp usable process in progress
-    }
+    const batchId = manager.postageStamp()
+    expect(batchId).toEqual(db.toArray()[0].batchID)
+    manager.stop()
+    await sleep(250) // Needed as there could be the wait for posage stamp usable process in progress
   })
 
   it('should create additional stamp if existing is starting to get full', async () => {
     const stamp = buildStamp({ utilization: 14 })
     db.add(stamp)
-
-    const manager = new AutoBuyStampsManager()
     const stampConfig = getStampsConfig({
       POSTAGE_DEPTH: defaultDepth.toString(),
       POSTAGE_AMOUNT: defaultAmount.toString(),
       POSTAGE_REFRESH_PERIOD: '200',
       BEE_DEBUG_API_URL: url,
-    })!
+    }) as StampsConfigAutobuy
 
-    if (stampConfig.mode === 'autobuy') {
-      await manager.start(stampConfig)
+    const manager = new AutoBuyStampsManager(stampConfig)
 
-      await sleep(1_000)
+    await sleep(1_000)
 
-      expect(db.toArray().length).toEqual(2)
-      expect(manager.postageStamp).toEqual(stamp.batchID)
-      manager.stop()
-      await sleep(250) // Needed as there could be the wait for posage stamp usable process in progress
-    }
+    expect(db.toArray().length).toEqual(2)
+    expect(manager.postageStamp()).toEqual(stamp.batchID)
+    manager.stop()
+    await sleep(250) // Needed as there could be the wait for posage stamp usable process in progress
   })
 
   it('should create additional stamp if existing stamp usage increases', async () => {
     const stamp = buildStamp({ utilization: 5 })
     db.add(stamp)
-
-    const manager = new AutoBuyStampsManager()
     const stampConfig = getStampsConfig({
       POSTAGE_DEPTH: defaultDepth.toString(),
       POSTAGE_AMOUNT: defaultAmount.toString(),
       POSTAGE_REFRESH_PERIOD: '200',
       POSTAGE_USAGE_MAX: '0.8',
       BEE_DEBUG_API_URL: url,
-    })!
+    }) as StampsConfigAutobuy
 
-    if (stampConfig.mode === 'autobuy') {
-      await manager.start(stampConfig)
+    const manager = new AutoBuyStampsManager(stampConfig)
 
-      await sleep(200)
-      expect(db.toArray().length).toEqual(1)
-      expect(manager.postageStamp).toEqual(stamp.batchID)
+    await sleep(200)
+    expect(db.toArray().length).toEqual(1)
+    expect(manager.postageStamp()).toEqual(stamp.batchID)
 
-      stamp.utilization = 15
-      await sleep(500)
+    stamp.utilization = 15
+    await sleep(500)
 
-      expect(db.toArray().length).toEqual(2)
-      expect(manager.postageStamp).not.toEqual(stamp.batchID)
-      manager.stop()
-      await sleep(1500) // Needed as there could be the wait for posage stamp usable process in progress
-    }
+    expect(db.toArray().length).toEqual(2)
+    expect(manager.postageStamp()).not.toEqual(stamp.batchID)
+    manager.stop()
+    await sleep(1500) // Needed as there could be the wait for posage stamp usable process in progress
   })
 })
 
@@ -240,27 +234,76 @@ describe('filterUsableStamps', () => {
   })
 })
 
-describe('topUpStamp', () => {
-  it('should extend stamp stamp and await for it to extend others', async () => {
+describe('extendsStampsTTL', () => {
+  let stampsConfig: StampsConfig
+
+  beforeEach(() => {
+    stampsConfig = getStampsConfig({
+      POSTAGE_DEPTH: defaultDepth.toString(),
+      POSTAGE_AMOUNT: defaultAmount.toString(),
+      POSTAGE_TTL_MIN: defaultTTL.toString(),
+      POSTAGE_USAGE_THRESHOLD: defaultUsageThreshold.toString(),
+      POSTAGE_REFRESH_PERIOD: '200',
+      POSTAGE_EXTENDSTTL: 'true',
+      BEE_DEBUG_API_URL: url,
+    }) as StampsConfig
+  })
+
+  it('should not find any usable stamps', async () => {
+    const stamps = [
+      buildStamp({ utilization: 7, batchTTL: 200_000, usable: false }),
+      buildStamp({ utilization: 8, batchTTL: 150_000, usable: false }),
+      buildStamp({ utilization: 10, batchTTL: 120_000, usable: false }),
+    ]
+
+    const { ttlMin, refreshPeriod } = stampsConfig as StampsConfigExtends
+    const minTimeThreshold = ttlMin + refreshPeriod / 1000
+    const res = filterUsableStampsExtendsTTL(stamps, minTimeThreshold)
+    expect(0).toEqual(res.length)
+  })
+
+  it('should extend stamp ttl and await for it to extend others', async () => {
     const beeDebug = new BeeDebug(url)
-    const stamp = await buyNewStamp(defaultDepth, defaultAmount, beeDebug)
+    const stampId = await buyNewStamp(defaultDepth, defaultAmount, beeDebug)
     const extendAmount = '100'
 
-    await topUpStamp(beeDebug, stamp.batchId, extendAmount)
-    const stampExtended = await beeDebug.getPostageBatch(stamp.batchId)
+    await topUpStamp(beeDebug, stampId.batchId, extendAmount)
+    const stampExtended = await beeDebug.getPostageBatch(stampId.batchId)
     expect(Number(stampExtended.amount)).toBeGreaterThan(Number(defaultAmount))
   })
 })
 
-describe('extendsCapacity', () => {
+describe('extendsStampsCapacity', () => {
+  let stampsConfig: StampsConfig
+
+  beforeEach(() => {
+    stampsConfig = getStampsConfig({
+      POSTAGE_USAGE_THRESHOLD: defaultUsageThreshold.toString(),
+      POSTAGE_EXTENDS_CAPACITY: 'true',
+      BEE_DEBUG_API_URL: url,
+    }) as StampsConfig
+  })
+  it('should not find any usable stamps', async () => {
+    const stamps = [
+      buildStamp({ utilization: 14, depth: 20, bucketDepth: 16, usable: false }),
+      buildStamp({ utilization: 8, depth: 20, bucketDepth: 16, usable: true }),
+      buildStamp({ utilization: 10, depth: 20, bucketDepth: 16, usable: true }),
+    ]
+    const res = filterUsableStampsExtendsCapacity(stamps, defaultUsageThreshold)
+    expect(0).toEqual(res.length)
+  })
+
   it('should extend stamps capacity', async () => {
+    const extendManager = new ExtendsStampManager(stampsConfig as StampsConfigExtends)
     const beeDebug = new BeeDebug(url)
 
-    const stamp = await buyNewStamp(defaultDepth, defaultAmount, beeDebug)
+    const stampId = await buyNewStamp(defaultDepth, defaultAmount, beeDebug)
 
-    await topUpStamp(beeDebug, stamp.batchId, (Number(stamp.stamp.amount) * 2).toString())
-    await beeDebug.diluteBatch(stamp.batchId, stamp.stamp.depth + 1)
-    const stampExtended = await beeDebug.getPostageBatch(stamp.batchId)
+    await extendsCapacity(extendManager, beeDebug, stampId.stamp)
+    await sleep(1_000)
+    const stampExtended = await beeDebug.getPostageBatch(stampId.batchId)
     expect(stampExtended.depth).toBeGreaterThan(defaultDepth)
+    extendManager.stop()
+    await sleep(250) // Needed as there could be the wait for posage stamp usable process in progress
   })
 })

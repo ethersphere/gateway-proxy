@@ -1,4 +1,4 @@
-import { BatchId, BeeDebug, PostageBatch } from '@ethersphere/bee-js'
+import { BatchId, BeeDebug, NumberString, PostageBatch } from '@ethersphere/bee-js'
 import { logger } from './logger'
 import { stampPurchaseCounter } from './stamps/counters'
 
@@ -50,24 +50,32 @@ export function getUsage({ utilization, depth, bucketDepth }: PostageBatch): num
   return utilization / Math.pow(2, depth - bucketDepth)
 }
 
-export function getUsageThreshold(
-  postageUsageThreshold: string | undefined,
-  isExtendsCapacity: boolean,
-  defaultUsageThreshold: number,
-): number {
-  return Number(postageUsageThreshold || (isExtendsCapacity ? defaultUsageThreshold : '0'))
+/**
+ * Validate if the value is an integer
+ * @param value
+ * @returns boolean
+ */
+export function isBoolean(value: unknown): boolean {
+  return (
+    typeof value === 'boolean' ||
+    (typeof value === 'string' && (value === 'true' || value === 'false')) ||
+    (typeof value === 'number' && (value === 1 || value === 0))
+  )
 }
 
-export function getAmount(postageAmount: string | undefined): string {
-  return postageAmount ?? '0'
-}
-
-export function getTTLMin(postageTTLMin: string | undefined): number {
-  return Number(postageTTLMin || '0')
-}
-
-export function getDepth(postageDepth: string | undefined): number {
-  return Number(postageDepth || '0')
+/**
+ * Validate if the value is an integer
+ * @param value
+ * @returns boolean
+ */
+export function isInteger(value: unknown): value is number | string | NumberString {
+  return (
+    typeof value === 'string' ||
+    (typeof value === 'number' &&
+      value > Number.MIN_SAFE_INTEGER &&
+      value < Number.MAX_SAFE_INTEGER &&
+      Number.isInteger(value))
+  )
 }
 
 /**

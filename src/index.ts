@@ -37,15 +37,11 @@ async function main() {
       logger.info('starting hardcoded postage stamp manager')
       stampManager.start(stampsConfig)
     } else if (mode === 'autobuy') {
-      stampManager = new AutoBuyStampsManager()
-
       logger.info('starting autobuy postage stamp manager')
-      stampManager.start(stampsConfig)
+      stampManager = new AutoBuyStampsManager(stampsConfig)
     } else {
-      stampManager = new ExtendsStampManager()
-
       logger.info('starting extends postage stamp manager')
-      stampManager.start(stampsConfig)
+      stampManager = new ExtendsStampManager(stampsConfig)
     }
     logger.info('starting the proxy')
     app = createApp(appConfig, stampManager)

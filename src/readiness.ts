@@ -40,7 +40,7 @@ async function tryUploadingSingleChunk(
 ): Promise<ReadinessStatus> {
   const chunk = makeChunk()
   try {
-    await bee.uploadChunk(stampsManager.postageStamp, chunk, { timeout: READINESS_TIMEOUT_MS, deferred: true })
+    await bee.uploadChunk(stampsManager.postageStamp(), chunk, { timeout: READINESS_TIMEOUT_MS, deferred: true })
 
     return ReadinessStatus.OK
   } catch (error) {

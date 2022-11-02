@@ -136,7 +136,7 @@ export const createApp = (
     if (stampManager) {
       proxyReq.removeHeader(SWARM_STAMP_HEADER)
       try {
-        proxyReq.setHeader(SWARM_STAMP_HEADER, stampManager.postageStamp)
+        proxyReq.setHeader(SWARM_STAMP_HEADER, stampManager.postageStamp())
       } catch (error) {
         logger.error('proxy failure', error)
 
