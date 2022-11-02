@@ -107,32 +107,32 @@ export class ExtendsStampManager extends BaseStampManager implements StampsManag
     stampCheckCounter.inc()
     logger.info('checking postage stamps')
 
-    try {
-      const stamps = await beeDebug.getAllPostageBatch()
+    const stamps = await beeDebug.getAllPostageBatch()
 
-      const { depth, amount, ttlMin, refreshPeriod, usageThreshold } = config
+    const { depth, amount, ttlMin, refreshPeriod, usageThreshold, ttl, capacity } = config
 
-      // Get all usable stamps sorted by usage from most used to least
+    // Get all usable stamps sorted by usage from most used to least
+    if (!this.isBuyingStamp && ttl) {
       const minTimeThreshold = ttlMin + refreshPeriod / 1000
       usableStampsExtendsTTL = filterUsableStampsExtendsTTL(stamps, minTimeThreshold)
 
-      if (!this.isBuyingStamp) {
-        if (depth > 0 && usableStampsExtendsTTL.length === 0) {
-          this.isBuyingStamp = true
-          try {
-            const { stamp: newStamp } = await buyNewStamp(depth, amount, beeDebug)
+      if (depth > 0 && usableStampsExtendsTTL.length === 0) {
+        this.isBuyingStamp = true
+        try {
+          const { stamp: newStamp } = await buyNewStamp(depth, amount, beeDebug)
 
-            // Add the bought postage stamp
-            usableStampsExtendsTTL.push(newStamp)
-          } finally {
-            this.isBuyingStamp = false
-          }
-        } else {
-          this.usableStamps = usableStampsExtendsTTL
-          await this.verifyUsableStamps(beeDebug, ttlMin, amount)
+          // Add the bought postage stamp
+          usableStampsExtendsTTL.push(newStamp)
+        } finally {
+          this.isBuyingStamp = false
         }
+      } else {
+        this.usableStamps = usableStampsExtendsTTL
+        await this.verifyUsableStamps(beeDebug, ttlMin, amount)
       }
+    }
 
+    if (capacity) {
       usableStampsExtendsCapacity = filterUsableStampsExtendsCapacity(stamps, usageThreshold)
 
       for (const stamp of usableStampsExtendsCapacity) {
@@ -147,8 +147,6 @@ export class ExtendsStampManager extends BaseStampManager implements StampsManag
           logger.error('failed to extend stamp capacity', err)
         }
       }
-    } catch (e) {
-      logger.error('failed to refresh on extends postage stamps', e)
     }
   }
 }
