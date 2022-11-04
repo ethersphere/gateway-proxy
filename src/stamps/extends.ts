@@ -12,10 +12,10 @@ import { BaseStampManager, StampsManager } from './base'
  *
  * @returns Filtered stamps soltered by usage
  */
-export function filterUsableStampsExtendsTTL(stamps: PostageBatch[], minTimeThreshold: number): PostageBatch[] {
+export function filterUsableStampsExtendsTTL(stamps: PostageBatch[]): PostageBatch[] {
   const usableStamps = stamps
     // filter to get stamps that have the right depth, amount and are not fully used or expired
-    .filter(s => s.usable && s.batchTTL < minTimeThreshold)
+    .filter(s => s.usable)
     // sort the stamps by usage
     .sort((a, b) => (a.batchTTL > b.batchTTL ? 1 : -1))
 
@@ -67,7 +67,7 @@ export class ExtendsStampManager extends BaseStampManager implements StampsManag
     super()
     // Autobuy mode
     const refreshStamps = async () => this.refreshStamps(config, new BeeDebug(config.beeDebugApiUrl))
-    this.startFeature(config, refreshStamps)
+    this.start(config, refreshStamps)
   }
 
   completeTopUp(extendsTypeFeature: 'ttl' | 'capacity', stamp: PostageBatch) {
@@ -83,7 +83,7 @@ export class ExtendsStampManager extends BaseStampManager implements StampsManag
 
   async verifyUsableStamps(beeDebug: BeeDebug, ttlMin: number, amount: string) {
     for (const stamp of this.usableStamps!) {
-      if (ttlMin > 0 && !this.topingUpStamps.includes(stamp.batchID) && amount !== '0') {
+      if (!this.topingUpStamps.includes(stamp.batchID) && amount !== '0') {
         this.topingUpStamps.push(stamp.batchID)
         logger.info(`extending postage stamp TTL ${stamp.batchID}`)
 
@@ -102,8 +102,6 @@ export class ExtendsStampManager extends BaseStampManager implements StampsManag
   }
 
   private async refreshStamps(config: StampsConfigExtends, beeDebug: BeeDebug): Promise<void> {
-    let usableStampsExtendsTTL: PostageBatch[] = []
-    let usableStampsExtendsCapacity: PostageBatch[] = []
     stampCheckCounter.inc()
     logger.info('checking postage stamps')
 
@@ -113,27 +111,27 @@ export class ExtendsStampManager extends BaseStampManager implements StampsManag
 
     // Get all usable stamps sorted by usage from most used to least
     if (!this.isBuyingStamp && enableTtl) {
-      const minTimeThreshold = ttlMin + refreshPeriod / 1000
-      usableStampsExtendsTTL = filterUsableStampsExtendsTTL(stamps, minTimeThreshold)
+      const usableStampsSortByTTL = filterUsableStampsExtendsTTL(stamps)
 
-      if (depth > 0 && usableStampsExtendsTTL.length === 0) {
+      if (usableStampsSortByTTL.length === 0) {
         this.isBuyingStamp = true
         try {
           const { stamp: newStamp } = await buyNewStamp(depth, amount, beeDebug)
 
           // Add the bought postage stamp
-          usableStampsExtendsTTL.push(newStamp)
+          usableStampsSortByTTL.push(newStamp)
         } finally {
           this.isBuyingStamp = false
         }
       } else {
-        this.usableStamps = usableStampsExtendsTTL
+        const minTimeThreshold = ttlMin + refreshPeriod / 1000
+        this.usableStamps = usableStampsSortByTTL.filter(s => s.batchTTL < minTimeThreshold)
         await this.verifyUsableStamps(beeDebug, ttlMin, amount)
       }
     }
 
     if (enableCapacity) {
-      usableStampsExtendsCapacity = filterUsableStampsExtendsCapacity(stamps, usageThreshold)
+      const usableStampsExtendsCapacity = filterUsableStampsExtendsCapacity(stamps, usageThreshold)
 
       for (const stamp of usableStampsExtendsCapacity) {
         try {

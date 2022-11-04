@@ -1,15 +1,15 @@
 import { PostageBatch } from '@ethersphere/bee-js'
 import { stampGetCounter, stampGetErrorCounter } from './counters'
 import { logger } from '../logger'
-import { ERROR_NO_STAMP, StampsConfig, StampsConfigAutobuy, StampsConfigExtends } from '../config'
+import { ERROR_NO_STAMP, StampsConfig } from '../config'
 
 export interface StampsManager {
-  start?: (config: StampsConfig) => Promise<void>
+  start: (config: StampsConfig, refreshStamps: () => void) => Promise<void>
   stop: () => void
   postageStamp: () => string
 }
 
-export class BaseStampManager implements StampsManager {
+export class BaseStampManager {
   private interval?: ReturnType<typeof setInterval>
   public stamp?: string
   public usableStamps?: PostageBatch[]
@@ -45,14 +45,13 @@ export class BaseStampManager implements StampsManager {
   /**
    * Start the manager in either hardcoded or autobuy mode
    */
-  public async startFeature(
-    config: StampsConfigAutobuy | StampsConfigExtends,
-    refreshStamps: () => void,
-  ): Promise<void> {
+  async start(config: StampsConfig, refreshStamps: () => void): Promise<void> {
     this.stop()
     refreshStamps()
 
-    this.interval = setInterval(refreshStamps, config.refreshPeriod)
+    if (config.mode === 'autobuy' || config.mode === 'extends') {
+      this.interval = setInterval(refreshStamps, config.refreshPeriod)
+    }
   }
 
   stop(): void {

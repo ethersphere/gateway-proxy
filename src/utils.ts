@@ -55,12 +55,15 @@ export function getUsage({ utilization, depth, bucketDepth }: PostageBatch): num
  * @param value
  * @returns boolean
  */
-export function isBoolean(value: unknown): boolean {
-  return (
-    typeof value === 'boolean' ||
-    (typeof value === 'string' && (value === 'true' || value === 'false')) ||
-    (typeof value === 'number' && (value === 1 || value === 0))
-  )
+export function assertBoolean(value: unknown): boolean {
+  if (
+    (typeof value === 'string' && value !== 'true' && value !== 'false') ||
+    (typeof value === 'number' && value !== 1 && value !== 0)
+  ) {
+    throw Error(`Invalid value pass as boolean: ${value}`)
+  }
+
+  return true
 }
 
 /**
@@ -70,12 +73,16 @@ export function isBoolean(value: unknown): boolean {
  */
 export function isInteger(value: unknown): value is number | string | NumberString {
   return (
-    typeof value === 'string' ||
+    (typeof value === 'string' && /^-?(0|[1-9][0-9]*)$/g.test(value)) ||
     (typeof value === 'number' &&
       value > Number.MIN_SAFE_INTEGER &&
       value < Number.MAX_SAFE_INTEGER &&
       Number.isInteger(value))
   )
+}
+
+export function assertInteger(value: unknown, name = 'value'): asserts value is number | NumberString {
+  if (!isInteger(value)) throw new TypeError(`${name} is not integer`)
 }
 
 /**
