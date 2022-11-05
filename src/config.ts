@@ -171,7 +171,7 @@ export function getStampsConfig({
       refreshPeriod,
       beeDebugApiUrl,
     )
-  } else if (POSTAGE_DEPTH && POSTAGE_AMOUNT && BEE_DEBUG_API_URL) {
+  } else if (POSTAGE_DEPTH && POSTAGE_AMOUNT) {
     return createAutobuyStampsConfig(
       POSTAGE_DEPTH,
       POSTAGE_AMOUNT,
@@ -183,10 +183,10 @@ export function getStampsConfig({
     )
   }
   // Missing one of the variables needed for the autobuy or extends TTL
-  else if (POSTAGE_DEPTH || POSTAGE_AMOUNT || POSTAGE_TTL_MIN || BEE_DEBUG_API_URL) {
+  else if (POSTAGE_DEPTH || POSTAGE_AMOUNT || POSTAGE_TTL_MIN) {
     throw new Error(
-      `config: please provide POSTAGE_DEPTH=${POSTAGE_DEPTH}, POSTAGE_AMOUNT=${POSTAGE_AMOUNT}, POSTAGE_TTL_MIN=${POSTAGE_TTL_MIN}
-        or BEE_DEBUG_API_URL=${BEE_DEBUG_API_URL} for the feature to work`,
+      `config: please provide POSTAGE_DEPTH=${POSTAGE_DEPTH}, POSTAGE_AMOUNT=${POSTAGE_AMOUNT} or POSTAGE_TTL_MIN=${POSTAGE_TTL_MIN}
+        for the feature to work`,
     )
   }
 
@@ -243,8 +243,8 @@ export function createExtendsStampsConfig(
   ) {
     throw new Error(
       `config: to extends stamps TTL please provide POSTAGE_TTL_MIN bigger than ${MINIMAL_EXTENDS_TTL_VALUE}, valid values for
-      POSTAGE_AMOUNT, POSTAGE_TTL_MIN, POSTAGE_DEPTH. Current states are
-      POSTAGE_TTL_MIN=${POSTAGE_TTL_MIN}, POSTAGE_AMOUNT=${POSTAGE_AMOUNT}, POSTAGE_TTL_MIN=${POSTAGE_TTL_MIN} and POSTAGE_DEPTH=${POSTAGE_DEPTH}`,
+      POSTAGE_AMOUNT, POSTAGE_TTL_MIN, POSTAGE_DEPTH. Current states are POSTAGE_TTL_MIN=${POSTAGE_TTL_MIN},
+      POSTAGE_AMOUNT=${POSTAGE_AMOUNT} and POSTAGE_DEPTH=${POSTAGE_DEPTH}`,
     )
   }
 

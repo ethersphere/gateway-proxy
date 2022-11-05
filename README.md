@@ -99,7 +99,7 @@ npm run start
 ```sh
 export POSTAGE_DEPTH=20
 export POSTAGE_AMOUNT=1000000
-export BEE_DEBUG_API_URL=http://localhost:1635
+export BEE_DEBUG_API_URL=http://localhost:1635 (optional)
 
 npm run start
 ```
@@ -111,7 +111,7 @@ export POSTAGE_EXTENDSTTL=true
 export POSTAGE_TTL_MIN=60
 export POSTAGE_DEPTH=20
 export POSTAGE_AMOUNT=1000000
-export BEE_DEBUG_API_URL=http://localhost:1635
+export BEE_DEBUG_API_URL=http://localhost:1635 (optional)
 
 npm run start
 ```
