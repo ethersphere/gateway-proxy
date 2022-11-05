@@ -188,12 +188,10 @@ describe('getStampsConfig', () => {
   })
 
   const throwValues: EnvironmentVariables[] = [
-    { BEE_DEBUG_API_URL },
     { POSTAGE_DEPTH },
     { POSTAGE_AMOUNT },
     { BEE_DEBUG_API_URL, POSTAGE_DEPTH },
     { BEE_DEBUG_API_URL, POSTAGE_AMOUNT },
-    { POSTAGE_DEPTH, POSTAGE_AMOUNT },
   ]
 
   throwValues.forEach(v => {
@@ -201,8 +199,7 @@ describe('getStampsConfig', () => {
       expect(() => {
         getStampsConfig(v)
       }).toThrowError(
-        `config: please provide POSTAGE_DEPTH=${v.POSTAGE_DEPTH}, POSTAGE_AMOUNT=${v.POSTAGE_AMOUNT}, POSTAGE_TTL_MIN=${v.POSTAGE_TTL_MIN}
-        or BEE_DEBUG_API_URL=${v.BEE_DEBUG_API_URL} for the feature to work`,
+        `config: please provide POSTAGE_DEPTH=${v.POSTAGE_DEPTH}, POSTAGE_AMOUNT=${v.POSTAGE_AMOUNT} or POSTAGE_TTL_MIN=${v.POSTAGE_TTL_MIN} for the feature to work`,
       )
     })
   })

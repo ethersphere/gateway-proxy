@@ -185,8 +185,7 @@ export function getStampsConfig({
   // Missing one of the variables needed for the autobuy or extends TTL
   else if (POSTAGE_DEPTH || POSTAGE_AMOUNT || POSTAGE_TTL_MIN) {
     throw new Error(
-      `config: please provide POSTAGE_DEPTH=${POSTAGE_DEPTH}, POSTAGE_AMOUNT=${POSTAGE_AMOUNT} or POSTAGE_TTL_MIN=${POSTAGE_TTL_MIN}
-        for the feature to work`,
+      `config: please provide POSTAGE_DEPTH=${POSTAGE_DEPTH}, POSTAGE_AMOUNT=${POSTAGE_AMOUNT} or POSTAGE_TTL_MIN=${POSTAGE_TTL_MIN} for the feature to work`,
     )
   }
 
