@@ -1,4 +1,4 @@
-import { isInteger, assertBoolean, assertInteger } from './utils'
+import { isInteger, assertBoolean, assertInteger, assertDecimal } from './utils'
 
 export interface AppConfig {
   beeApiUrl: string
@@ -147,7 +147,10 @@ export function getStampsConfig({
   POSTAGE_EXTENDSTTL,
   POSTAGE_EXTENDS_CAPACITY,
 }: EnvironmentVariables = {}): StampsConfig | undefined {
-  assertInteger(POSTAGE_REFRESH_PERIOD)
+  if (POSTAGE_REFRESH_PERIOD) {
+    assertInteger(POSTAGE_REFRESH_PERIOD)
+  }
+
   const refreshPeriod = Number(POSTAGE_REFRESH_PERIOD || DEFAULT_POSTAGE_REFRESH_PERIOD)
   const beeDebugApiUrl = BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL
 
@@ -177,6 +180,13 @@ export function getStampsConfig({
       POSTAGE_TTL_MIN,
       refreshPeriod,
       beeDebugApiUrl,
+    )
+  }
+  // Missing one of the variables needed for the autobuy or extends TTL
+  else if (POSTAGE_DEPTH || POSTAGE_AMOUNT || POSTAGE_TTL_MIN || BEE_DEBUG_API_URL) {
+    throw new Error(
+      `config: please provide POSTAGE_DEPTH=${POSTAGE_DEPTH}, POSTAGE_AMOUNT=${POSTAGE_AMOUNT}, POSTAGE_TTL_MIN=${POSTAGE_TTL_MIN}
+        or BEE_DEBUG_API_URL=${BEE_DEBUG_API_URL} for the feature to work`,
     )
   }
 
@@ -242,7 +252,7 @@ export function createExtendsStampsConfig(
     assertBoolean(POSTAGE_EXTENDS_CAPACITY) &&
     POSTAGE_EXTENDS_CAPACITY === 'true' &&
     POSTAGE_USAGE_THRESHOLD &&
-    !isInteger(POSTAGE_USAGE_THRESHOLD)
+    !assertDecimal(POSTAGE_USAGE_THRESHOLD)
   ) {
     throw new Error(
       `config: to extends capacity please provide valid number for POSTAGE_USAGE_THRESHOLD. Current states is

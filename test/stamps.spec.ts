@@ -258,7 +258,8 @@ describe('extendsStampsTTL', () => {
 
     const { ttlMin, refreshPeriod } = stampsConfig as StampsConfigExtends
     const minTimeThreshold = ttlMin + refreshPeriod / 1000
-    const res = filterUsableStampsExtendsTTL(stamps, minTimeThreshold)
+    const usableStampsSortByTTL = filterUsableStampsExtendsTTL(stamps)
+    const res = usableStampsSortByTTL.filter(s => s.batchTTL < minTimeThreshold)
     expect(0).toEqual(res.length)
   })
 

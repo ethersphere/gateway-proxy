@@ -82,7 +82,19 @@ export function isInteger(value: unknown): value is number | string | NumberStri
 }
 
 export function assertInteger(value: unknown, name = 'value'): asserts value is number | NumberString {
-  if (!isInteger(value)) throw new TypeError(`${name} is not integer`)
+  if (!isInteger(value)) throw new TypeError(`${name} is not a valid integer`)
+}
+
+export function assertDecimal(value: unknown, name = 'value'): boolean {
+  if (typeof value === 'number') {
+    value = value.toString()
+  }
+
+  if (typeof value !== 'string' || (typeof value === 'string' && !/^[-+]?[0]+\.[0-9]+$/g.test(value))) {
+    throw new TypeError(`${name} is not a valid decimal`)
+  }
+
+  return true
 }
 
 /**
