@@ -1,5 +1,6 @@
 import { bigNumberParser } from './parser/big-number-parser'
 import { boolParser } from './parser/bool-parser'
+import { depthParser } from './parser/depth-parser'
 import { enumParser } from './parser/enum-parser'
 import { optionalStringParser } from './parser/optional-string-parser'
 import { percentageParser } from './parser/percentage-parser'
@@ -27,7 +28,7 @@ export function makeSettings(settings: Record<string, any>): Settings {
       },
       autobuy: {
         amount: bigNumberParser.parse(settings?.stamp?.autobuy?.amount, 'stamp.autobuy.amount'),
-        depth: bigNumberParser.parse(settings?.stamp?.autobuy?.depth, 'stamp.autobuy.depth'),
+        depth: depthParser.parse(settings?.stamp?.autobuy?.depth, 'stamp.autobuy.depth'),
         ttlThreshold: temporalParser.parse(settings?.stamp?.autobuy?.ttlThreshold, 'stamp.autobuy.ttlThreshold'),
         usageThreshold: percentageParser.parse(
           settings?.stamp?.autobuy?.usageThreshold,
@@ -39,7 +40,7 @@ export function makeSettings(settings: Record<string, any>): Settings {
           settings?.stamp?.autoextend?.defaultAmount,
           'stamp.autoextend.defaultAmount',
         ),
-        defaultDepth: bigNumberParser.parse(settings?.stamp?.autoextend?.defaultDepth, 'stamp.autoextend.defaultDepth'),
+        defaultDepth: depthParser.parse(settings?.stamp?.autoextend?.defaultDepth, 'stamp.autoextend.defaultDepth'),
         extendCapacity: boolParser.parse(
           settings?.stamp?.autoextend?.extendCapacity,
           'stamp.autoextend.extendCapacity',

@@ -5,11 +5,9 @@ import { EnvironmentVariables, getAppConfig, getContentConfig, getServerConfig, 
 import { ContentManager } from './content'
 import { logger, subscribeLogServerRequests } from './logger'
 import { createApp } from './server'
-import { createOrGetSettings } from './settings/settings-service'
 import { StampsManager } from './stamps'
 
 async function main() {
-  createOrGetSettings('config.yaml')
   // Configuration
   const stampsConfig = getStampsConfig(process.env as EnvironmentVariables)
   const contentConfig = getContentConfig(process.env as EnvironmentVariables)
