@@ -24,11 +24,13 @@ export const POST_PROXY_ENDPOINTS = ['/bzz', '/bytes', '/chunks', '/feeds/:owner
 export const createApp = (
   {
     hostname,
+    domainLookup,
     beeApiUrl,
     beeDebugApiUrl,
     authorization,
     cidSubdomains,
     ensSubdomains,
+    dnslinkEnabled,
     removePinHeader,
     exposeHashedIdentity,
   }: AppConfig,
@@ -75,25 +77,39 @@ export const createApp = (
     })
   }
 
-  if (cidSubdomains || ensSubdomains) {
-    if (!hostname) {
-      throw new Error('For Bzz.link support you have to configure HOSTNAME env!')
+  if (cidSubdomains || ensSubdomains || dnslinkEnabled) {
+    if (cidSubdomains || ensSubdomains) {
+      if (!hostname) {
+        throw new Error('For Bzz.link support you have to configure HOSTNAME env!')
+      }
+
+      if (hostname === DEFAULT_HOSTNAME) {
+        logger.warn(`bzz.link support is enabled but HOSTNAME is set to the default ${DEFAULT_HOSTNAME}`)
+      }
+
+      if (cidSubdomains) logger.info(`enabling CID subdomain support with hostname ${hostname}`)
+
+      if (ensSubdomains) logger.info(`enabling ENS subdomain support with hostname ${hostname}`)
     }
 
-    if (hostname === DEFAULT_HOSTNAME) {
-      logger.warn(`bzz.link support is enabled but HOSTNAME is set to the default ${DEFAULT_HOSTNAME}`)
+    if (dnslinkEnabled && !domainLookup) {
+      throw new Error('For Bzz.link support with dnslink you have to configure DOMAIN_LOOKUP env!')
     }
 
-    if (cidSubdomains) logger.info(`enabling CID subdomain support with hostname ${hostname}`)
-
-    if (ensSubdomains) logger.info(`enabling ENS subdomain support with hostname ${hostname}`)
+    if (dnslinkEnabled) logger.info(`enabling DNSLINK support with domain ${domainLookup}`)
 
     app.get(
       '*',
       createProxyMiddleware(bzzLink.requestFilter, {
         ...commonOptions,
         cookieDomainRewrite: hostname,
-        router: bzzLink.routerClosure(beeApiUrl, Boolean(cidSubdomains), Boolean(ensSubdomains)),
+        router: bzzLink.routerClosure(
+          beeApiUrl,
+          domainLookup!,
+          Boolean(cidSubdomains),
+          Boolean(ensSubdomains),
+          Boolean(dnslinkEnabled),
+        ),
       }),
     )
 
