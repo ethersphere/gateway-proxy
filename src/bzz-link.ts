@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import * as swarmCid from '@ethersphere/swarm-cid'
 import { logger } from './logger'
+import { resolve, Result } from '@dnslink/js'
 
 export class NotEnabledError extends Error {}
 
@@ -13,6 +14,8 @@ export class RedirectCidError extends Error {
   }
 }
 
+export class NoDNSLinkFoundError extends Error {}
+
 /**
  * Function that evaluates if the request was made with subdomain.
  *
@@ -24,19 +27,55 @@ export function requestFilter(pathname: string, req: Request): boolean {
 }
 
 /**
+ * Function that search for DNSLink configuration on TXT records
+ *
+ * @param domain
+ */
+async function dnsLookup(domain: string): Promise<Result> {
+  let result = null
+  try {
+    result = await resolve(domain, {
+      endpoints: ['dns.google'], // required! see more below.
+      timeout: 1000, // timeout for the operation
+      retries: 3, // retries in case of transport error
+    })
+  } catch (ex) {
+    logger.error(`dnslink lookup error`, ex)
+    throw new NoDNSLinkFoundError(`dnslink lookup error resolving domain ${domain}`)
+  }
+
+  return result!
+}
+
+/**
  * Closure that routes subdomain CID/ENS to /bzz endpoint.
  *
  * @param target
  * @param isCidEnabled
  * @param isEnsEnabled
  */
-export function routerClosure(target: string, isCidEnabled: boolean, isEnsEnabled: boolean) {
-  return (req: Request): string => {
-    const bzzResource = subdomainToBzz(req, isCidEnabled, isEnsEnabled)
+export function routerClosure(
+  target: string,
+  domain: string,
+  isCidEnabled: boolean,
+  isEnsEnabled: boolean,
+  isDnslinkEnabled: boolean,
+): { (req: Request): Promise<string> } | { (req: Request): string } {
+  return async (req: Request): Promise<string> => {
+    if (isDnslinkEnabled) {
+      const result = await dnsLookup(domain)
 
-    logger.debug(`bzz link proxy`, { hostname: req.hostname, bzzResource })
+      const { txtEntries } = result
+      const bzzResource = JSON.parse(JSON.stringify(txtEntries[0])).value.split('/')[2]
+      logger.info(`bzz link proxy`, { hostname: req.hostname, bzzResource })
 
-    return `${target}/bzz/${bzzResource}`
+      return `${target}/bzz/${bzzResource}`
+    } else {
+      const bzzResource = subdomainToBzz(req, isCidEnabled, isEnsEnabled)
+      logger.info(`bzz link proxy`, { hostname: req.hostname, bzzResource })
+
+      return `${target}/bzz/${bzzResource}`
+    }
   }
 }
 

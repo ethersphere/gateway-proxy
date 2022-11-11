@@ -2,7 +2,7 @@ import { Application, Request } from 'express'
 import { Server } from 'http'
 import { AddressInfo } from 'net'
 import request from 'supertest'
-import { NotEnabledError, RedirectCidError, requestFilter, routerClosure } from '../src/bzz-link'
+import { NoDNSLinkFoundError, NotEnabledError, RedirectCidError, requestFilter, routerClosure } from '../src/bzz-link'
 import { DEFAULT_BEE_DEBUG_API_URL } from '../src/config'
 import { createApp } from '../src/server'
 import { createBzzLinkMockServer } from './bzz-link.mockserver'
@@ -71,42 +71,42 @@ describe('bzz.link', () => {
     }
 
     it('should translate valid CID', async () => {
-      const router = routerClosure('http://some.bee', true, true)
+      const router = routerClosure('http://some.bee', '', true, true, false)
       const req = { hostname: `${MANIFEST.cid}.bzz.link`, subdomains: [MANIFEST.cid] } as Request
 
       expect(router(req)).toEqual(`http://some.bee/bzz/${MANIFEST.reference}`)
     })
 
     it('should translate valid CID with ENS disabled', async () => {
-      const router = routerClosure('http://some.bee', true, false)
+      const router = routerClosure('http://some.bee', '', true, false, false)
       const req = { hostname: `${MANIFEST.cid}.bzz.link`, subdomains: [MANIFEST.cid] } as Request
 
       expect(router(req)).toEqual(`http://some.bee/bzz/${MANIFEST.reference}`)
     })
 
     it('should translate valid ENS', async () => {
-      const router = routerClosure('http://some.bee', true, true)
+      const router = routerClosure('http://some.bee', '', true, true, false)
       const req = { hostname: `some-ens-domain.bzz.link`, subdomains: ['some-ens-domain'] } as Request
 
       expect(router(req)).toEqual(`http://some.bee/bzz/some-ens-domain.eth`)
     })
 
     it('should translate valid ENS with subdomain', async () => {
-      const router = routerClosure('http://some.bee', true, true)
+      const router = routerClosure('http://some.bee', '', true, true, false)
       const req = { hostname: `book.swarm.bzz.link`, subdomains: ['swarm', 'book'] } as Request
 
       expect(router(req)).toEqual(`http://some.bee/bzz/book.swarm.eth`)
     })
 
     it('should translate valid ENS when CID is disabled', async () => {
-      const router = routerClosure('http://some.bee', false, true)
+      const router = routerClosure('http://some.bee', '', false, true, false)
       const req = { hostname: `some-ens-domain.bzz.link`, subdomains: ['some-ens-domain'] } as Request
 
       expect(router(req)).toEqual(`http://some.bee/bzz/some-ens-domain.eth`)
     })
 
     it('should throw redirection error for legacy CID', async () => {
-      const router = routerClosure('http://some.bee', true, true)
+      const router = routerClosure('http://some.bee', '', true, true, false)
       const req = {
         hostname: `${MANIFEST.legacyCid}.bzz.link`,
         protocol: 'http',
@@ -127,17 +127,24 @@ describe('bzz.link', () => {
     })
 
     it('should throw when CID support is disabled', async () => {
-      const router = routerClosure('http://some.bee', false, true)
+      const router = routerClosure('http://some.bee', '', false, true, false)
       const req = { hostname: `${MANIFEST.cid}.bzz.link`, subdomains: [MANIFEST.cid] } as Request
 
       expect(() => router(req)).toThrow(NotEnabledError)
     })
 
     it('should throw when ENS support is disabled', async () => {
-      const router = routerClosure('http://some.bee', true, false)
+      const router = routerClosure('http://some.bee', '', true, false, false)
       const req = { hostname: `some-ens-domain.bzz.link`, subdomains: ['some-ens-domain'] } as Request
 
       expect(() => router(req)).toThrow(NotEnabledError)
+    })
+
+    it('should throw when DNSLINK TXT records are not configured', async () => {
+      const router = routerClosure('http://some.bee', 'swarm.domain.com', false, false, true)
+      const req = { hostname: `some-ens-domain.bzz.link`, subdomains: ['some-ens-domain'] } as Request
+
+      expect(() => router(req)).toThrow(NoDNSLinkFoundError)
     })
   })
 })
