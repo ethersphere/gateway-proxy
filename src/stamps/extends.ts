@@ -65,7 +65,7 @@ export class ExtendsStampManager extends BaseStampManager implements StampsManag
 
   constructor(config: StampsConfigExtends) {
     super()
-    // Autobuy mode
+
     const refreshStamps = async () => this.refreshStamps(config, new BeeDebug(config.beeDebugApiUrl))
     this.start(config, refreshStamps)
   }
@@ -105,12 +105,18 @@ export class ExtendsStampManager extends BaseStampManager implements StampsManag
     stampCheckCounter.inc()
     logger.info('checking postage stamps')
 
-    const stamps = await beeDebug.getAllPostageBatch()
+    let stamps: PostageBatch[] = []
+
+    try {
+      stamps = await beeDebug.getAllPostageBatch()
+    } catch (e) {
+      logger.error(`There's been an error getting postage batches: ${e}`)
+    }
 
     const { depth, amount, ttlMin, refreshPeriod, usageThreshold, enableTtl, enableCapacity } = config
 
     // Get all usable stamps sorted by usage from most used to least
-    if (!this.isBuyingStamp && enableTtl) {
+    if (!this.isBuyingStamp && enableTtl && stamps.length > 0) {
       const usableStampsSortByTTL = filterUsableStampsExtendsTTL(stamps)
 
       if (usableStampsSortByTTL.length === 0) {
@@ -130,7 +136,7 @@ export class ExtendsStampManager extends BaseStampManager implements StampsManag
       }
     }
 
-    if (enableCapacity) {
+    if (enableCapacity && stamps.length > 0) {
       const usableStampsExtendsCapacity = filterUsableStampsExtendsCapacity(stamps, usageThreshold)
 
       for (const stamp of usableStampsExtendsCapacity) {

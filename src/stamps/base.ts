@@ -43,14 +43,17 @@ export class BaseStampManager {
   }
 
   /**
-   * Start the manager in either hardcoded or autobuy mode
+   * Start the manager in either hardcoded, autobuy or extends mode
    */
-  async start(config: StampsConfig, refreshStamps: () => void): Promise<void> {
+  async start(config: StampsConfig, refreshStamps?: () => void): Promise<void> {
     this.stop()
-    refreshStamps()
 
-    if (config.mode === 'autobuy' || config.mode === 'extends') {
+    if (refreshStamps && (config.mode === 'autobuy' || config.mode === 'extends')) {
+      refreshStamps()
+
       this.interval = setInterval(refreshStamps, config.refreshPeriod)
+    } else if (config.mode === 'hardcoded') {
+      this.stamp = config.stamp
     }
   }
 

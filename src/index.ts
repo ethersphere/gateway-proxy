@@ -32,10 +32,8 @@ async function main() {
     const { mode } = stampsConfig
 
     if (mode === 'hardcoded') {
-      stampManager = new HardcodedStampsManager()
-
+      stampManager = new HardcodedStampsManager(stampsConfig)
       logger.info('starting hardcoded postage stamp manager')
-      stampManager.start(stampsConfig)
     } else if (mode === 'autobuy') {
       logger.info('starting autobuy postage stamp manager')
       stampManager = new AutoBuyStampsManager(stampsConfig)

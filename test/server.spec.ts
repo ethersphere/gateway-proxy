@@ -36,8 +36,7 @@ beforeAll(async () => {
   beeProxy = new Bee(`http://localhost:${port}`)
 
   const stamp = getPostageBatch()
-  const stampManager = new HardcodedStampsManager()
-  await stampManager.start({ mode: 'hardcoded', stamp })
+  const stampManager = new HardcodedStampsManager({ mode: 'hardcoded', stamp })
   const appWithStamp = createApp({ beeApiUrl, beeDebugApiUrl: DEFAULT_BEE_DEBUG_API_URL }, stampManager)
   proxyWithStamp = await new Promise((resolve, _reject) => {
     const server = appWithStamp.listen(async () => resolve(server))

@@ -1,7 +1,7 @@
 import type { Server } from 'http'
 import { BeeDebug, BatchId, PostageBatch } from '@ethersphere/bee-js'
 import { buyNewStamp, getUsage, sleep } from '../src/utils'
-import { getStampsConfig, StampsConfig, StampsConfigAutobuy, StampsConfigExtends } from '../src/config'
+import { getStampsConfig, StampsConfig, StampsConfigAutobuy, StampsConfigExtends, StampsConfigHardcoded } from '../src/config'
 import { createStampMockServer, StampDB } from './stamps.mockserver'
 import { genRandomHex } from './utils'
 import {
@@ -68,8 +68,8 @@ const buildStamp = (overwrites: Partial<PostageBatch>) => {
 describe('postageStamp', () => {
   it('should return correct hardcoded single postage stamp', async () => {
     const stamp = '0000000000000000000000000000000000000000000000000000000000000000'
-    const stampManager = new HardcodedStampsManager()
-    await stampManager.start(getStampsConfig({ POSTAGE_STAMP: stamp })!)
+    const config = getStampsConfig({ POSTAGE_STAMP: stamp })! as StampsConfigHardcoded
+    const stampManager = new HardcodedStampsManager(config)
     expect(stampManager.postageStamp()).toEqual(stamp)
   })
 

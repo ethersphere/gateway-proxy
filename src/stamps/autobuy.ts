@@ -44,7 +44,7 @@ export class AutoBuyStampsManager extends BaseStampManager implements StampsMana
 
   constructor(config: StampsConfigAutobuy) {
     super()
-    // Autobuy mode
+
     const refreshStamps = async () => this.refreshStamps(config, new BeeDebug(config.beeDebugApiUrl))
     this.start(config, refreshStamps)
   }

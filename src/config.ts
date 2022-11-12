@@ -1,4 +1,4 @@
-import { isInteger, assertBoolean, assertInteger, assertDecimal } from './utils'
+import { isInteger, assertInteger, assertDecimal } from './utils'
 
 export interface AppConfig {
   beeApiUrl: string
@@ -16,7 +16,7 @@ export interface ServerConfig {
   port: number
 }
 
-interface StampsConfigHardcoded {
+export interface StampsConfigHardcoded {
   mode: 'hardcoded'
   stamp: string
 }
@@ -157,10 +157,7 @@ export function getStampsConfig({
   // Start in hardcoded mode
   if (POSTAGE_STAMP) return { mode: 'hardcoded', stamp: POSTAGE_STAMP }
   // Start autobuy
-  else if (
-    (assertBoolean(POSTAGE_EXTENDSTTL) && POSTAGE_EXTENDSTTL === 'true') ||
-    (assertBoolean(POSTAGE_EXTENDS_CAPACITY) && POSTAGE_EXTENDS_CAPACITY === 'true')
-  ) {
+  else if (POSTAGE_EXTENDSTTL === 'true' || POSTAGE_EXTENDS_CAPACITY === 'true') {
     return createExtendsStampsConfig(
       POSTAGE_EXTENDSTTL,
       POSTAGE_EXTENDS_CAPACITY,
@@ -233,7 +230,6 @@ export function createExtendsStampsConfig(
   beeDebugApiUrl: string,
 ): StampsConfigExtends {
   if (
-    assertBoolean(POSTAGE_EXTENDSTTL) &&
     POSTAGE_EXTENDSTTL === 'true' &&
     (Number(POSTAGE_TTL_MIN) < MINIMAL_EXTENDS_TTL_VALUE ||
       !isInteger(POSTAGE_AMOUNT) ||
@@ -247,12 +243,7 @@ export function createExtendsStampsConfig(
     )
   }
 
-  if (
-    assertBoolean(POSTAGE_EXTENDS_CAPACITY) &&
-    POSTAGE_EXTENDS_CAPACITY === 'true' &&
-    POSTAGE_USAGE_THRESHOLD &&
-    !assertDecimal(POSTAGE_USAGE_THRESHOLD)
-  ) {
+  if (POSTAGE_EXTENDS_CAPACITY === 'true' && POSTAGE_USAGE_THRESHOLD && !assertDecimal(POSTAGE_USAGE_THRESHOLD)) {
     throw new Error(
       `config: to extends capacity please provide valid number for POSTAGE_USAGE_THRESHOLD. Current states is
       POSTAGE_USAGE_THRESHOLD=${POSTAGE_USAGE_THRESHOLD}`,

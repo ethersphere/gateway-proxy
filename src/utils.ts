@@ -55,22 +55,6 @@ export function getUsage({ utilization, depth, bucketDepth }: PostageBatch): num
  * @param value
  * @returns boolean
  */
-export function assertBoolean(value: unknown): boolean {
-  if (
-    (typeof value === 'string' && value !== 'true' && value !== 'false') ||
-    (typeof value === 'number' && value !== 1 && value !== 0)
-  ) {
-    throw Error(`Invalid value pass as boolean: ${value}`)
-  }
-
-  return true
-}
-
-/**
- * Validate if the value is an integer
- * @param value
- * @returns boolean
- */
 export function isInteger(value: unknown): value is number | string | NumberString {
   return (
     (typeof value === 'string' && /^-?(0|[1-9][0-9]*)$/g.test(value)) ||
