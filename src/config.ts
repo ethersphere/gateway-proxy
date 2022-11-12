@@ -102,6 +102,7 @@ export const DEFAULT_LOG_LEVEL = 'info'
 export const MINIMAL_EXTENDS_TTL_VALUE = 60
 export const READINESS_TIMEOUT_MS = 3000
 export const ERROR_NO_STAMP = 'No postage stamp'
+export const DEFAULT_QUERY_DNSLINK_ENDPOINT = 'dns.google'
 
 export const logLevel =
   process.env.LOG_LEVEL && SUPPORTED_LEVELS.includes(process.env.LOG_LEVEL as SupportedLevels)

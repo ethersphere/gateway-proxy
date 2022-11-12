@@ -74,35 +74,35 @@ describe('bzz.link', () => {
       const router = routerClosure('http://some.bee', '', true, true, false)
       const req = { hostname: `${MANIFEST.cid}.bzz.link`, subdomains: [MANIFEST.cid] } as Request
 
-      expect(router(req)).toEqual(`http://some.bee/bzz/${MANIFEST.reference}`)
+      expect(await router(req)).toEqual(`http://some.bee/bzz/${MANIFEST.reference}`)
     })
 
     it('should translate valid CID with ENS disabled', async () => {
       const router = routerClosure('http://some.bee', '', true, false, false)
       const req = { hostname: `${MANIFEST.cid}.bzz.link`, subdomains: [MANIFEST.cid] } as Request
 
-      expect(router(req)).toEqual(`http://some.bee/bzz/${MANIFEST.reference}`)
+      expect(await router(req)).toEqual(`http://some.bee/bzz/${MANIFEST.reference}`)
     })
 
     it('should translate valid ENS', async () => {
       const router = routerClosure('http://some.bee', '', true, true, false)
       const req = { hostname: `some-ens-domain.bzz.link`, subdomains: ['some-ens-domain'] } as Request
 
-      expect(router(req)).toEqual(`http://some.bee/bzz/some-ens-domain.eth`)
+      expect(await router(req)).toEqual(`http://some.bee/bzz/some-ens-domain.eth`)
     })
 
     it('should translate valid ENS with subdomain', async () => {
       const router = routerClosure('http://some.bee', '', true, true, false)
       const req = { hostname: `book.swarm.bzz.link`, subdomains: ['swarm', 'book'] } as Request
 
-      expect(router(req)).toEqual(`http://some.bee/bzz/book.swarm.eth`)
+      expect(await router(req)).toEqual(`http://some.bee/bzz/book.swarm.eth`)
     })
 
     it('should translate valid ENS when CID is disabled', async () => {
       const router = routerClosure('http://some.bee', '', false, true, false)
       const req = { hostname: `some-ens-domain.bzz.link`, subdomains: ['some-ens-domain'] } as Request
 
-      expect(router(req)).toEqual(`http://some.bee/bzz/some-ens-domain.eth`)
+      expect(await router(req)).toEqual(`http://some.bee/bzz/some-ens-domain.eth`)
     })
 
     it('should throw redirection error for legacy CID', async () => {
@@ -115,7 +115,7 @@ describe('bzz.link', () => {
       } as Request
 
       try {
-        router(req)
+        await router(req)
         throw new Error('Should have thrown an RedirectCidError')
       } catch (e) {
         if (!(e instanceof RedirectCidError)) {
@@ -130,21 +130,21 @@ describe('bzz.link', () => {
       const router = routerClosure('http://some.bee', '', false, true, false)
       const req = { hostname: `${MANIFEST.cid}.bzz.link`, subdomains: [MANIFEST.cid] } as Request
 
-      expect(() => router(req)).toThrow(NotEnabledError)
+      expect(async () => router(req)).rejects.toThrow(NotEnabledError)
     })
 
     it('should throw when ENS support is disabled', async () => {
       const router = routerClosure('http://some.bee', '', true, false, false)
       const req = { hostname: `some-ens-domain.bzz.link`, subdomains: ['some-ens-domain'] } as Request
 
-      expect(() => router(req)).toThrow(NotEnabledError)
+      expect(async () => router(req)).rejects.toThrow(NotEnabledError)
     })
 
     it('should throw when DNSLINK TXT records are not configured', async () => {
-      const router = routerClosure('http://some.bee', 'swarm.domain.com', false, false, true)
+      const router = routerClosure('http://some.bee', 'swarm.domain.com', false, false, true, 'dns.query')
       const req = { hostname: `some-ens-domain.bzz.link`, subdomains: ['some-ens-domain'] } as Request
 
-      expect(() => router(req)).toThrow(NoDNSLinkFoundError)
+      expect(async () => router(req)).rejects.toThrow(NoDNSLinkFoundError)
     })
   })
 })

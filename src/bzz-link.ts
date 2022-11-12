@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import * as swarmCid from '@ethersphere/swarm-cid'
 import { logger } from './logger'
 import { resolve, Result } from '@dnslink/js'
+import { DEFAULT_QUERY_DNSLINK_ENDPOINT } from './config'
 
 export class NotEnabledError extends Error {}
 
@@ -31,11 +32,11 @@ export function requestFilter(pathname: string, req: Request): boolean {
  *
  * @param domain
  */
-async function dnsLookup(domain: string): Promise<Result> {
+async function dnsLookup(domain: string, queryDnsLinkEndpoint = DEFAULT_QUERY_DNSLINK_ENDPOINT): Promise<Result> {
   let result = null
   try {
     result = await resolve(domain, {
-      endpoints: ['dns.google'], // required! see more below.
+      endpoints: [queryDnsLinkEndpoint],
       timeout: 1000, // timeout for the operation
       retries: 3, // retries in case of transport error
     })
@@ -44,7 +45,7 @@ async function dnsLookup(domain: string): Promise<Result> {
     throw new NoDNSLinkFoundError(`dnslink lookup error resolving domain ${domain}`)
   }
 
-  return result!
+  return result
 }
 
 /**
@@ -60,10 +61,11 @@ export function routerClosure(
   isCidEnabled: boolean,
   isEnsEnabled: boolean,
   isDnslinkEnabled: boolean,
-): { (req: Request): Promise<string> } | { (req: Request): string } {
+  dnsQuery?: string,
+): { (req: Request): Promise<string> } {
   return async (req: Request): Promise<string> => {
     if (isDnslinkEnabled) {
-      const result = await dnsLookup(domain)
+      const result = await dnsLookup(domain, dnsQuery)
 
       const { txtEntries } = result
       const bzzResource = JSON.parse(JSON.stringify(txtEntries[0])).value.split('/')[2]
