@@ -1,7 +1,13 @@
 import type { Server } from 'http'
 import { BeeDebug, BatchId, PostageBatch } from '@ethersphere/bee-js'
 import { buyNewStamp, getUsage, sleep } from '../src/utils'
-import { getStampsConfig, StampsConfig, StampsConfigAutobuy, StampsConfigExtends, StampsConfigHardcoded } from '../src/config'
+import {
+  getStampsConfig,
+  StampsConfig,
+  StampsConfigAutobuy,
+  StampsConfigExtends,
+  StampsConfigHardcoded,
+} from '../src/config'
 import { createStampMockServer, StampDB } from './stamps.mockserver'
 import { genRandomHex } from './utils'
 import {
