@@ -27,36 +27,51 @@ export function requestFilter(pathname: string, req: Request): boolean {
   return req.subdomains.length >= 1
 }
 
+function getDomain(req: Request, dnslinkDomains: string[]): string {
+  const host = req.headers.host
+
+  if (host) {
+    const matches = host.match(/^([^?#]*)(\?([^#]*))?(#(.*))?:[0-9]*]?/i) // clean host domain string
+    const match = matches && matches[1] // domain will be null if no match is found
+
+    // if the domain is not on list of domains configured it will take anything
+    const domain = match && validateDomain(match, dnslinkDomains) ? match : req.headers.host!
+
+    return domain
+  }
+
+  return req.headers.host!
+}
+
+function validateDomain(host: string, domains: string[]) {
+  return domains.includes(host)
+}
+
 /**
  * Function that search for DNSLink configuration on TXT records
  *
  * @param domain
  */
 async function dnsLookup(
-  req: Request,
-  domains: string[],
+  domain: string,
   queryDnsLinkEndpoint = DEFAULT_QUERY_DNSLINK_ENDPOINT,
 ): Promise<Result | undefined> {
-  let domain
   try {
-    domain = req.headers.host
+    console.log('domain', domain)
 
-    if (domain) {
-      const matches = domain.match(/^([^?#]*)(\?([^#]*))?(#(.*))?:[0-9]*]?/i) // clean host domain string
-      const host = matches && matches[1] // domain will be null if no match is found
-
-      if (host && domains.includes(host)) {
-        return await resolve(host, {
-          endpoints: [queryDnsLinkEndpoint],
-          timeout: 1000, // timeout for the operation
-          retries: 3, // retries in case of transport error
-        })
-      }
-    }
+    return await resolve(domain, {
+      endpoints: [queryDnsLinkEndpoint],
+      timeout: 1000, // timeout for the operation
+      retries: 3, // retries in case of transport error
+    })
   } catch (ex) {
     logger.error(`dnslink lookup error`, ex)
     throw new NoDNSLinkFoundError(`dnslink lookup error resolving domain ${domain}`)
   }
+}
+
+function getBzzRoute(target: string, bzzResource: string) {
+  return `${target}/bzz/${bzzResource}`
 }
 
 /**
@@ -78,28 +93,28 @@ export function routerClosure(
   dnsQuery?: string,
 ): { (req: Request): Promise<string> } {
   return async (req: Request): Promise<string> => {
-    let bzzResource: string | undefined
-
     if (isDnslinkEnabled) {
-      const result = await dnsLookup(req, dnslinkDomains, dnsQuery)
+      const domain = getDomain(req, dnslinkDomains)
+
+      const result = await dnsLookup(domain, dnsQuery)
 
       if (result) {
         const { txtEntries } = result
         const txtEntry = JSON.parse(JSON.stringify(txtEntries[0]))
 
         if (txtEntry.value) {
-          bzzResource = txtEntry.value.split('/')[2]
+          const bzzResource = txtEntry.value.split('/')[2]
           logger.info(`bzz link proxy`, { hostname: req.hostname, bzzResource })
+
+          return getBzzRoute(target, bzzResource)
         }
       }
     }
 
-    if (!bzzResource) {
-      bzzResource = subdomainToBzz(req, isCidEnabled, isEnsEnabled)
-      logger.info(`bzz link proxy`, { hostname: req.hostname, bzzResource })
-    }
+    const bzzResource = subdomainToBzz(req, isCidEnabled, isEnsEnabled)
+    logger.info(`bzz link proxy`, { hostname: req.hostname, bzzResource })
 
-    return `${target}/bzz/${bzzResource}`
+    return getBzzRoute(target, bzzResource)
   }
 }
 

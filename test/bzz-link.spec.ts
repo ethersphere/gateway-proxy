@@ -149,7 +149,11 @@ describe('bzz.link', () => {
         true,
         'dns.query',
       )
-      const req = { hostname: `some-ens-domain.bzz.link`, subdomains: ['some-ens-domain'] } as Request
+      const req = {
+        hostname: `some-ens-domain.bzz.link`,
+        subdomains: ['some-ens-domain'],
+        headers: { host: 'swarm.url.com' },
+      } as Request
 
       expect(async () => router(req)).rejects.toThrow(NoDNSLinkFoundError)
     })
