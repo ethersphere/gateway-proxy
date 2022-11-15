@@ -3,7 +3,7 @@ export interface AppConfig {
   beeDebugApiUrl: string
   authorization?: string
   hostname?: string
-  domainLookup?: string
+  domainsLookup?: string[]
   cidSubdomains?: boolean
   ensSubdomains?: boolean
   dnslinkEnabled?: boolean
@@ -70,7 +70,7 @@ export type EnvironmentVariables = Partial<{
 
   // DNSLink support
   DNSLINK: string
-  DOMAIN_LOOKUP: string
+  DNSLINK_ALLOWED_DOMAINS: string
 
   // Headers manipulation
   REMOVE_PIN_HEADER: string
@@ -116,7 +116,7 @@ export function getAppConfig({
   CID_SUBDOMAINS,
   ENS_SUBDOMAINS,
   DNSLINK,
-  DOMAIN_LOOKUP,
+  DNSLINK_ALLOWED_DOMAINS,
   HOSTNAME,
   REMOVE_PIN_HEADER,
   EXPOSE_HASHED_IDENTITY,
@@ -129,7 +129,7 @@ export function getAppConfig({
     cidSubdomains: CID_SUBDOMAINS === 'true',
     ensSubdomains: ENS_SUBDOMAINS === 'true',
     dnslinkEnabled: DNSLINK === 'true',
-    domainLookup: DOMAIN_LOOKUP,
+    domainsLookup: DNSLINK_ALLOWED_DOMAINS ? DNSLINK_ALLOWED_DOMAINS.split(',') : undefined,
     removePinHeader: REMOVE_PIN_HEADER ? REMOVE_PIN_HEADER === 'true' : true,
     exposeHashedIdentity: EXPOSE_HASHED_IDENTITY === 'true',
   }

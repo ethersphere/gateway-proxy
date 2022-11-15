@@ -32,52 +32,74 @@ export function requestFilter(pathname: string, req: Request): boolean {
  *
  * @param domain
  */
-async function dnsLookup(domain: string, queryDnsLinkEndpoint = DEFAULT_QUERY_DNSLINK_ENDPOINT): Promise<Result> {
-  let result = null
+async function dnsLookup(
+  req: Request,
+  domains: string[],
+  queryDnsLinkEndpoint = DEFAULT_QUERY_DNSLINK_ENDPOINT,
+): Promise<Result | undefined> {
+  let domain
   try {
-    result = await resolve(domain, {
-      endpoints: [queryDnsLinkEndpoint],
-      timeout: 1000, // timeout for the operation
-      retries: 3, // retries in case of transport error
-    })
+    domain = req.headers.host
+
+    if (domain) {
+      const matches = domain.match(/^([^?#]*)(\?([^#]*))?(#(.*))?:[0-9]*]?/i) // clean host domain string
+      const host = matches && matches[1] // domain will be null if no match is found
+
+      if (host && domains.includes(host)) {
+        return await resolve(host, {
+          endpoints: [queryDnsLinkEndpoint],
+          timeout: 1000, // timeout for the operation
+          retries: 3, // retries in case of transport error
+        })
+      }
+    }
   } catch (ex) {
     logger.error(`dnslink lookup error`, ex)
     throw new NoDNSLinkFoundError(`dnslink lookup error resolving domain ${domain}`)
   }
-
-  return result
 }
 
 /**
- * Closure that routes subdomain CID/ENS to /bzz endpoint.
+ * Closure that routes subdomain CID/ENS/DNSLINK to /bzz endpoint.
  *
  * @param target
+ * @param dnslinkDomains
  * @param isCidEnabled
  * @param isEnsEnabled
+ * @param isDnslinkEnabled
+ * @param dnsQuery
  */
 export function routerClosure(
   target: string,
-  domain: string,
+  dnslinkDomains: string[],
   isCidEnabled: boolean,
   isEnsEnabled: boolean,
   isDnslinkEnabled: boolean,
   dnsQuery?: string,
 ): { (req: Request): Promise<string> } {
   return async (req: Request): Promise<string> => {
+    let bzzResource: string | undefined
+
     if (isDnslinkEnabled) {
-      const result = await dnsLookup(domain, dnsQuery)
+      const result = await dnsLookup(req, dnslinkDomains, dnsQuery)
 
-      const { txtEntries } = result
-      const bzzResource = JSON.parse(JSON.stringify(txtEntries[0])).value.split('/')[2]
-      logger.info(`bzz link proxy`, { hostname: req.hostname, bzzResource })
+      if (result) {
+        const { txtEntries } = result
+        const txtEntry = JSON.parse(JSON.stringify(txtEntries[0]))
 
-      return `${target}/bzz/${bzzResource}`
-    } else {
-      const bzzResource = subdomainToBzz(req, isCidEnabled, isEnsEnabled)
-      logger.info(`bzz link proxy`, { hostname: req.hostname, bzzResource })
-
-      return `${target}/bzz/${bzzResource}`
+        if (txtEntry.value) {
+          bzzResource = txtEntry.value.split('/')[2]
+          logger.info(`bzz link proxy`, { hostname: req.hostname, bzzResource })
+        }
+      }
     }
+
+    if (!bzzResource) {
+      bzzResource = subdomainToBzz(req, isCidEnabled, isEnsEnabled)
+      logger.info(`bzz link proxy`, { hostname: req.hostname, bzzResource })
+    }
+
+    return `${target}/bzz/${bzzResource}`
   }
 }
 
@@ -105,6 +127,12 @@ export function errorHandler(err: Error, req: Request, res: Response, next: (e: 
   if (err instanceof RedirectCidError) {
     // Using Permanently Moved HTTP code for redirection
     res.redirect(301, err.newUrl)
+
+    return
+  }
+
+  if (err instanceof NoDNSLinkFoundError) {
+    res.sendStatus(403)
 
     return
   }

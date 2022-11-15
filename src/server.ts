@@ -30,7 +30,7 @@ export const createApp = (
     cidSubdomains,
     ensSubdomains,
     dnslinkEnabled,
-    domainLookup,
+    domainsLookup,
     removePinHeader,
     exposeHashedIdentity,
   }: AppConfig,
@@ -92,11 +92,11 @@ export const createApp = (
       if (ensSubdomains) logger.info(`enabling ENS subdomain support with hostname ${hostname}`)
     }
 
-    if (dnslinkEnabled && !domainLookup) {
+    if (dnslinkEnabled && !domainsLookup) {
       throw new Error('For Bzz.link support with dnslink you have to configure DOMAIN_LOOKUP env!')
     }
 
-    if (dnslinkEnabled) logger.info(`enabling DNSLINK support with domain ${domainLookup}`)
+    if (dnslinkEnabled) logger.info(`enabling DNSLINK support with domains ${domainsLookup}`)
 
     app.get(
       '*',
@@ -105,7 +105,7 @@ export const createApp = (
         cookieDomainRewrite: hostname,
         router: bzzLink.routerClosure(
           beeApiUrl,
-          domainLookup!,
+          domainsLookup!,
           Boolean(cidSubdomains),
           Boolean(ensSubdomains),
           Boolean(dnslinkEnabled),
