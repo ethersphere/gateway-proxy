@@ -4,7 +4,7 @@ import { logger } from '../logger'
 import { ERROR_NO_STAMP, StampsConfig } from '../config'
 
 export interface StampsManager {
-  start: (config: StampsConfig, refreshStamps: () => void) => Promise<void>
+  start: (config: StampsConfig, refreshStamps: () => Promise<void>) => Promise<void>
   stop: () => void
   postageStamp: () => string
 }
@@ -45,13 +45,13 @@ export class BaseStampManager {
   /**
    * Start the manager in either hardcoded, autobuy or extends mode
    */
-  async start(config: StampsConfig, refreshStamps?: () => void): Promise<void> {
+  async start(config: StampsConfig, refreshStamps?: (config: StampsConfig) => Promise<void>) {
     this.stop()
 
     if (refreshStamps && (config.mode === 'autobuy' || config.mode === 'extends')) {
-      refreshStamps()
+      refreshStamps(config)
 
-      this.interval = setInterval(refreshStamps, config.refreshPeriod)
+      this.interval = setInterval(async () => refreshStamps, config.refreshPeriod)
     } else if (config.mode === 'hardcoded') {
       this.stamp = config.stamp
     }

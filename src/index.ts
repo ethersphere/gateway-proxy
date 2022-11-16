@@ -6,6 +6,7 @@ import { AutoBuyStampsManager, ExtendsStampManager, HardcodedStampsManager } fro
 import { getAppConfig, getServerConfig, getStampsConfig, EnvironmentVariables, getContentConfig } from './config'
 import { logger, subscribeLogServerRequests } from './logger'
 import { ContentManager } from './content'
+import { BeeDebug } from '@ethersphere/bee-js'
 
 async function main() {
   // Configuration
@@ -33,13 +34,16 @@ async function main() {
 
     if (mode === 'hardcoded') {
       stampManager = new HardcodedStampsManager(stampsConfig)
+      stampManager.start(stampsConfig)
       logger.info('starting hardcoded postage stamp manager')
     } else if (mode === 'autobuy') {
       logger.info('starting autobuy postage stamp manager')
-      stampManager = new AutoBuyStampsManager(stampsConfig)
+      stampManager = new AutoBuyStampsManager(new BeeDebug(stampsConfig.beeDebugApiUrl))
+      stampManager.start(stampsConfig, async () => (stampManager as AutoBuyStampsManager).refreshStamps(stampsConfig))
     } else {
       logger.info('starting extends postage stamp manager')
-      stampManager = new ExtendsStampManager(stampsConfig)
+      stampManager = new ExtendsStampManager(new BeeDebug(stampsConfig.beeDebugApiUrl))
+      stampManager.start(stampsConfig, async () => (stampManager as ExtendsStampManager).refreshStamps(stampsConfig))
     }
     logger.info('starting the proxy')
     app = createApp(appConfig, stampManager)

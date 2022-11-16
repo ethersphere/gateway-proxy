@@ -88,7 +88,8 @@ describe('postageStamp', () => {
       POSTAGE_REFRESH_PERIOD: '200',
       BEE_DEBUG_API_URL: url,
     }) as StampsConfigAutobuy
-    const manager = new AutoBuyStampsManager(stampConfig)
+    const manager = new AutoBuyStampsManager(new BeeDebug(url))
+    manager.start(stampConfig, async () => (manager as AutoBuyStampsManager).refreshStamps(stampConfig))
 
     await sleep(1_000)
     expect(db.toArray().length).toEqual(1)
@@ -106,7 +107,8 @@ describe('postageStamp', () => {
       POSTAGE_REFRESH_PERIOD: '200',
       BEE_DEBUG_API_URL: url,
     }) as StampsConfigAutobuy
-    const manager = new AutoBuyStampsManager(stampConfig)
+    const manager = new AutoBuyStampsManager(new BeeDebug(url))
+    manager.start(stampConfig, async () => (manager as AutoBuyStampsManager).refreshStamps(stampConfig))
 
     await sleep(4_000)
     expect(db.toArray().length).toEqual(1)
@@ -127,7 +129,8 @@ describe('postageStamp', () => {
       BEE_DEBUG_API_URL: url,
     }) as StampsConfigAutobuy
 
-    const manager = new AutoBuyStampsManager(stampConfig)
+    const manager = new AutoBuyStampsManager(new BeeDebug(url))
+    manager.start(stampConfig, async () => (manager as AutoBuyStampsManager).refreshStamps(stampConfig))
 
     await sleep(1_000)
 
@@ -148,14 +151,15 @@ describe('postageStamp', () => {
       BEE_DEBUG_API_URL: url,
     }) as StampsConfigAutobuy
 
-    const manager = new AutoBuyStampsManager(stampConfig)
+    const manager = new AutoBuyStampsManager(new BeeDebug(url))
+    manager.start(stampConfig, async () => (manager as AutoBuyStampsManager).refreshStamps(stampConfig))
 
     await sleep(200)
     expect(db.toArray().length).toEqual(1)
     expect(manager.postageStamp()).toEqual(stamp.batchID)
 
     stamp.utilization = 15
-    await sleep(500)
+    await sleep(2000)
 
     expect(db.toArray().length).toEqual(2)
     expect(manager.postageStamp()).not.toEqual(stamp.batchID)
@@ -301,8 +305,9 @@ describe('extendsStampsCapacity', () => {
   })
 
   it('should extend stamps capacity', async () => {
-    const extendManager = new ExtendsStampManager(stampsConfig as StampsConfigExtends)
     const beeDebug = new BeeDebug(url)
+    const extendManager = new ExtendsStampManager(beeDebug)
+    extendManager.start(stampsConfig, async () => (extendManager as ExtendsStampManager).refreshStamps(stampsConfig))
 
     const stampId = await buyNewStamp(defaultDepth, defaultAmount, beeDebug)
 

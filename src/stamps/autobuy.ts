@@ -1,7 +1,7 @@
 import { BeeDebug, PostageBatch } from '@ethersphere/bee-js'
 import { buyNewStamp, getUsage } from '../utils'
 import { logger } from '../logger'
-import { StampsConfigAutobuy } from '../config'
+import { StampsConfig, StampsConfigAutobuy } from '../config'
 import {
   stampCheckCounter,
   stampPurchaseFailedCounter,
@@ -41,12 +41,11 @@ export function filterUsableStampsAutobuy(
 
 export class AutoBuyStampsManager extends BaseStampManager implements StampsManager {
   private isBuyingStamp?: boolean = false
+  private beeDebug: BeeDebug
 
-  constructor(config: StampsConfigAutobuy) {
+  constructor(beeDebug: BeeDebug) {
     super()
-
-    const refreshStamps = async () => this.refreshStamps(config, new BeeDebug(config.beeDebugApiUrl))
-    this.start(config, refreshStamps)
+    this.beeDebug = beeDebug
   }
 
   /**
@@ -55,14 +54,14 @@ export class AutoBuyStampsManager extends BaseStampManager implements StampsMana
    * @param config Stamps config
    * @param beeDebug Connection to debug endpoint for checking/buying stamps
    */
-  private async refreshStamps(config: StampsConfigAutobuy, beeDebug: BeeDebug): Promise<void> {
+  public async refreshStamps(config: StampsConfig) {
     try {
       stampCheckCounter.inc()
       logger.info('checking postage stamps')
-      const stamps = await beeDebug.getAllPostageBatch()
+      const stamps = await this.beeDebug.getAllPostageBatch()
       logger.debug('retrieved stamps', stamps)
 
-      const { depth, amount, usageMax, usageThreshold, ttlMin } = config
+      const { depth, amount, usageMax, usageThreshold, ttlMin } = config as StampsConfigAutobuy
 
       // Get all usable stamps sorted by usage from most used to least
       this.usableStamps = filterUsableStampsAutobuy(stamps, depth, amount, usageMax, ttlMin)
@@ -77,7 +76,7 @@ export class AutoBuyStampsManager extends BaseStampManager implements StampsMana
       if (!this.isBuyingStamp && (!leastUsed || getUsage(leastUsed) > usageThreshold)) {
         this.isBuyingStamp = true
         try {
-          const { stamp } = await buyNewStamp(depth, amount, beeDebug)
+          const { stamp } = await buyNewStamp(depth, amount, this.beeDebug)
 
           // Add the bought postage stamp
           this.usableStamps.push(stamp)
