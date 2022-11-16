@@ -57,8 +57,6 @@ async function dnsLookup(
   queryDnsLinkEndpoint = DEFAULT_QUERY_DNSLINK_ENDPOINT,
 ): Promise<Result | undefined> {
   try {
-    console.log('domain', domain)
-
     return await resolve(domain, {
       endpoints: [queryDnsLinkEndpoint],
       timeout: 1000, // timeout for the operation
