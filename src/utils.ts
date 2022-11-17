@@ -74,7 +74,7 @@ export function assertDecimal(value: unknown, name = 'value'): boolean {
     value = value.toString()
   }
 
-  if (typeof value !== 'string' || (typeof value === 'string' && !/^[-+]?[0]+\.[0-9]+$/g.test(value))) {
+  if (typeof value !== 'string' || (typeof value === 'string' && !/^\d*\.?\d*$/g.test(value))) {
     throw new TypeError(`${name} is not a valid decimal`)
   }
 

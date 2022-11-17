@@ -14,9 +14,9 @@ import { StampsConfig, StampsConfigExtends } from '../config'
  */
 export function filterUsableStampsExtendsTTL(stamps: PostageBatch[]): PostageBatch[] {
   const usableStamps = stamps
-    // filter to get stamps that have the right depth, amount and are not fully used or expired
+    // filter to get usable stamps
     .filter(s => s.usable)
-    // sort the stamps by usage
+    // sort the stamps by TTL
     .sort((a, b) => (a.batchTTL > b.batchTTL ? 1 : -1))
 
   // return the all usable stamp sorted by usage
@@ -45,14 +45,14 @@ export function filterUsableStampsExtendsCapacity(stamps: PostageBatch[], usageT
   return []
 }
 
-export async function topUpStamp(beeDebug: BeeDebug, postageBatchId: string, amount: string): Promise<PostageBatch> {
+async function topUpStamp(beeDebug: BeeDebug, postageBatchId: string, amount: string): Promise<PostageBatch> {
   await beeDebug.topUpBatch(postageBatchId, amount)
   const stamp = await beeDebug.getPostageBatch(postageBatchId)
 
   return stamp
 }
 
-export async function extendsCapacity(extendManager: ExtendsStampManager, beeDebug: BeeDebug, stamp: PostageBatch) {
+async function extendsCapacity(extendManager: ExtendsStampManager, beeDebug: BeeDebug, stamp: PostageBatch) {
   const stampRes = await topUpStamp(beeDebug, stamp.batchID, BigInt(stamp.amount).toString())
   setTimeout(() => extendManager.completeTopUp('capacity', stampRes), 60000)
   await beeDebug.diluteBatch(stamp.batchID, stamp.depth + 1)

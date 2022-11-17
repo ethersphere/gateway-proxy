@@ -1,6 +1,6 @@
 import request from 'supertest'
 import { createApp } from '../src/server'
-import { HardcodedStampsManager } from '../src/stamps'
+import { BaseStampManager } from '../src/stamps/base'
 
 describe('readiness', () => {
   test('should be ready without stamp management', async () => {
@@ -13,7 +13,7 @@ describe('readiness', () => {
   })
 
   test('should be ready with stamp management', async () => {
-    const stampManager = new HardcodedStampsManager({ mode: 'hardcoded', stamp: process.env.BEE_POSTAGE as string })
+    const stampManager = new BaseStampManager(process.env.BEE_POSTAGE as string)
     const app = createApp(
       {
         beeApiUrl: 'http://localhost:1633',

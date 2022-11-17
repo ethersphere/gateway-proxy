@@ -2,11 +2,13 @@
 import { Application } from 'express'
 
 import { createApp } from './server'
-import { AutoBuyStampsManager, ExtendsStampManager, HardcodedStampsManager } from './stamps'
+import { AutoBuyStampsManager, ExtendsStampManager } from './stamps'
 import { getAppConfig, getServerConfig, getStampsConfig, EnvironmentVariables, getContentConfig } from './config'
 import { logger, subscribeLogServerRequests } from './logger'
 import { ContentManager } from './content'
+import type { StampsManager } from './stamps'
 import { BeeDebug } from '@ethersphere/bee-js'
+import { BaseStampManager } from './stamps/base'
 
 async function main() {
   // Configuration
@@ -29,11 +31,11 @@ async function main() {
 
   if (stampsConfig) {
     logger.debug('stamps config', stampsConfig)
-    let stampManager: HardcodedStampsManager | AutoBuyStampsManager | ExtendsStampManager
+    let stampManager: StampsManager
     const { mode } = stampsConfig
 
     if (mode === 'hardcoded') {
-      stampManager = new HardcodedStampsManager(stampsConfig)
+      stampManager = new BaseStampManager()
       stampManager.start(stampsConfig)
       logger.info('starting hardcoded postage stamp manager')
     } else if (mode === 'autobuy') {

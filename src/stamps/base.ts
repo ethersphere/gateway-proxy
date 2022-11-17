@@ -4,7 +4,7 @@ import { logger } from '../logger'
 import { ERROR_NO_STAMP, StampsConfig } from '../config'
 
 export interface StampsManager {
-  start: (config: StampsConfig, refreshStamps: () => Promise<void>) => Promise<void>
+  start: (config: StampsConfig, refreshStamps?: () => Promise<void>) => Promise<void>
   stop: () => void
   postageStamp: () => string
 }
@@ -13,6 +13,10 @@ export class BaseStampManager {
   private interval?: ReturnType<typeof setInterval>
   public stamp?: string
   public usableStamps?: PostageBatch[]
+
+  constructor(stamp?: string) {
+    this.stamp = stamp
+  }
 
   /**
    * Get postage stamp that should be replaced in a the proxy request header

@@ -8,7 +8,7 @@ import { logger } from './logger'
 import { register } from './metrics'
 import { checkReadiness, ReadinessStatus } from './readiness'
 import { getErrorMessage } from './utils'
-import type { BaseStampManager } from './stamps/base'
+import type { StampsManager } from './stamps/base'
 
 const SWARM_STAMP_HEADER = 'swarm-postage-batch-id'
 
@@ -32,7 +32,7 @@ export const createApp = (
     removePinHeader,
     exposeHashedIdentity,
   }: AppConfig,
-  stampManager?: BaseStampManager,
+  stampManager?: StampsManager,
 ): Application => {
   const commonOptions: Options = {
     target: beeApiUrl,
