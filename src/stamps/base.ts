@@ -51,7 +51,7 @@ export class BaseStampManager {
     if (refreshStamps && (config.mode === 'autobuy' || config.mode === 'extends')) {
       refreshStamps(config)
 
-      this.interval = setInterval(async () => refreshStamps, config.refreshPeriod)
+      this.interval = setInterval(async () => refreshStamps(config), config.refreshPeriod)
     } else if (config.mode === 'hardcoded') {
       this.stamp = config.stamp
     }

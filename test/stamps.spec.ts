@@ -159,7 +159,7 @@ describe('postageStamp', () => {
     expect(manager.postageStamp()).toEqual(stamp.batchID)
 
     stamp.utilization = 15
-    await sleep(2000)
+    await sleep(500)
 
     expect(db.toArray().length).toEqual(2)
     expect(manager.postageStamp()).not.toEqual(stamp.batchID)
