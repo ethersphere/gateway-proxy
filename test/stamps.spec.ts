@@ -276,6 +276,8 @@ describe('extendsStampsTTL', () => {
 
     const [stampExtended] = db.toArray()
     expect(Number(stampExtended.amount)).toBeGreaterThan(Number(defaultAmount))
+    extendManager.stop()
+    await sleep(250) // Needed as there could be the wait for posage stamp usable process in progress
   })
 })
 
