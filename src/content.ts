@@ -14,40 +14,36 @@ export class ContentManager {
   private interval?: ReturnType<typeof setInterval>
   private isReuploading = false
 
-  public async attemptRefreshContentReupload(beeApi: Bee): Promise<void> {
+  public async refreshContentReupload(beeApi: Bee): Promise<void> {
     try {
-      await this.refreshContentReupload(beeApi)
+      const pins = await beeApi.getAllPins()
+
+      if (!pins.length) {
+        logger.info(`no pins found`)
+
+        return
+      }
+
+      logger.info(`checking pinned content (${pins.length} pins)`)
+      for (const pin of pins) {
+        const isRetrievable = await beeApi.isReferenceRetrievable(pin)
+        logger.debug(`pin ${pin} is ${isRetrievable ? 'retrievable' : 'not retrievable'}`)
+
+        if (!isRetrievable && !this.isReuploading) {
+          this.isReuploading = true
+          try {
+            logger.debug(`reuploading pinned content: ${pin}`)
+            await beeApi.reuploadPinnedData(pin)
+            contentReuploadCounter.inc()
+            logger.info(`pinned content reuploaded: ${pin}`)
+          } catch (error) {
+            logger.error('failed to reupload pinned content', error)
+          }
+          this.isReuploading = false
+        }
+      }
     } catch (error) {
       logger.error('content reupload job failed', error)
-    }
-  }
-
-  public async refreshContentReupload(beeApi: Bee): Promise<void> {
-    const pins = await beeApi.getAllPins()
-
-    if (!pins.length) {
-      logger.info(`no pins found`)
-
-      return
-    }
-
-    logger.info(`checking pinned content (${pins.length} pins)`)
-    for (const pin of pins) {
-      const isRetrievable = await beeApi.isReferenceRetrievable(pin)
-      logger.debug(`pin ${pin} is ${isRetrievable ? 'retrievable' : 'not retrievable'}`)
-
-      if (!isRetrievable && !this.isReuploading) {
-        this.isReuploading = true
-        try {
-          logger.debug(`reuploading pinned content: ${pin}`)
-          await beeApi.reuploadPinnedData(pin)
-          contentReuploadCounter.inc()
-          logger.info(`pinned content reuploaded: ${pin}`)
-        } catch (error) {
-          logger.error('failed to reupload pinned content', error)
-        }
-        this.isReuploading = false
-      }
     }
   }
 
@@ -55,7 +51,8 @@ export class ContentManager {
    * Start the manager that checks for pinned content availability and reuploads the data if needed.
    */
   start(config: ContentConfig): void {
-    const refreshContent = async () => this.attemptRefreshContentReupload(new Bee(config.beeApiUrl))
+    const bee = new Bee(config.beeApiUrl)
+    const refreshContent = async () => this.refreshContentReupload(bee)
     this.stop()
     refreshContent()
 

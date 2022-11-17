@@ -5,8 +5,8 @@ import type { Server } from 'http'
 import { DEFAULT_BEE_DEBUG_API_URL } from '../src/config'
 
 import { bee, getPostageBatch, makeCollectionFromFS } from './utils'
-import { StampsManager } from '../src/stamps'
 import { createHeaderCheckMockServer } from './header-check.mockserver'
+import { BaseStampManager } from '../src/stamps/base'
 
 const beeApiUrl = process.env.BEE_API_URL || 'http://localhost:1633'
 const beeApiUrlWrong = process.env.BEE_API_URL_WRONG || 'http://localhost:2021'
@@ -36,8 +36,7 @@ beforeAll(async () => {
   beeProxy = new Bee(`http://localhost:${port}`)
 
   const stamp = getPostageBatch()
-  const stampManager = new StampsManager()
-  await stampManager.start({ mode: 'hardcoded', stamp })
+  const stampManager = new BaseStampManager(stamp)
   const appWithStamp = createApp({ beeApiUrl, beeDebugApiUrl: DEFAULT_BEE_DEBUG_API_URL }, stampManager)
   proxyWithStamp = await new Promise((resolve, _reject) => {
     const server = appWithStamp.listen(async () => resolve(server))

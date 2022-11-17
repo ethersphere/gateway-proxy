@@ -7,8 +7,8 @@ import { fetchBeeIdentity, getHashedIdentity, HASHED_IDENTITY_HEADER } from './i
 import { logger } from './logger'
 import { register } from './metrics'
 import { checkReadiness, ReadinessStatus } from './readiness'
-import type { StampsManager } from './stamps'
 import { getErrorMessage } from './utils'
+import type { StampsManager } from './stamps/base'
 
 const SWARM_STAMP_HEADER = 'swarm-postage-batch-id'
 
@@ -136,7 +136,7 @@ export const createApp = (
     if (stampManager) {
       proxyReq.removeHeader(SWARM_STAMP_HEADER)
       try {
-        proxyReq.setHeader(SWARM_STAMP_HEADER, stampManager.postageStamp)
+        proxyReq.setHeader(SWARM_STAMP_HEADER, stampManager.postageStamp())
       } catch (error) {
         logger.error('proxy failure', error)
 

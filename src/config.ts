@@ -1,3 +1,5 @@
+import { isInteger, assertInteger, assertDecimal } from './utils'
+
 export interface AppConfig {
   beeApiUrl: string
   beeDebugApiUrl: string
@@ -14,32 +16,36 @@ export interface ServerConfig {
   port: number
 }
 
-interface StampsConfigHardcoded {
+export interface StampsConfigHardcoded {
   mode: 'hardcoded'
   stamp: string
 }
-export interface StampsConfigExtends {
-  mode: 'extendsTTL'
+
+export interface StampsConfigAutobuy {
+  mode: 'autobuy'
   ttlMin: number
   depth: number
   amount: string
+  usageThreshold: number
+  refreshPeriod: number
+  usageMax: number
+  beeDebugApiUrl: string
+}
+
+export interface StampsConfigExtends {
+  mode: 'extends'
+  enableTtl: boolean
+  enableCapacity: boolean
+  ttlMin: number
+  depth: number
+  amount: string
+  usageThreshold: number
   refreshPeriod: number
   beeDebugApiUrl: string
 }
 
 export interface ContentConfigReupload {
   beeApiUrl: string
-  refreshPeriod: number
-}
-
-export interface StampsConfigAutobuy {
-  mode: 'autobuy'
-  depth: number
-  amount: string
-  beeDebugApiUrl: string
-  usageThreshold: number
-  usageMax: number
-  ttlMin: number
   refreshPeriod: number
 }
 
@@ -80,6 +86,7 @@ export type EnvironmentVariables = Partial<{
   POSTAGE_REFRESH_PERIOD: string
   POSTAGE_EXTENDSTTL: string
   REUPLOAD_PERIOD: string
+  POSTAGE_EXTENDS_CAPACITY: string
 }>
 
 export const SUPPORTED_LEVELS = ['critical', 'error', 'warn', 'info', 'verbose', 'debug'] as const
@@ -138,50 +145,127 @@ export function getStampsConfig({
   POSTAGE_TTL_MIN,
   POSTAGE_REFRESH_PERIOD,
   POSTAGE_EXTENDSTTL,
+  POSTAGE_EXTENDS_CAPACITY,
 }: EnvironmentVariables = {}): StampsConfig | undefined {
+  if (POSTAGE_REFRESH_PERIOD) {
+    assertInteger(POSTAGE_REFRESH_PERIOD)
+  }
+
   const refreshPeriod = Number(POSTAGE_REFRESH_PERIOD || DEFAULT_POSTAGE_REFRESH_PERIOD)
   const beeDebugApiUrl = BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL
 
   // Start in hardcoded mode
   if (POSTAGE_STAMP) return { mode: 'hardcoded', stamp: POSTAGE_STAMP }
   // Start autobuy
-  else if (!POSTAGE_EXTENDSTTL && POSTAGE_DEPTH && POSTAGE_AMOUNT && BEE_DEBUG_API_URL) {
-    return {
-      mode: 'autobuy',
-      depth: Number(POSTAGE_DEPTH),
-      amount: POSTAGE_AMOUNT,
-      usageThreshold: Number(POSTAGE_USAGE_THRESHOLD || DEFAULT_POSTAGE_USAGE_THRESHOLD),
-      usageMax: Number(POSTAGE_USAGE_MAX || DEFAULT_POSTAGE_USAGE_MAX),
-      ttlMin: Number(POSTAGE_TTL_MIN || (refreshPeriod / 1000) * 5),
+  else if (POSTAGE_EXTENDSTTL === 'true' || POSTAGE_EXTENDS_CAPACITY === 'true') {
+    return createExtendsStampsConfig(
+      POSTAGE_EXTENDSTTL,
+      POSTAGE_EXTENDS_CAPACITY,
+      POSTAGE_AMOUNT,
+      POSTAGE_USAGE_THRESHOLD,
+      POSTAGE_TTL_MIN,
+      POSTAGE_DEPTH,
       refreshPeriod,
       beeDebugApiUrl,
-    }
-  } else if (
-    POSTAGE_EXTENDSTTL === 'true' &&
-    POSTAGE_AMOUNT &&
-    POSTAGE_DEPTH &&
-    Number(POSTAGE_TTL_MIN) >= MINIMAL_EXTENDS_TTL_VALUE
-  ) {
-    return {
-      mode: 'extendsTTL',
-      depth: Number(POSTAGE_DEPTH),
-      ttlMin: Number(POSTAGE_TTL_MIN),
-      amount: POSTAGE_AMOUNT,
+    )
+  } else if (POSTAGE_DEPTH && POSTAGE_AMOUNT) {
+    return createAutobuyStampsConfig(
+      POSTAGE_DEPTH,
+      POSTAGE_AMOUNT,
+      POSTAGE_USAGE_THRESHOLD,
+      POSTAGE_USAGE_MAX,
+      POSTAGE_TTL_MIN,
       refreshPeriod,
       beeDebugApiUrl,
-    }
+    )
   }
   // Missing one of the variables needed for the autobuy or extends TTL
-  else if (POSTAGE_DEPTH || POSTAGE_AMOUNT || POSTAGE_TTL_MIN || BEE_DEBUG_API_URL) {
+  else if (POSTAGE_DEPTH || POSTAGE_AMOUNT || POSTAGE_TTL_MIN) {
     throw new Error(
-      `config: please provide POSTAGE_DEPTH=${POSTAGE_DEPTH}, POSTAGE_AMOUNT=${POSTAGE_AMOUNT}, POSTAGE_TTL_MIN=${POSTAGE_TTL_MIN} ${
-        POSTAGE_EXTENDSTTL === 'true' ? 'at least 60 seconds ' : ''
-      }or BEE_DEBUG_API_URL=${BEE_DEBUG_API_URL} for the feature to work`,
+      `config: please provide POSTAGE_DEPTH=${POSTAGE_DEPTH}, POSTAGE_AMOUNT=${POSTAGE_AMOUNT} or POSTAGE_TTL_MIN=${POSTAGE_TTL_MIN} for the feature to work`,
     )
   }
 
   // Stamps rewrite is disabled
   return undefined
+}
+
+export function createAutobuyStampsConfig(
+  POSTAGE_DEPTH: string,
+  POSTAGE_AMOUNT: string,
+  POSTAGE_USAGE_THRESHOLD: string | undefined,
+  POSTAGE_USAGE_MAX: string | undefined,
+  POSTAGE_TTL_MIN: string | undefined,
+  refreshPeriod: number,
+  beeDebugApiUrl: string,
+): StampsConfigAutobuy {
+  // Missing one of the variables needed for the autobuy
+  if (!isInteger(POSTAGE_DEPTH) || !isInteger(POSTAGE_AMOUNT)) {
+    throw new Error(
+      `config: please provide valid values for POSTAGE_DEPTH, POSTAGE_AMOUNT for the autobuy feature to work.
+      Current state are POSTAGE_DEPTH=${POSTAGE_DEPTH} and POSTAGE_AMOUNT=${POSTAGE_AMOUNT}`,
+    )
+  }
+
+  return {
+    mode: 'autobuy',
+    depth: Number(POSTAGE_DEPTH),
+    amount: POSTAGE_AMOUNT,
+    usageThreshold: Number(POSTAGE_USAGE_THRESHOLD || DEFAULT_POSTAGE_USAGE_THRESHOLD),
+    usageMax: Number(POSTAGE_USAGE_MAX || DEFAULT_POSTAGE_USAGE_MAX),
+    ttlMin: Number(POSTAGE_TTL_MIN || (refreshPeriod / 1000) * 5),
+    refreshPeriod,
+    beeDebugApiUrl,
+  }
+}
+
+export function createExtendsStampsConfig(
+  POSTAGE_EXTENDSTTL: string | undefined,
+  POSTAGE_EXTENDS_CAPACITY: string | undefined,
+  POSTAGE_AMOUNT: string | undefined,
+  POSTAGE_USAGE_THRESHOLD: string | undefined,
+  POSTAGE_TTL_MIN: string | undefined,
+  POSTAGE_DEPTH: string | undefined,
+  refreshPeriod: number,
+  beeDebugApiUrl: string,
+): StampsConfigExtends {
+  if (
+    POSTAGE_EXTENDSTTL === 'true' &&
+    (Number(POSTAGE_TTL_MIN) < MINIMAL_EXTENDS_TTL_VALUE ||
+      !isInteger(POSTAGE_AMOUNT) ||
+      (POSTAGE_TTL_MIN && !isInteger(POSTAGE_TTL_MIN)) ||
+      (POSTAGE_DEPTH && !isInteger(POSTAGE_DEPTH)))
+  ) {
+    throw new Error(
+      `config: to extends stamps TTL please provide POSTAGE_TTL_MIN bigger than ${MINIMAL_EXTENDS_TTL_VALUE}, valid values for
+      POSTAGE_AMOUNT, POSTAGE_TTL_MIN, POSTAGE_DEPTH. Current states are POSTAGE_TTL_MIN=${POSTAGE_TTL_MIN},
+      POSTAGE_AMOUNT=${POSTAGE_AMOUNT} and POSTAGE_DEPTH=${POSTAGE_DEPTH}`,
+    )
+  }
+
+  if (POSTAGE_EXTENDS_CAPACITY === 'true' && POSTAGE_USAGE_THRESHOLD && !assertDecimal(POSTAGE_USAGE_THRESHOLD)) {
+    throw new Error(
+      `config: to extends capacity please provide valid number for POSTAGE_USAGE_THRESHOLD. Current states is
+      POSTAGE_USAGE_THRESHOLD=${POSTAGE_USAGE_THRESHOLD}`,
+    )
+  }
+
+  const amount = POSTAGE_AMOUNT || '0'
+  const usageThreshold = Number(POSTAGE_USAGE_THRESHOLD || DEFAULT_POSTAGE_USAGE_THRESHOLD)
+  const ttlMin = Number(POSTAGE_TTL_MIN)
+  const depth = Number(POSTAGE_DEPTH)
+
+  return {
+    mode: 'extends',
+    enableTtl: POSTAGE_EXTENDSTTL === 'true',
+    enableCapacity: POSTAGE_EXTENDS_CAPACITY === 'true',
+    depth,
+    ttlMin,
+    amount,
+    usageThreshold,
+    refreshPeriod,
+    beeDebugApiUrl,
+  }
 }
 
 export function getContentConfig({ BEE_API_URL, REUPLOAD_PERIOD }: EnvironmentVariables = {}): ContentConfig | false {

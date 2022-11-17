@@ -1,7 +1,7 @@
 import { Bee, BeeDebug, Utils } from '@ethersphere/bee-js'
 import { ERROR_NO_STAMP, READINESS_TIMEOUT_MS } from './config'
 import { logger } from './logger'
-import { StampsManager } from './stamps'
+import type { StampsManager } from './stamps'
 import { getErrorMessage } from './utils'
 
 const MAX_CHUNK_SIZE = 4096
@@ -37,7 +37,7 @@ export async function checkReadiness(
 async function tryUploadingSingleChunk(bee: Bee, stampsManager: StampsManager): Promise<ReadinessStatus> {
   const chunk = makeChunk()
   try {
-    await bee.uploadChunk(stampsManager.postageStamp, chunk, { timeout: READINESS_TIMEOUT_MS, deferred: true })
+    await bee.uploadChunk(stampsManager.postageStamp(), chunk, { timeout: READINESS_TIMEOUT_MS, deferred: true })
 
     return ReadinessStatus.OK
   } catch (error) {

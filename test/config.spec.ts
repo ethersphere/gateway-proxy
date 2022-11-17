@@ -1,3 +1,4 @@
+import { sleep } from '../src/utils'
 import {
   DEFAULT_BEE_DEBUG_API_URL,
   DEFAULT_HOSTNAME,
@@ -14,8 +15,9 @@ import {
 } from '../src/config'
 
 describe('getAppConfig', () => {
-  it('should return default values', () => {
+  it('should return default values', async () => {
     const config = getAppConfig()
+    await sleep(1_000)
     expect(config.beeApiUrl).toEqual(DEFAULT_BEE_API_URL)
     expect(config.authorization).toBeUndefined()
   })
@@ -66,7 +68,7 @@ describe('getStampsConfig', () => {
   const POSTAGE_AMOUNT = '100'
   const POSTAGE_DEPTH = '20'
   const BEE_DEBUG_API_URL = 'http://localhost:1635'
-  const POSTAGE_USAGE_THRESHOLD = '0.6'
+  const POSTAGE_USAGE_THRESHOLD = '0.7'
   const POSTAGE_USAGE_MAX = '0.8'
   const POSTAGE_TTL_MIN = '200'
   const POSTAGE_REFRESH_PERIOD = '60000'
@@ -144,12 +146,15 @@ describe('getStampsConfig', () => {
         POSTAGE_TTL_MIN,
       },
       output: {
-        mode: 'extendsTTL',
+        mode: 'extends',
         depth: Number(POSTAGE_DEPTH),
         amount: POSTAGE_AMOUNT,
+        usageThreshold: Number(POSTAGE_USAGE_THRESHOLD),
         beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL,
         ttlMin: Number(POSTAGE_TTL_MIN),
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
+        enableTtl: true,
+        enableCapacity: false,
       },
     },
     {
@@ -162,12 +167,15 @@ describe('getStampsConfig', () => {
         POSTAGE_TTL_MIN,
       },
       output: {
-        mode: 'extendsTTL',
+        mode: 'extends',
         depth: Number(POSTAGE_DEPTH),
         amount: POSTAGE_AMOUNT,
+        usageThreshold: Number(POSTAGE_USAGE_THRESHOLD),
         beeDebugApiUrl: BEE_DEBUG_API_URL,
         ttlMin: Number(POSTAGE_TTL_MIN),
         refreshPeriod: Number(POSTAGE_REFRESH_PERIOD),
+        enableTtl: true,
+        enableCapacity: false,
       },
     },
   ]
@@ -180,12 +188,10 @@ describe('getStampsConfig', () => {
   })
 
   const throwValues: EnvironmentVariables[] = [
-    { BEE_DEBUG_API_URL },
     { POSTAGE_DEPTH },
     { POSTAGE_AMOUNT },
     { BEE_DEBUG_API_URL, POSTAGE_DEPTH },
     { BEE_DEBUG_API_URL, POSTAGE_AMOUNT },
-    { POSTAGE_DEPTH, POSTAGE_AMOUNT },
   ]
 
   throwValues.forEach(v => {
@@ -193,11 +199,7 @@ describe('getStampsConfig', () => {
       expect(() => {
         getStampsConfig(v)
       }).toThrowError(
-        `config: please provide POSTAGE_DEPTH=${v.POSTAGE_DEPTH}, POSTAGE_AMOUNT=${v.POSTAGE_AMOUNT}, POSTAGE_TTL_MIN=${
-          v.POSTAGE_TTL_MIN
-        } ${v.POSTAGE_EXTENDSTTL === 'true' ? 'at least 60 seconds ' : ''}or BEE_DEBUG_API_URL=${
-          v.BEE_DEBUG_API_URL
-        } for the feature to work`,
+        `config: please provide POSTAGE_DEPTH=${v.POSTAGE_DEPTH}, POSTAGE_AMOUNT=${v.POSTAGE_AMOUNT} or POSTAGE_TTL_MIN=${v.POSTAGE_TTL_MIN} for the feature to work`,
       )
     })
   })
