@@ -39,7 +39,7 @@ export function getDomain(req: Request): string | undefined {
 }
 
 export function validateDomain(host: string, domains: string[]): boolean {
-  return domains.includes(host!)
+  return domains.includes(host)
 }
 
 /**
