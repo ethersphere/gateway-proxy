@@ -33,7 +33,7 @@ export function getDomain(req: Request): string | undefined {
     const match = matches && matches[1] // domain will be null if no match is found
 
     if (match) return match
-  } finally {
+  } catch {
     return req.headers.host
   }
 }
@@ -101,10 +101,15 @@ export function routerClosure(
 ): { (req: Request): Promise<string> } {
   return async (req: Request): Promise<string> => {
     if (isDnslinkEnabled) {
-      const domain = getDomain(req)
+      let domain = getDomain(req)
 
-      if (domain && validateDomain(domain, dnslinkDomains)) {
-        const result = await dnsLookup(domain!, dnsQuery)
+      // in case domain is not on the list of allowed domains then it uses anything on headers-host
+      if (!(domain && validateDomain(domain, dnslinkDomains))) {
+        domain = req.headers.host
+      }
+
+      if (domain) {
+        const result = await dnsLookup(domain, dnsQuery)
 
         const bzzRoute = getDnslinkBzzRoute(req.hostname, target, result)
 
