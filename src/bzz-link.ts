@@ -27,24 +27,19 @@ export function requestFilter(pathname: string, req: Request): boolean {
   return req.subdomains.length >= 1
 }
 
-function getDomain(req: Request, dnslinkDomains: string[]): string {
-  const host = req.headers.host
-
-  if (host) {
-    const matches = host.match(/^([^?#]*)(\?([^#]*))?(#(.*))?:[0-9]*]?/i) // clean host domain string
+export function getDomain(req: Request): string | undefined {
+  try {
+    const matches = req.headers.host!.match(/^([^?#]*)(\?([^#]*))?(#(.*))?:[0-9]*]?/i) // clean host domain string
     const match = matches && matches[1] // domain will be null if no match is found
 
-    // if the domain is not on list of domains configured it will take anything
-    const domain = match && validateDomain(match, dnslinkDomains) ? match : req.headers.host!
-
-    return domain
+    if (match) return match
+  } finally {
+    return req.headers.host
   }
-
-  return req.headers.host!
 }
 
-function validateDomain(host: string, domains: string[]) {
-  return domains.includes(host)
+export function validateDomain(host: string, domains: string[]): boolean {
+  return domains.includes(host!)
 }
 
 /**
@@ -68,7 +63,21 @@ async function dnsLookup(
   }
 }
 
-function getBzzRoute(target: string, bzzResource: string) {
+function getDnslinkBzzRoute(hostname: string, target: string, result: Result | undefined): string | undefined {
+  if (result) {
+    const { txtEntries } = result
+    const txtEntry = JSON.parse(JSON.stringify(txtEntries[0]))
+
+    if (txtEntry.value) {
+      const bzzResource = txtEntry.value.split('/')[2]
+      logger.info(`bzz link proxy`, { hostname, bzzResource })
+
+      return getBzzRoute(target, bzzResource)
+    }
+  }
+}
+
+function getBzzRoute(target: string, bzzResource: string): string {
   return `${target}/bzz/${bzzResource}`
 }
 
@@ -92,20 +101,14 @@ export function routerClosure(
 ): { (req: Request): Promise<string> } {
   return async (req: Request): Promise<string> => {
     if (isDnslinkEnabled) {
-      const domain = getDomain(req, dnslinkDomains)
+      const domain = getDomain(req)
 
-      const result = await dnsLookup(domain, dnsQuery)
+      if (domain && validateDomain(domain, dnslinkDomains)) {
+        const result = await dnsLookup(domain!, dnsQuery)
 
-      if (result) {
-        const { txtEntries } = result
-        const txtEntry = JSON.parse(JSON.stringify(txtEntries[0]))
+        const bzzRoute = getDnslinkBzzRoute(req.hostname, target, result)
 
-        if (txtEntry.value) {
-          const bzzResource = txtEntry.value.split('/')[2]
-          logger.info(`bzz link proxy`, { hostname: req.hostname, bzzResource })
-
-          return getBzzRoute(target, bzzResource)
-        }
+        if (bzzRoute) return bzzRoute
       }
     }
 

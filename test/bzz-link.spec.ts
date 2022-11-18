@@ -2,7 +2,15 @@ import { Application, Request } from 'express'
 import { Server } from 'http'
 import { AddressInfo } from 'net'
 import request from 'supertest'
-import { NoDNSLinkFoundError, NotEnabledError, RedirectCidError, requestFilter, routerClosure } from '../src/bzz-link'
+import {
+  getDomain,
+  NoDNSLinkFoundError,
+  NotEnabledError,
+  RedirectCidError,
+  requestFilter,
+  routerClosure,
+  validateDomain,
+} from '../src/bzz-link'
 import { DEFAULT_BEE_DEBUG_API_URL } from '../src/config'
 import { createApp } from '../src/server'
 import { createBzzLinkMockServer } from './bzz-link.mockserver'
@@ -138,6 +146,26 @@ describe('bzz.link', () => {
       const req = { hostname: `some-ens-domain.bzz.link`, subdomains: ['some-ens-domain'] } as Request
 
       expect(async () => router(req)).rejects.toThrow(NotEnabledError)
+    })
+
+    it('should return false for domain not found on allowed domains', () => {
+      const req = {
+        hostname: `some-ens-domain.bzz.link`,
+        subdomains: ['some-ens-domain'],
+        headers: { host: 'swarm.url.com' },
+      } as Request
+      const dnsAllowedDomains = ['swarm.domain.com', 'some-ens-domain.bzz.link']
+      expect(validateDomain(req.headers.host!, dnsAllowedDomains)).toBe(false)
+    })
+
+    it('should return the domain specified on header-host', () => {
+      const domain = 'swarm.url.com'
+      const req = {
+        hostname: `some-ens-domain.bzz.link`,
+        subdomains: ['some-ens-domain'],
+        headers: { host: `${domain}:3000` },
+      } as Request
+      expect(getDomain(req)).toEqual(domain)
     })
 
     it('should throw when DNSLINK TXT records are not configured', async () => {
