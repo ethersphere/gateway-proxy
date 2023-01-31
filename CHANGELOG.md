@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.6.1](https://www.github.com/ethersphere/gateway-proxy/compare/v0.6.0...v0.6.1) (2023-01-31)
+
+
+### Bug Fixes
+
+* add missing sleep in wait for stamp usable ([#382](https://www.github.com/ethersphere/gateway-proxy/issues/382)) ([cf2002a](https://www.github.com/ethersphere/gateway-proxy/commit/cf2002a8836b0b8238a8946ab8b161fb5877618b))
+
 ## [0.6.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.5.1...v0.6.0) (2022-10-10)
 
 
