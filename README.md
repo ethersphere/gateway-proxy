@@ -221,8 +221,8 @@ See for example [here](https://serverfault.com/a/118589) for `dnsmasq` solution.
 
 ## Maintainers
 
-- [vojtechsimetka](https://github.com/vojtechsimetka)
-- [auhau](https://github.com/auhau)
+ - [Cafe137](https://github.com/Cafe137)
+
 
 ## License
 
