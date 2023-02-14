@@ -9,7 +9,7 @@
 ![](https://img.shields.io/badge/npm-%3E%3D6.0.0-orange.svg?style=flat-square)
 ![](https://img.shields.io/badge/Node.js-%3E%3D12.0.0-orange.svg?style=flat-square)
 
-> Proxy to you bee node which aims to work as a public or personal gateway or to be used in CI for uploading to Swarm.
+> Proxy to your bee node which aims to work as a public or personal gateway or to be used in CI for uploading to Swarm.
 
 **Warning: This project is in beta state. There might (and most probably will) be changes in the future to its API and
 working. Also, no guarantees can be made about its stability, efficiency, and security at this stage.**
@@ -71,8 +71,8 @@ In order to use Bzz.link, set the `HOSTNAME` environment variable, and either or
 
 ### Reupload pinned content
 
-It can reupload existing pinned content that appear as not retrievable. To enable this, provide `REAUPLOAD_PERIOD`
-with the miliseconds that represent the time to periodicaly check pinned content status.
+It can reupload existing pinned content that appears as not retrievable. To enable this, provide `REAUPLOAD_PERIOD`
+with the milliseconds that represent the time to periodically check pinned content status.
 
 ### Examples
 
@@ -216,7 +216,7 @@ Easy way is to have one testing CID that you will put directly to `/etc/hosts` a
 bah5acgzamh5fl7emnrazttpy7sag6utq5myidv3venspn6l5sevr4lko2n3q.localhost 127.0.0.1
 ```
 
-If you want fully functional setup than you have to locally install some DNS client that will provide you this functionality.
+If you want fully functional setup then you have to locally install some DNS client that will provide you this functionality.
 See for example [here](https://serverfault.com/a/118589) for `dnsmasq` solution.
 
 ## Maintainers
