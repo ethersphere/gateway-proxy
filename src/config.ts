@@ -3,8 +3,10 @@ export interface AppConfig {
   beeDebugApiUrl: string
   authorization?: string
   hostname?: string
+  domainsLookup?: string[]
   cidSubdomains?: boolean
   ensSubdomains?: boolean
+  dnslinkEnabled?: boolean
   removePinHeader?: boolean
   exposeHashedIdentity?: boolean
 }
@@ -66,6 +68,10 @@ export type EnvironmentVariables = Partial<{
   CID_SUBDOMAINS: string
   ENS_SUBDOMAINS: string
 
+  // DNSLink support
+  DNSLINK: string
+  DNSLINK_ALLOWED_DOMAINS: string
+
   // Headers manipulation
   REMOVE_PIN_HEADER: string
 
@@ -96,6 +102,7 @@ export const DEFAULT_LOG_LEVEL = 'info'
 export const MINIMAL_EXTENDS_TTL_VALUE = 60
 export const READINESS_TIMEOUT_MS = 3000
 export const ERROR_NO_STAMP = 'No postage stamp'
+export const DEFAULT_QUERY_DNSLINK_ENDPOINT = 'dns.google'
 
 export const logLevel =
   process.env.LOG_LEVEL && SUPPORTED_LEVELS.includes(process.env.LOG_LEVEL as SupportedLevels)
@@ -108,6 +115,8 @@ export function getAppConfig({
   AUTH_SECRET,
   CID_SUBDOMAINS,
   ENS_SUBDOMAINS,
+  DNSLINK,
+  DNSLINK_ALLOWED_DOMAINS,
   HOSTNAME,
   REMOVE_PIN_HEADER,
   EXPOSE_HASHED_IDENTITY,
@@ -119,6 +128,8 @@ export function getAppConfig({
     authorization: AUTH_SECRET,
     cidSubdomains: CID_SUBDOMAINS === 'true',
     ensSubdomains: ENS_SUBDOMAINS === 'true',
+    dnslinkEnabled: DNSLINK === 'true',
+    domainsLookup: DNSLINK_ALLOWED_DOMAINS ? DNSLINK_ALLOWED_DOMAINS.split(',') : undefined,
     removePinHeader: REMOVE_PIN_HEADER ? REMOVE_PIN_HEADER === 'true' : true,
     exposeHashedIdentity: EXPOSE_HASHED_IDENTITY === 'true',
   }

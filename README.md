@@ -69,6 +69,9 @@ allows to have better security model for your web applications.
 In order to use Bzz.link, set the `HOSTNAME` environment variable, and either or both of `CID_SUBDOMAINS` and
 `ENS_SUBDOMAINS` according to your requirements. You may also need to set up DNS with wildcard subdomain support.
 
+Another option to use Bzz.link, set the `DNSLINK` environment variable, and `DOMAIN_LOOKUP` according to the domain with
+the TXT record settings.
+
 ### Reupload pinned content
 
 It can reupload existing pinned content that appear as not retrievable. To enable this, provide `REAUPLOAD_PERIOD`
@@ -144,8 +147,10 @@ npm run start
 | POSTAGE_USAGE_MAX       | 0.9                         | Usage percentage at which existing postage stamp should not be considered viable ( values 0 to 1).         |
 | POSTAGE_TTL_MIN         | `autobuy`: 5 \* POSTAGE_REFRESH_PERIOD. `extends TTL`: undefined | In `autobuy`, Minimal time to live for the postage stamps to still be considered for upload (in seconds). In `extends TTL` is mandatory and required to be above 60 seconds  |
 | POSTAGE_REFRESH_PERIOD  | 60                          | How frequently are the postage stamps checked in seconds.                                                  |
-| CID_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for CIDs.                                             |
-| ENS_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for ENS.                                              |
+| CID_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for CIDs.                                                     |
+| ENS_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for ENS.                                                      |
+| DNSLINK                  | false                       | Enables Bzz.link that uses TXT records of a certain domain                                                    |
+| DOMAIN_LOOKUP            | undefined                   | Set the domain that holds the TXT records with the `dnslink` settings.                                                 |
 | REMOVE_PIN_HEADER       | true                        | Removes swarm-pin header on all proxy requests.                                                            |
 | `LOG_LEVEL`             | info                        | Log level that is outputted (values: `critical`, `error`, `warn`, `info`, `verbose`, `debug`)              |
 | POSTAGE_EXTENDSTTL      | false                       | Enables extends TTL feature. Works along with POSTAGE_AMOUNT                                               |
