@@ -4,11 +4,15 @@ import { getUsage } from '../stamps'
 
 export const BestStampMode = {
   refreshStamps: async (beeDebug: BeeDebug): Promise<string | undefined> => {
-    logger.info('checking postage stamps')
-    const stamps = await beeDebug.getAllPostageBatch()
-    logger.debug('retrieved stamps', stamps)
+    try {
+      logger.info('checking postage stamps')
+      const stamps = await beeDebug.getAllPostageBatch()
+      logger.debug('retrieved stamps', stamps)
 
-    return getBestUsableStamp(stamps)
+      return getBestUsableStamp(stamps)
+    } catch {
+      return undefined
+    }
   },
 }
 
