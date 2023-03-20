@@ -11,6 +11,8 @@ export const BestStampMode = {
 
       return getBestUsableStamp(stamps)
     } catch {
+      logger.error('failed to retrieve postage stamps')
+
       return undefined
     }
   },
