@@ -1,13 +1,10 @@
-import { BeeDebug, PostageBatch, BatchId } from '@ethersphere/bee-js'
+import { BatchId, BeeDebug, PostageBatch } from '@ethersphere/bee-js'
 import client from 'prom-client'
 import { ERROR_NO_STAMP, StampsConfig, StampsConfigAutobuy, StampsConfigExtends } from './config'
 import { logger } from './logger'
 import { register } from './metrics'
+import { BestStampMode } from './mode/best-stamp-mode'
 import { waitForStampUsable } from './utils'
-
-interface Options {
-  timeout?: number
-}
 
 const stampPurchaseCounter = new client.Counter({
   name: 'stamp_purchase_counter',
@@ -300,15 +297,22 @@ export class StampsManager {
    */
   async start(config: StampsConfig): Promise<void> {
     // Hardcoded stamp mode
-    if (config.mode === 'hardcoded') this.stamp = config.stamp
-    // Autobuy or ExtendsTTL mode
+    if (config.mode === 'hardcoded') {
+      this.stamp = config.stamp
+    }
+    // Modes with periodic refresh
     else {
       let refreshStamps: () => Promise<void>
+      const beeDebug = new BeeDebug(config.beeDebugApiUrl)
 
-      if (config.mode === 'autobuy') {
-        refreshStamps = async () => this.refreshStampsAutobuy(config, new BeeDebug(config.beeDebugApiUrl))
+      if (config.mode === 'best') {
+        refreshStamps = async () => {
+          this.stamp = await BestStampMode.refreshStamps(beeDebug)
+        }
+      } else if (config.mode === 'autobuy') {
+        refreshStamps = async () => this.refreshStampsAutobuy(config, beeDebug)
       } else {
-        refreshStamps = async () => this.refreshStampsExtends(config, new BeeDebug(config.beeDebugApiUrl))
+        refreshStamps = async () => this.refreshStampsExtends(config, beeDebug)
       }
       this.stop()
       await refreshStamps()
