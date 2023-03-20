@@ -18,6 +18,11 @@ interface StampsConfigHardcoded {
   mode: 'hardcoded'
   stamp: string
 }
+interface StampsConfigSelectBest {
+  mode: 'best'
+  beeDebugApiUrl: string
+  refreshPeriod: number
+}
 export interface StampsConfigExtends {
   mode: 'extendsTTL'
   ttlMin: number
@@ -43,7 +48,7 @@ export interface StampsConfigAutobuy {
   refreshPeriod: number
 }
 
-export type StampsConfig = StampsConfigHardcoded | StampsConfigAutobuy | StampsConfigExtends
+export type StampsConfig = StampsConfigHardcoded | StampsConfigAutobuy | StampsConfigExtends | StampsConfigSelectBest
 
 export type ContentConfig = ContentConfigReupload
 
@@ -128,6 +133,7 @@ export function getServerConfig({ PORT, HOSTNAME }: EnvironmentVariables = {}): 
   return { hostname: HOSTNAME || DEFAULT_HOSTNAME, port: Number(PORT || DEFAULT_PORT) }
 }
 
+// eslint-disable-next-line complexity
 export function getStampsConfig({
   BEE_DEBUG_API_URL,
   POSTAGE_STAMP,
@@ -142,10 +148,19 @@ export function getStampsConfig({
   const refreshPeriod = Number(POSTAGE_REFRESH_PERIOD || DEFAULT_POSTAGE_REFRESH_PERIOD)
   const beeDebugApiUrl = BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL
 
+  if (POSTAGE_STAMP === 'auto') {
+    if (!BEE_DEBUG_API_URL) {
+      throw new Error('BEE_DEBUG_API_URL must be set when POSTAGE_STAMP=auto')
+    }
+
+    return { mode: 'best', beeDebugApiUrl, refreshPeriod }
+  }
+
   // Start in hardcoded mode
-  if (POSTAGE_STAMP) return { mode: 'hardcoded', stamp: POSTAGE_STAMP }
-  // Start autobuy
-  else if (!POSTAGE_EXTENDSTTL && POSTAGE_DEPTH && POSTAGE_AMOUNT && BEE_DEBUG_API_URL) {
+  if (POSTAGE_STAMP) {
+    return { mode: 'hardcoded', stamp: POSTAGE_STAMP }
+  } else if (!POSTAGE_EXTENDSTTL && POSTAGE_DEPTH && POSTAGE_AMOUNT && BEE_DEBUG_API_URL) {
+    // Start autobuy
     return {
       mode: 'autobuy',
       depth: Number(POSTAGE_DEPTH),
