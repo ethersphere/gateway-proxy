@@ -1,12 +1,12 @@
 import { Bee, BeeDebug } from '@ethersphere/bee-js'
 import express, { Application } from 'express'
-import { createProxyMiddleware, Options } from 'http-proxy-middleware'
+import { Options, createProxyMiddleware } from 'http-proxy-middleware'
 import * as bzzLink from './bzz-link'
-import { AppConfig, DEFAULT_HOSTNAME, ERROR_NO_STAMP } from './config'
-import { fetchBeeIdentity, getHashedIdentity, HASHED_IDENTITY_HEADER } from './identity'
+import { HASHED_IDENTITY_HEADER, fetchBeeIdentity, getHashedIdentity } from './identity'
 import { logger } from './logger'
 import { register } from './metrics'
-import { checkReadiness, ReadinessStatus } from './readiness'
+import { ReadinessStatus, checkReadiness } from './readiness'
+import { settings } from './settings/settings-singleton'
 import type { StampsManager } from './stamps'
 import { getErrorMessage } from './utils'
 
@@ -21,37 +21,22 @@ export const GET_PROXY_ENDPOINTS = [
 ]
 export const POST_PROXY_ENDPOINTS = ['/bzz', '/bytes', '/chunks', '/feeds/:owner/:topic', '/soc/:owner/:id']
 
-export const createApp = (
-  {
-    hostname,
-    beeApiUrl,
-    beeDebugApiUrl,
-    authorization,
-    cidSubdomains,
-    ensSubdomains,
-    removePinHeader,
-    exposeHashedIdentity,
-  }: AppConfig,
-  stampManager?: StampsManager,
-): Application => {
+export const createApp = (stampManager?: StampsManager): Application => {
   const commonOptions: Options = {
-    target: beeApiUrl,
+    target: settings.bee.api,
     changeOrigin: true,
     logProvider: () => logger,
   }
 
-  const bee = new Bee(beeApiUrl)
-  const beeDebug = new BeeDebug(beeDebugApiUrl)
+  const bee = new Bee(settings.bee.api)
+  const beeDebug = new BeeDebug(settings.bee.debugApi)
 
   // Create Express Server
   const app = express()
 
   // Register hashed identity
-  if (exposeHashedIdentity) {
-    if (!beeDebugApiUrl) {
-      throw Error('BEE_DEBUG_API_URL is not set, but EXPOSE_HASHED_IDENTITY is set to true')
-    }
-    const beeDebug = new BeeDebug(beeDebugApiUrl)
+  if (settings.exposeHashedIdentity) {
+    const beeDebug = new BeeDebug(settings.bee.debugApi)
     fetchBeeIdentity(beeDebug)
     app.use((_, res, next) => {
       res.set(HASHED_IDENTITY_HEADER, getHashedIdentity())
@@ -59,15 +44,15 @@ export const createApp = (
     })
   }
 
-  if (hostname) {
-    const subdomainOffset = hostname.split('.').length
+  if (settings.server.hostname) {
+    const subdomainOffset = settings.server.hostname.split('.').length
     app.set('subdomain offset', subdomainOffset)
   }
 
   // Authorization
-  if (authorization) {
+  if (settings.server.authSecret) {
     app.use('', (req, res, next) => {
-      if (req.headers.authorization === authorization) {
+      if (req.headers.authorization === settings.server.authSecret) {
         next()
       } else {
         res.sendStatus(403)
@@ -75,25 +60,21 @@ export const createApp = (
     })
   }
 
-  if (cidSubdomains || ensSubdomains) {
-    if (!hostname) {
+  if (settings.cid || settings.ens) {
+    if (!settings.server.hostname) {
       throw new Error('For Bzz.link support you have to configure HOSTNAME env!')
     }
 
-    if (hostname === DEFAULT_HOSTNAME) {
-      logger.warn(`bzz.link support is enabled but HOSTNAME is set to the default ${DEFAULT_HOSTNAME}`)
-    }
+    if (settings.cid) logger.info(`enabling CID subdomain support with hostname ${settings.server.hostname}`)
 
-    if (cidSubdomains) logger.info(`enabling CID subdomain support with hostname ${hostname}`)
-
-    if (ensSubdomains) logger.info(`enabling ENS subdomain support with hostname ${hostname}`)
+    if (settings.ens) logger.info(`enabling ENS subdomain support with hostname ${settings.server.hostname}`)
 
     app.get(
       '*',
       createProxyMiddleware(bzzLink.requestFilter, {
         ...commonOptions,
-        cookieDomainRewrite: hostname,
-        router: bzzLink.routerClosure(beeApiUrl, Boolean(cidSubdomains), Boolean(ensSubdomains)),
+        cookieDomainRewrite: settings.server.hostname,
+        router: bzzLink.routerClosure(settings.bee.api, settings.cid, settings.ens),
       }),
     )
 
@@ -129,7 +110,7 @@ export const createApp = (
   const options: Options = { ...commonOptions }
 
   options.onProxyReq = (proxyReq, _req, res) => {
-    if (removePinHeader) {
+    if (settings.removePinHeader) {
       proxyReq.removeHeader('swarm-pin')
     }
 
@@ -140,8 +121,8 @@ export const createApp = (
       } catch (error) {
         logger.error('proxy failure', error)
 
-        if (getErrorMessage(error) === ERROR_NO_STAMP) {
-          res.writeHead(503).end(ERROR_NO_STAMP)
+        if (getErrorMessage(error) === 'No postage stamp') {
+          res.writeHead(503).end('No postage stamp')
         } else {
           res.writeHead(503).end('Service Unavailable')
         }

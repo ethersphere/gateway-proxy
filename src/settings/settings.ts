@@ -20,18 +20,18 @@ export interface StampHardcodedSettings {
 }
 
 export interface StampAutobuySettings {
-  amount: number
+  amount: string
   depth: number
   ttlThreshold: number
   usageThreshold: number
 }
 
 export interface StampAutoextendSettings {
-  defaultAmount: number
+  defaultAmount: string
   defaultDepth: number
   extendCapacity: boolean
   extendTtl: boolean
-  extendAmount: number
+  extendAmount: string
   ttlThreshold: number
   usageThreshold: number
 }

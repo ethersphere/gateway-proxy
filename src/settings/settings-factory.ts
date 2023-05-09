@@ -15,7 +15,7 @@ export function makeSettings(settings: Record<string, any>): Settings {
       debugApi: requiredStringParser.parse(settings?.bee?.debugApi, 'bee.debugApi'),
     },
     server: {
-      port: bigNumberParser.parse(settings?.server?.port, 'server.port'),
+      port: parseInt(bigNumberParser.parse(settings?.server?.port, 'server.port'), 10),
       hostname: optionalStringParser.parse(settings?.server?.hostname, 'server.hostname'),
       authSecret: optionalStringParser.parse(settings?.server?.authSecret, 'server.authSecret'),
       logLevel: enumParser.parse(settings?.server?.logLevel, 'server.logLevel', ['debug', 'info', 'warn', 'error']),
@@ -29,7 +29,7 @@ export function makeSettings(settings: Record<string, any>): Settings {
       autobuy: {
         amount: bigNumberParser.parse(settings?.stamp?.autobuy?.amount, 'stamp.autobuy.amount'),
         depth: depthParser.parse(settings?.stamp?.autobuy?.depth, 'stamp.autobuy.depth'),
-        ttlThreshold: temporalParser.parse(settings?.stamp?.autobuy?.ttlThreshold, 'stamp.autobuy.ttlThreshold'),
+        ttlThreshold: temporalParser.parse(settings?.stamp?.autobuy?.ttlThreshold, 'stamp.autobuy.ttlThreshold') / 1000,
         usageThreshold: percentageParser.parse(
           settings?.stamp?.autobuy?.usageThreshold,
           'stamp.autobuy.usageThreshold',
@@ -47,7 +47,8 @@ export function makeSettings(settings: Record<string, any>): Settings {
         ),
         extendTtl: boolParser.parse(settings?.stamp?.autoextend?.extendTtl, 'stamp.autoextend.extendTtl'),
         extendAmount: bigNumberParser.parse(settings?.stamp?.autoextend?.extendAmount, 'stamp.autoextend.extendAmount'),
-        ttlThreshold: temporalParser.parse(settings?.stamp?.autoextend?.ttlThreshold, 'stamp.autoextend.ttlThreshold'),
+        ttlThreshold:
+          temporalParser.parse(settings?.stamp?.autoextend?.ttlThreshold, 'stamp.autoextend.ttlThreshold') / 1000,
         usageThreshold: percentageParser.parse(
           settings?.stamp?.autoextend?.usageThreshold,
           'stamp.autoextend.usageThreshold',

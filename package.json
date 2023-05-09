@@ -30,12 +30,11 @@
     "depcheck": "depcheck .",
     "check:types": "tsc --project tsconfig.test.json",
     "test": "jest --verbose",
-    "bee": "bee-factory start"
+    "bee": "npx bee-factory start"
   },
   "license": "BSD-3-Clause",
   "devDependencies": {
     "@commitlint/cli": "^17.1.2",
-    "@ethersphere/bee-factory": "^0.4.1",
     "@jest/types": "^29.0.3",
     "@types/express": "^4.17.14",
     "@types/jest": "^27.5.2",
@@ -62,8 +61,9 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@ethersphere/bee-js": "^5.0.0",
+    "@ethersphere/bee-js": "6.0.0-pre.9",
     "@ethersphere/swarm-cid": "^0.1.0",
+    "bignumber.js": "^9.1.1",
     "express": "^4.18.1",
     "http-proxy-middleware": "^2.0.6",
     "js-yaml": "^4.1.0",

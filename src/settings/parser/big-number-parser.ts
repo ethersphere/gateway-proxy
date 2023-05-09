@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js'
 import { OutOfBoundsError, ParsingError } from './parsing-error'
 
 const multiplierMap: Record<string, number> = {
@@ -9,17 +10,18 @@ const multiplierMap: Record<string, number> = {
 }
 
 export const bigNumberParser = {
-  parse(value: string, field: string): number {
+  parse(value: string, field: string): string {
     const rawNumber = value.match(/\-?[0-9]+(\.[0-9]+)?/)?.[0]
     const rawUnit = value.match(/[a-zA-Z]+/)?.[0]
-    const number = Number(rawNumber)
     const unit = rawUnit ? rawUnit.trim().charAt(0).toLowerCase() : 'identity'
 
-    if (isNaN(number)) {
+    if (!rawNumber) {
       throw new ParsingError(field, value, 'number', '20m')
     }
 
-    if (number < 0) {
+    const number = new BigNumber(rawNumber)
+
+    if (number.lte(0)) {
       throw new OutOfBoundsError(field, value, `Number must be positive.`)
     }
 
@@ -27,6 +29,6 @@ export const bigNumberParser = {
       throw new ParsingError(field, value, 'number', '20m')
     }
 
-    return number * multiplierMap[unit]
+    return number.multipliedBy(multiplierMap[unit]).toString()
   },
 }

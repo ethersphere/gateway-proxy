@@ -1,5 +1,4 @@
 import { Bee, BeeDebug, Utils } from '@ethersphere/bee-js'
-import { ERROR_NO_STAMP, READINESS_TIMEOUT_MS } from './config'
 import { logger } from './logger'
 import { StampsManager } from './stamps'
 import { getErrorMessage } from './utils'
@@ -24,7 +23,7 @@ export async function checkReadiness(
     return ready
   } else {
     try {
-      const health = await beeDebug.getHealth({ timeout: READINESS_TIMEOUT_MS })
+      const health = await beeDebug.getHealth({ timeout: 3000 })
       const ready = health.status === 'ok'
 
       return ready ? ReadinessStatus.OK : ReadinessStatus.HEALTH_CHECK_FAILED
@@ -37,14 +36,14 @@ export async function checkReadiness(
 async function tryUploadingSingleChunk(bee: Bee, stampsManager: StampsManager): Promise<ReadinessStatus> {
   const chunk = makeChunk()
   try {
-    await bee.uploadChunk(stampsManager.postageStamp, chunk, { timeout: READINESS_TIMEOUT_MS, deferred: true })
+    await bee.uploadChunk(stampsManager.postageStamp, chunk, { deferred: true }, { timeout: 3000 })
 
     return ReadinessStatus.OK
   } catch (error) {
     const errorMessage = getErrorMessage(error)
     logger.error('unable to upload readiness-check chunk to bee', errorMessage)
 
-    if (errorMessage === ERROR_NO_STAMP) {
+    if (errorMessage === 'No postage stamp') {
       return ReadinessStatus.NO_STAMP
     }
 
