@@ -1,20 +1,17 @@
-FROM node:lts-bullseye-slim as base
+FROM node:alpine
 
-WORKDIR /app
+WORKDIR /usr/src/app
 
-COPY . .
+COPY package*.json .
+COPY tsconfig.json .
+COPY src src
+COPY public public
 
-RUN npm ci
+RUN npm install
 
-RUN npm run build
+EXPOSE 4000
 
-FROM node:lts-bullseye-slim
+RUN mkdir /usr/src/config
 
-WORKDIR /app
-COPY --from=base --chown=nobody:nogroup /app/dist dist
-COPY --from=base --chown=nobody:nogroup /app/public public
-COPY --from=base --chown=nobody:nogroup /app/node_modules node_modules
-USER nobody
-EXPOSE 3000
+CMD [ "node", "dist/index.js", "/usr/src/config/config.yaml" ]
 
-ENTRYPOINT [ "node", "dist/index.js"]

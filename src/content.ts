@@ -1,8 +1,8 @@
 import { Bee } from '@ethersphere/bee-js'
 import client from 'prom-client'
-import type { ContentConfig } from './config'
 import { logger } from './logger'
 import { register } from './metrics'
+import { settings } from './settings/settings-singleton'
 
 const contentReuploadCounter = new client.Counter({
   name: 'content_reupload_counter',
@@ -26,20 +26,15 @@ export class ContentManager {
     const pins = await beeApi.getAllPins()
 
     if (!pins.length) {
-      logger.info(`no pins found`)
-
       return
     }
 
-    logger.info(`checking pinned content (${pins.length} pins)`)
     for (const pin of pins) {
       const isRetrievable = await beeApi.isReferenceRetrievable(pin)
-      logger.debug(`pin ${pin} is ${isRetrievable ? 'retrievable' : 'not retrievable'}`)
-
       if (!isRetrievable && !this.isReuploading) {
         this.isReuploading = true
         try {
-          logger.debug(`reuploading pinned content: ${pin}`)
+          logger.info(`reuploading pinned content: ${pin}`)
           await beeApi.reuploadPinnedData(pin)
           contentReuploadCounter.inc()
           logger.info(`pinned content reuploaded: ${pin}`)
@@ -54,12 +49,13 @@ export class ContentManager {
   /**
    * Start the manager that checks for pinned content availability and reuploads the data if needed.
    */
-  start(config: ContentConfig): void {
-    const refreshContent = async () => this.attemptRefreshContentReupload(new Bee(config.beeApiUrl))
+  start(): void {
+    logger.info('Starting content manager')
+    const refreshContent = async () => this.attemptRefreshContentReupload(new Bee(settings.bee.api))
     this.stop()
     refreshContent()
 
-    this.interval = setInterval(refreshContent, config.refreshPeriod)
+    this.interval = setInterval(refreshContent, settings.contentReupload.reuploadFrequency)
   }
 
   stop(): void {
