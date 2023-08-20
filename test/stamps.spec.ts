@@ -21,8 +21,8 @@ beforeAll(async () => {
   url = `http://localhost:${port}`
 })
 
-afterAll(async () => {
-  await new Promise(resolve => server.close(resolve))
+afterAll(done => {
+  server.close(done)
 })
 
 afterEach(() => {

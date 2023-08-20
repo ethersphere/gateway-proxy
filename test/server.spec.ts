@@ -137,7 +137,7 @@ describe('POST /bytes', () => {
 
     const downloadedData = await bee.downloadData(reference)
 
-    expect(Buffer.from(downloadedData).toString()).toEqual(data)
+    expect(downloadedData.text()).toEqual(data)
   })
 
   it('should store and retrieve actual data with environment defined postage stamp', async () => {
@@ -149,7 +149,7 @@ describe('POST /bytes', () => {
 
     const downloadedData = await bee.downloadData(reference)
 
-    expect(Buffer.from(downloadedData).toString()).toEqual(data)
+    expect(downloadedData.text()).toEqual(data)
   })
 })
 
@@ -163,7 +163,7 @@ describe('GET /bytes/:reference/', () => {
 
     const downloadedData = await beeProxy.downloadData(reference)
 
-    expect(Buffer.from(downloadedData).toString()).toEqual(data)
+    expect(downloadedData.text()).toEqual(data)
   })
 
   it('with authorization enabled should return 403 & Forbidden', async () => {
@@ -259,7 +259,7 @@ describe('POST /chunks', () => {
     expect(reference).toEqual(hash)
 
     const downloadedData = await bee.downloadChunk(reference)
-    expect(downloadedData).toEqual(data)
+    expect(downloadedData.bytes()).toEqual(data)
   })
 
   it('should store and retrieve chunk with environment defined postage stamp', async () => {
@@ -275,7 +275,7 @@ describe('POST /chunks', () => {
     expect(reference).toEqual(hash)
 
     const downloadedData = await bee.downloadChunk(reference)
-    expect(downloadedData).toEqual(data)
+    expect(downloadedData.bytes()).toEqual(data)
   })
 })
 
@@ -293,7 +293,7 @@ describe('GET /chunks/:reference/', () => {
     expect(reference).toEqual(hash)
 
     const downloadedData = await beeProxy.downloadChunk(reference)
-    expect(downloadedData).toEqual(data)
+    expect(downloadedData.bytes()).toEqual(data)
   })
 
   it('with authorization enabled should return 403 & Forbidden', async () => {

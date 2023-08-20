@@ -2,18 +2,17 @@
  * For a detailed explanation regarding each configuration property and type check, visit:
  * https://jestjs.io/docs/en/configuration.html
  */
-import type { Config } from '@jest/types'
 
-export default async (): Promise<Config.InitialOptions> => {
+export default async () => {
   return {
-    preset: 'ts-jest',
+    preset: 'ts-jest/presets/default-esm',
     testEnvironment: 'node',
 
     // Indicates whether the coverage information should be collected while executing the test
     // collectCoverage: false,
 
     // This will setup the prerequisites for the tests to run
-    globalSetup: './tests-setup.ts',
+    globalSetup: './jest/postage-setup.js',
 
     // The directory where Jest should output its coverage files
     coverageDirectory: 'coverage',
@@ -29,5 +28,18 @@ export default async (): Promise<Config.InitialOptions> => {
 
     // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
     testPathIgnorePatterns: ['/node_modules/'],
+
+    extensionsToTreatAsEsm: ['.ts'],
+    moduleNameMapper: {
+      '^(\\.{1,2}/.*)\\.js$': '$1',
+    },
+    transform: {
+      '^.+\\.m?[tj]sx?$': [
+        'ts-jest',
+        {
+          useESM: true,
+        },
+      ],
+    },
   }
 }
