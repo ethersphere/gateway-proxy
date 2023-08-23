@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.7.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.6.0...v0.7.0) (2023-08-23)
+
+
+### Features
+
+* upgrade bee-js to 6.2.0 ([#464](https://www.github.com/ethersphere/gateway-proxy/issues/464)) ([eeaf768](https://www.github.com/ethersphere/gateway-proxy/commit/eeaf768fffd69560c01c433a5561184e9fe6c12b))
+
+
+### Bug Fixes
+
+* add missing sleep in wait for stamp usable ([#382](https://www.github.com/ethersphere/gateway-proxy/issues/382)) ([cf2002a](https://www.github.com/ethersphere/gateway-proxy/commit/cf2002a8836b0b8238a8946ab8b161fb5877618b))
+
 ## [0.6.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.5.1...v0.6.0) (2022-10-10)
 
 
