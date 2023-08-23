@@ -29,5 +29,9 @@ export default async (): Promise<Config.InitialOptions> => {
 
     // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
     testPathIgnorePatterns: ['/node_modules/'],
+
+    moduleNameMapper: {
+      axios: 'axios/dist/node/axios.cjs',
+    },
   }
 }
