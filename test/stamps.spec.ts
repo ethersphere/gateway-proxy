@@ -1,9 +1,9 @@
+import { BatchId, BeeDebug, PostageBatch } from '@ethersphere/bee-js'
+import { System } from 'cafe-utility'
 import type { Server } from 'http'
-import { BeeDebug, BatchId, PostageBatch } from '@ethersphere/bee-js'
-import { StampsManager, getUsage, buyNewStamp, topUpStamp, filterUsableStampsAutobuy } from '../src/stamps'
 import { getStampsConfig } from '../src/config'
-import { sleep } from '../src/utils'
-import { createStampMockServer, StampDB } from './stamps.mockserver'
+import { StampsManager, buyNewStamp, filterUsableStampsAutobuy, getUsage, topUpStamp } from '../src/stamps'
+import { StampDB, createStampMockServer } from './stamps.mockserver'
 import { genRandomHex } from './utils'
 
 interface AddressInfo {
@@ -76,13 +76,13 @@ describe('postageStamp', () => {
         BEE_DEBUG_API_URL: url,
       })!,
     )
-    await sleep(1_000)
+    await System.sleepMillis(1_000)
     expect(db.toArray().length).toEqual(1)
 
     const batchId = manager.postageStamp
     expect(batchId).toBe(stamp.batchID)
     manager.stop()
-    await sleep(250) // Needed as there could be the wait for posage stamp usable process in progress
+    await System.sleepMillis(250) // Needed as there could be the wait for posage stamp usable process in progress
   })
 
   it('should start without any postage stamp and create new one', async () => {
@@ -95,12 +95,12 @@ describe('postageStamp', () => {
         BEE_DEBUG_API_URL: url,
       })!,
     )
-    await sleep(1_000)
+    await System.sleepMillis(1_000)
     expect(db.toArray().length).toEqual(1)
 
     expect(manager.postageStamp).toEqual(db.toArray()[0].batchID)
     manager.stop()
-    await sleep(250) // Needed as there could be the wait for posage stamp usable process in progress
+    await System.sleepMillis(250) // Needed as there could be the wait for posage stamp usable process in progress
   })
 
   it('should create additional stamp if existing is starting to get full', async () => {
@@ -117,12 +117,12 @@ describe('postageStamp', () => {
       })!,
     )
 
-    await sleep(1_000)
+    await System.sleepMillis(1_000)
 
     expect(db.toArray().length).toEqual(2)
     expect(manager.postageStamp).toEqual(stamp.batchID)
     manager.stop()
-    await sleep(250) // Needed as there could be the wait for posage stamp usable process in progress
+    await System.sleepMillis(250) // Needed as there could be the wait for posage stamp usable process in progress
   })
 
   it('should create additional stamp if existing stamp usage increases', async () => {
@@ -140,17 +140,17 @@ describe('postageStamp', () => {
       })!,
     )
 
-    await sleep(200)
+    await System.sleepMillis(200)
     expect(db.toArray().length).toEqual(1)
     expect(manager.postageStamp).toEqual(stamp.batchID)
 
     stamp.utilization = 15
-    await sleep(500)
+    await System.sleepMillis(500)
 
     expect(db.toArray().length).toEqual(2)
     expect(manager.postageStamp).not.toEqual(stamp.batchID)
     manager.stop()
-    await sleep(1500) // Needed as there could be the wait for posage stamp usable process in progress
+    await System.sleepMillis(1500) // Needed as there could be the wait for posage stamp usable process in progress
   })
 })
 

@@ -1,6 +1,6 @@
 import express from 'express'
 import type { Server } from 'http'
-import { POST_PROXY_ENDPOINTS } from '../src/server'
+import { POST_PROXY_ENDPOINTS } from '../src/proxy'
 
 // This simple server just sends back the request headers as response body
 export async function createHeaderCheckMockServer(): Promise<Server> {
