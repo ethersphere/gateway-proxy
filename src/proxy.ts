@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { Dates, Strings } from 'cafe-utility'
+import { Dates, Objects, Strings } from 'cafe-utility'
 import { Application, Request, Response } from 'express'
 import { logger } from './logger'
 import { StampsManager } from './stamps'
@@ -40,7 +40,7 @@ async function fetchAndRespond(req: Request, res: Response, options: Options) {
   try {
     const response = await axios({
       method: req.method,
-      url: Strings.joinUrl(options.beeApiUrl, path),
+      url: Strings.joinUrl(options.beeApiUrl, path) + Objects.toQueryString(req.query, true),
       data: req.body,
       headers,
       timeout: Dates.minutes(20),
