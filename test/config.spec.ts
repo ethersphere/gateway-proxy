@@ -179,7 +179,7 @@ describe('getStampsConfig', () => {
     })
   })
 
-  const throwValues: EnvironmentVariables[] = [{ POSTAGE_DEPTH }, { POSTAGE_AMOUNT }, { POSTAGE_DEPTH, POSTAGE_AMOUNT }]
+  const throwValues: EnvironmentVariables[] = [{ POSTAGE_DEPTH }, { POSTAGE_AMOUNT }]
 
   throwValues.forEach(v => {
     it(`should throw for ${JSON.stringify(v)}`, () => {

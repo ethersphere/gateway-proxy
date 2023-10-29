@@ -1,12 +1,13 @@
-import { createApp, POST_PROXY_ENDPOINTS } from '../src/server'
-import request from 'supertest'
 import { Bee } from '@ethersphere/bee-js'
 import type { Server } from 'http'
+import request from 'supertest'
 import { DEFAULT_BEE_DEBUG_API_URL } from '../src/config'
+import { createApp } from '../src/server'
 
-import { bee, getPostageBatch, makeCollectionFromFS } from './utils'
+import { POST_PROXY_ENDPOINTS } from '../src/proxy'
 import { StampsManager } from '../src/stamps'
 import { createHeaderCheckMockServer } from './header-check.mockserver'
+import { bee, getPostageBatch, makeCollectionFromFS } from './utils'
 
 const beeApiUrl = process.env.BEE_API_URL || 'http://localhost:1633'
 const beeApiUrlWrong = process.env.BEE_API_URL_WRONG || 'http://localhost:2021'
