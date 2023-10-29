@@ -14,6 +14,7 @@ export const createApp = (
     hostname,
     beeApiUrl,
     beeDebugApiUrl,
+    allowlist,
     authorization,
     cidSubdomains,
     ensSubdomains,
@@ -107,6 +108,7 @@ export const createApp = (
     beeApiUrl,
     removePinHeader: removePinHeader ?? false,
     stampManager: stampManager ?? null,
+    allowlist,
   })
 
   app.use(express.static('public'))
