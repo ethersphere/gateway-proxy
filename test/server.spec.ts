@@ -215,7 +215,7 @@ describe('GET /bzz/:reference/', () => {
 
     const res = await request(app).get(`/bzz/${reference}`).redirects(1).expect(200)
     expect(res.headers['content-disposition']).toBe('inline; filename="1.txt"')
-    expect(res.body).toBe('1abcd\n')
+    expect((res.body as Buffer).toString('utf8')).toBe('1abcd\n')
   })
 
   it('with authorization enabled should return 403 & Forbidden', async () => {
@@ -236,7 +236,7 @@ describe('GET /bzz/:reference/<path>', () => {
 
     const res = await request(app).get(`/bzz/${reference}/sub/3.txt`).redirects(1).expect(200)
     expect(res.headers['content-disposition']).toBe('inline; filename="3.txt"')
-    expect(res.body).toBe('3\n')
+    expect((res.body as Buffer).toString('utf8')).toBe('3\n')
   })
 
   it('with authorization enabled should return 403 & Forbidden', async () => {
