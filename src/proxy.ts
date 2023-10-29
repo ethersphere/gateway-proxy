@@ -45,6 +45,7 @@ async function fetchAndRespond(req: Request, res: Response, options: Options) {
       timeout: Dates.minutes(20),
       validateStatus: status => status < 500,
       responseType: 'arraybuffer',
+      maxRedirects: 0,
     })
     if ((response.headers['content-disposition'] || '').includes('.html')) {
       res.status(403).send('Forbidden')
