@@ -1,6 +1,8 @@
 import axios from 'axios'
 import { Dates, Objects, Strings } from 'cafe-utility'
-import { Application, Request, Response } from 'express'
+import { Application, Response } from 'express'
+import { IncomingHttpHeaders } from 'http'
+import { requestFilter, subdomainToBzz } from './bzz-link'
 import { logger } from './logger'
 import { StampsManager } from './stamps'
 import { getErrorMessage } from './utils'
@@ -16,32 +18,61 @@ interface Options {
   removePinHeader: boolean
   stampManager: StampsManager | null
   allowlist?: string[]
+  hostname?: string
+  cidSubdomains?: boolean
+  ensSubdomains?: boolean
 }
 
 export function createProxyEndpoints(app: Application, options: Options) {
+  app.use(async (req, res, next) => {
+    if (!options.hostname || !requestFilter(req)) {
+      next()
+    }
+    const newUrl = subdomainToBzz(
+      req.hostname,
+      options.hostname!,
+      options.cidSubdomains ?? false,
+      options.ensSubdomains ?? false,
+    )
+    await fetchAndRespond(
+      'GET',
+      Strings.joinUrl('bzz', newUrl, req.path),
+      req.query,
+      req.headers,
+      req.body,
+      res,
+      options,
+    )
+  })
   app.get(GET_PROXY_ENDPOINTS, async (req, res) => {
-    await fetchAndRespond(req, res, options)
+    await fetchAndRespond('GET', req.path, req.query, req.headers, req.body, res, options)
   })
   app.post(POST_PROXY_ENDPOINTS, async (req, res) => {
-    await fetchAndRespond(req, res, options)
+    await fetchAndRespond('POST', req.path, req.query, req.headers, req.body, res, options)
   })
 }
 
-async function fetchAndRespond(req: Request, res: Response, options: Options) {
-  const { headers, path } = req
-
+async function fetchAndRespond(
+  method: 'GET' | 'POST',
+  path: string,
+  query: Record<string, unknown>,
+  headers: IncomingHttpHeaders,
+  body: any,
+  res: Response,
+  options: Options,
+) {
   if (options.removePinHeader) {
     delete headers[SWARM_PIN_HEADER]
   }
 
-  if (req.method === 'POST' && options.stampManager) {
+  if (method === 'POST' && options.stampManager) {
     headers[SWARM_STAMP_HEADER] = options.stampManager.postageStamp
   }
   try {
     const response = await axios({
-      method: req.method,
-      url: Strings.joinUrl(options.beeApiUrl, path) + Objects.toQueryString(req.query, true),
-      data: req.body,
+      method,
+      url: Strings.joinUrl(options.beeApiUrl, path) + Objects.toQueryString(query, true),
+      data: body,
       headers,
       timeout: Dates.minutes(20),
       validateStatus: status => status < 500,
@@ -63,11 +94,6 @@ async function fetchAndRespond(req: Request, res: Response, options: Options) {
       }
     }
 
-    if (Array.isArray(response.headers['set-cookie'])) {
-      response.headers['set-cookie'] = response.headers['set-cookie'].map((cookie: string) => {
-        return cookie.replace(/Domain=.*?(;|$)/, `Domain=${req.hostname};`)
-      })
-    }
     res.set(response.headers).status(response.status).send(response.data)
   } catch (error) {
     res.status(500).send('Internal server error')

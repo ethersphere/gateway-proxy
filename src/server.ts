@@ -106,12 +106,16 @@ export const createApp = (
 
   createProxyEndpoints(app, {
     beeApiUrl,
-    removePinHeader: removePinHeader ?? false,
+    removePinHeader: removePinHeader ?? true,
     stampManager: stampManager ?? null,
     allowlist,
+    cidSubdomains,
+    ensSubdomains,
+    hostname,
   })
 
   app.use(express.static('public'))
+
   app.use((_req, res) => res.sendStatus(404))
 
   return app
