@@ -215,6 +215,7 @@ describe('GET /bzz/:reference/', () => {
 
     const res = await request(app).get(`/bzz/${reference}`).redirects(1).expect(200)
     expect(res.headers['content-disposition']).toBe('inline; filename="1.txt"')
+    expect(res).toEqual({ text: '1abcd\n' })
     expect(res.text).toBe('1abcd\n')
   })
 
