@@ -179,14 +179,7 @@ describe('getStampsConfig', () => {
     })
   })
 
-  const throwValues: EnvironmentVariables[] = [
-    { BEE_DEBUG_API_URL },
-    { POSTAGE_DEPTH },
-    { POSTAGE_AMOUNT },
-    { BEE_DEBUG_API_URL, POSTAGE_DEPTH },
-    { BEE_DEBUG_API_URL, POSTAGE_AMOUNT },
-    { POSTAGE_DEPTH, POSTAGE_AMOUNT },
-  ]
+  const throwValues: EnvironmentVariables[] = [{ POSTAGE_DEPTH }, { POSTAGE_AMOUNT }, { POSTAGE_DEPTH, POSTAGE_AMOUNT }]
 
   throwValues.forEach(v => {
     it(`should throw for ${JSON.stringify(v)}`, () => {
