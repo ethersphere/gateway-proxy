@@ -49,11 +49,20 @@ async function fetchAndRespond(req: Request, res: Response, options: Options) {
       maxRedirects: 0,
     })
 
-    if ((response.headers['content-disposition'] || '').includes('.html')) {
-      res.status(403).send('Forbidden')
+    if (options.allowlist) {
+      const currentHash = Strings.searchHex(path, 64)
 
-      return
+      if (
+        currentHash &&
+        (response.headers['content-disposition'] || '').includes('.html') &&
+        !options.allowlist.includes(currentHash)
+      ) {
+        res.status(403).send('Forbidden')
+
+        return
+      }
     }
+
     if (response.headers['set-cookie']) {
       response.headers['set-cookie'] = response.headers['set-cookie'].map((cookie: string) => {
         return cookie.replace(/Domain=.*?;/, `Domain=${req.hostname};`)
