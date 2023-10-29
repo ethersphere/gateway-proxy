@@ -22,7 +22,6 @@ export function createProxyEndpoints(app: Application, options: Options) {
   app.get(GET_PROXY_ENDPOINTS, async (req, res) => {
     await fetchAndRespond(req, res, options)
   })
-
   app.post(POST_PROXY_ENDPOINTS, async (req, res) => {
     await fetchAndRespond(req, res, options)
   })
@@ -30,9 +29,11 @@ export function createProxyEndpoints(app: Application, options: Options) {
 
 async function fetchAndRespond(req: Request, res: Response, options: Options) {
   const { headers, path } = req
+
   if (options.removePinHeader) {
     delete headers[SWARM_PIN_HEADER]
   }
+
   if (req.method === 'POST' && options.stampManager) {
     headers[SWARM_STAMP_HEADER] = options.stampManager.postageStamp
   }
@@ -47,11 +48,12 @@ async function fetchAndRespond(req: Request, res: Response, options: Options) {
       responseType: 'arraybuffer',
       maxRedirects: 0,
     })
+
     if ((response.headers['content-disposition'] || '').includes('.html')) {
       res.status(403).send('Forbidden')
+
       return
     }
-
     res.set(response.headers).status(response.status).send(response.data)
   } catch (error) {
     res.status(500).send('Internal server error')
