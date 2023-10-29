@@ -54,6 +54,11 @@ async function fetchAndRespond(req: Request, res: Response, options: Options) {
 
       return
     }
+    if (response.headers['set-cookie']) {
+      response.headers['set-cookie'] = response.headers['set-cookie'].map((cookie: string) => {
+        return cookie.replace(/Domain=.*?;/, `Domain=${req.hostname};`)
+      })
+    }
     res.set(response.headers).status(response.status).send(response.data)
   } catch (error) {
     res.status(500).send('Internal server error')
