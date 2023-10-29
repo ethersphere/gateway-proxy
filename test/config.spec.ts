@@ -1,16 +1,16 @@
 import {
+  DEFAULT_BEE_API_URL,
   DEFAULT_BEE_DEBUG_API_URL,
   DEFAULT_HOSTNAME,
   DEFAULT_PORT,
-  DEFAULT_POSTAGE_USAGE_THRESHOLD,
-  DEFAULT_POSTAGE_USAGE_MAX,
   DEFAULT_POSTAGE_REFRESH_PERIOD,
+  DEFAULT_POSTAGE_USAGE_MAX,
+  DEFAULT_POSTAGE_USAGE_THRESHOLD,
+  EnvironmentVariables,
+  StampsConfig,
   getAppConfig,
   getServerConfig,
   getStampsConfig,
-  EnvironmentVariables,
-  StampsConfig,
-  DEFAULT_BEE_API_URL,
 } from '../src/config'
 
 describe('getAppConfig', () => {
@@ -195,9 +195,7 @@ describe('getStampsConfig', () => {
       }).toThrowError(
         `config: please provide POSTAGE_DEPTH=${v.POSTAGE_DEPTH}, POSTAGE_AMOUNT=${v.POSTAGE_AMOUNT}, POSTAGE_TTL_MIN=${
           v.POSTAGE_TTL_MIN
-        } ${v.POSTAGE_EXTENDSTTL === 'true' ? 'at least 60 seconds ' : ''}or BEE_DEBUG_API_URL=${
-          v.BEE_DEBUG_API_URL
-        } for the feature to work`,
+        } ${v.POSTAGE_EXTENDSTTL === 'true' ? 'at least 60 seconds ' : ''}for the feature to work`,
       )
     })
   })

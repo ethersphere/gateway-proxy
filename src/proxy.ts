@@ -15,6 +15,7 @@ interface Options {
   beeApiUrl: string
   removePinHeader: boolean
   stampManager: StampsManager | null
+  allowlist?: string[]
 }
 
 export function createProxyEndpoints(app: Application, options: Options) {
@@ -45,7 +46,6 @@ async function fetchAndRespond(req: Request, res: Response, options: Options) {
       validateStatus: status => status < 500,
       responseType: 'arraybuffer',
     })
-    console.log(response.headers)
     if ((response.headers['content-disposition'] || '').includes('.html')) {
       res.status(403).send('Forbidden')
       return
