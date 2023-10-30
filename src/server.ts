@@ -20,6 +20,7 @@ export const createApp = (
     ensSubdomains,
     removePinHeader,
     exposeHashedIdentity,
+    readinessCheck,
   }: AppConfig,
   stampManager?: StampsManager,
 ): Application => {
@@ -93,7 +94,7 @@ export const createApp = (
 
   // Readiness endpoint
   app.get('/readiness', async (_req, res) => {
-    const readinessStatus = await checkReadiness(bee, beeDebug, stampManager)
+    const readinessStatus = await checkReadiness(bee, beeDebug, readinessCheck ?? false, stampManager)
 
     if (readinessStatus === ReadinessStatus.OK) {
       res.end('OK')

@@ -8,6 +8,7 @@ export interface AppConfig {
   ensSubdomains?: boolean
   removePinHeader?: boolean
   exposeHashedIdentity?: boolean
+  readinessCheck?: boolean
 }
 
 export interface ServerConfig {
@@ -64,6 +65,9 @@ export type EnvironmentVariables = Partial<{
   // Identity
   EXPOSE_HASHED_IDENTITY: string
 
+  // Readiness check
+  READINESS_CHECK: string
+
   // CID subdomain support
   CID_SUBDOMAINS: string
   ENS_SUBDOMAINS: string
@@ -114,6 +118,7 @@ export function getAppConfig({
   HOSTNAME,
   REMOVE_PIN_HEADER,
   EXPOSE_HASHED_IDENTITY,
+  READINESS_CHECK,
 }: EnvironmentVariables = {}): AppConfig {
   return {
     hostname: HOSTNAME || DEFAULT_HOSTNAME,
@@ -125,6 +130,7 @@ export function getAppConfig({
     ensSubdomains: ENS_SUBDOMAINS === 'true',
     removePinHeader: REMOVE_PIN_HEADER ? REMOVE_PIN_HEADER === 'true' : true,
     exposeHashedIdentity: EXPOSE_HASHED_IDENTITY === 'true',
+    readinessCheck: READINESS_CHECK === 'true',
   }
 }
 
