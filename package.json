@@ -1,6 +1,6 @@
 {
   "name": "@ethersphere/gateway-proxy",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Swarm proxy server that can play role of a gateway",
   "keywords": [
     "bee",
