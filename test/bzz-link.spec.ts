@@ -8,33 +8,23 @@ describe('bzz.link', () => {
     }
 
     it('should translate valid CID', async () => {
-      expect(subdomainToBzz(`${MANIFEST.cid}.some.bee`, 'some.bee', true, true)).toEqual(
-        `http://some.bee/bzz/${MANIFEST.reference}`,
-      )
+      expect(subdomainToBzz(`${MANIFEST.cid}.some.bee`, 'some.bee', true, true)).toEqual(MANIFEST.reference)
     })
 
     it('should translate valid CID with ENS disabled', async () => {
-      expect(subdomainToBzz(`${MANIFEST.cid}.some.bee`, 'some.bee', true, false)).toEqual(
-        `http://some.bee/bzz/${MANIFEST.reference}`,
-      )
+      expect(subdomainToBzz(`${MANIFEST.cid}.some.bee`, 'some.bee', true, false)).toEqual(MANIFEST.reference)
     })
 
     it('should translate valid ENS', async () => {
-      expect(subdomainToBzz('some-ens-domain.some.bee', 'some.bee', true, true)).toEqual(
-        `http://some.bee/bzz/some-ens-domain.eth`,
-      )
+      expect(subdomainToBzz('some-ens-domain.some.bee', 'some.bee', true, true)).toEqual(`some-ens-domain.eth`)
     })
 
     it('should translate valid ENS with subdomain', async () => {
-      expect(subdomainToBzz('book.swarm.bzz.link', 'bzz.link', true, true)).toEqual(
-        `http://bzz.link/bzz/book.swarm.eth`,
-      )
+      expect(subdomainToBzz('book.swarm.bzz.link', 'bzz.link', true, true)).toEqual(`book.swarm.eth`)
     })
 
     it('should translate valid ENS when CID is disabled', async () => {
-      expect(subdomainToBzz('some-ens-domain.some.bee', 'some.bee', false, true)).toEqual(
-        `http://some.bee/bzz/some-ens-domain.eth`,
-      )
+      expect(subdomainToBzz('some-ens-domain.some.bee', 'some.bee', false, true)).toEqual(`some-ens-domain.eth`)
     })
 
     it('should throw when CID support is disabled', async () => {
