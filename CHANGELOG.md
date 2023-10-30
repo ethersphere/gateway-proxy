@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.7.0...v0.8.0) (2023-10-30)
+
+
+### Features
+
+* add more control over proxying ([#468](https://www.github.com/ethersphere/gateway-proxy/issues/468)) ([0923d87](https://www.github.com/ethersphere/gateway-proxy/commit/0923d87ca91ae4289954b7bb253c2c163c073084))
+
 ## [0.7.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.6.0...v0.7.0) (2023-08-23)
 
 
