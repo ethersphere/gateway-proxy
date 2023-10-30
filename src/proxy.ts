@@ -26,6 +26,7 @@ interface Options {
 export function createProxyEndpoints(app: Application, options: Options) {
   app.use(async (req, res, next) => {
     const subdomain = options.hostname ? Strings.before(req.hostname, options.hostname) : null
+
     if (!options.hostname || !subdomain || req.method !== 'GET') {
       next()
 
