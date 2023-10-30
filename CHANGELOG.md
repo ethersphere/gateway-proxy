@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.8.1](https://www.github.com/ethersphere/gateway-proxy/compare/v0.8.0...v0.8.1) (2023-10-30)
+
+
+### Bug Fixes
+
+* do not log buffer ([#472](https://www.github.com/ethersphere/gateway-proxy/issues/472)) ([7a8e0fa](https://www.github.com/ethersphere/gateway-proxy/commit/7a8e0fa2bdb65569c01d2d7fd16bbc141d6d993d))
+
 ## [0.8.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.7.0...v0.8.0) (2023-10-30)
 
 
