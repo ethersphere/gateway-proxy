@@ -53,9 +53,9 @@ The proxy can manage postage stamps for you in 4 modes of operation:
 3. It can add/replace the request postage stamp with an auto-bought stamp or existing stamp that fulfils the amount,
    depth and is not too full or about to expire. To enable this, provide at minimum `POSTAGE_DEPTH`, `POSTAGE_AMOUNT`
    and `BEE_DEBUG_API_URL`.
-4. It can extend the TTL of a stamp that is about to expire. To enable this, set `POSTAGE_EXTENDSTTL=true`,
-   provide `POSTAGE_AMOUNT`, `POSTAGE_DEPTH` with the desired amount to use and `POSTAGE_TTL_MIN` above with
-   a number above or equal to 60.
+4. It can extend the TTL of a stamp that is about to expire. To enable this, set `POSTAGE_EXTENDSTTL=true`, provide
+   `POSTAGE_AMOUNT`, `POSTAGE_DEPTH` with the desired amount to use and `POSTAGE_TTL_MIN` above with a number above or
+   equal to 60.
 
 In modes 1, 2 and 3, the proxy can be configured to require authentication secret to forward the requests. Use the
 `AUTH_SECRET` environment variable to enable it.
@@ -71,8 +71,8 @@ In order to use Bzz.link, set the `HOSTNAME` environment variable, and either or
 
 ### Reupload pinned content
 
-It can reupload existing pinned content that appear as not retrievable. To enable this, provide `REAUPLOAD_PERIOD`
-with the miliseconds that represent the time to periodicaly check pinned content status.
+It can reupload existing pinned content that appear as not retrievable. To enable this, provide `REAUPLOAD_PERIOD` with
+the miliseconds that represent the time to periodicaly check pinned content status.
 
 ### Examples
 
@@ -95,7 +95,7 @@ npm run start
 ```sh
 export POSTAGE_DEPTH=20
 export POSTAGE_AMOUNT=1000000
-export BEE_DEBUG_API_URL=http://localhost:1635
+export POSTAGE_TTL_MIN=60
 
 npm run start
 ```
@@ -107,7 +107,6 @@ export POSTAGE_EXTENDSTTL=true
 export POSTAGE_TTL_MIN=60
 export POSTAGE_DEPTH=20
 export POSTAGE_AMOUNT=1000000
-export BEE_DEBUG_API_URL=http://localhost:1635
 
 npm run start
 ```
@@ -130,27 +129,27 @@ npm run start
 
 ### Environment variables
 
-| Name                    | Default Value               | Description                                                                                                |
-| ----------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| BEE_API_URL             | http://localhost:1633       | URL of the Bee node API                                                                                    |
-| BEE_DEBUG_API_URL       | http://localhost:1635       | URL of the Bee node Debug API. Required for postage stamps autobuy and hashed identity header.             |
-| AUTH_SECRET             | undefined                   | Authentication secret, disabled if not set (this secret is checked in the request header `authorization`). |
-| HOSTNAME                | localhost                   | Hostname of the proxy. Required for Bzz.link support.                                                      |
-| PORT                    | 3000                        | Port of the proxy.                                                                                         |
-| POSTAGE_STAMP           | undefined                   | Postage stamp that should be used for all upload requests. If provided, the autobuy feature is disabled.   |
-| POSTAGE_DEPTH           | undefined                   | Postage stamp depth to be used when buying new stamps or selecting existing stamps.                        |
-| POSTAGE_AMOUNT          | undefined                   | Postage stamp amount to be used when buying new stamps or selecting existing stamps.                       |
-| POSTAGE_USAGE_THRESHOLD | 0.7                         | Usage percentage at which new postage stamp will be bought (value between 0 and 1).                        |
-| POSTAGE_USAGE_MAX       | 0.9                         | Usage percentage at which existing postage stamp should not be considered viable ( values 0 to 1).         |
-| POSTAGE_TTL_MIN         | `autobuy`: 5 \* POSTAGE_REFRESH_PERIOD. `extends TTL`: undefined | In `autobuy`, Minimal time to live for the postage stamps to still be considered for upload (in seconds). In `extends TTL` is mandatory and required to be above 60 seconds  |
-| POSTAGE_REFRESH_PERIOD  | 60                          | How frequently are the postage stamps checked in seconds.                                                  |
-| CID_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for CIDs.                                             |
-| ENS_SUBDOMAINS          | false                       | Enables Bzz.link subdomain translation functionality for ENS.                                              |
-| REMOVE_PIN_HEADER       | true                        | Removes swarm-pin header on all proxy requests.                                                            |
-| `LOG_LEVEL`             | info                        | Log level that is outputted (values: `critical`, `error`, `warn`, `info`, `verbose`, `debug`)              |
-| POSTAGE_EXTENDSTTL      | false                       | Enables extends TTL feature. Works along with POSTAGE_AMOUNT                                               |
-| EXPOSE_HASHED_IDENTITY  | false                       | Exposes `x-bee-node` header, which is the hashed identity of the Bee node for identification purposes      |
-| REUPLOAD_PERIOD         | undefined                   | How frequently are the pinned content checked to be reuploaded.                                            |
+| Name                    | Default Value                                                    | Description                                                                                                                                                                 |
+| ----------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| BEE_API_URL             | http://localhost:1633                                            | URL of the Bee node API                                                                                                                                                     |
+| BEE_DEBUG_API_URL       | http://localhost:1635                                            | URL of the Bee node Debug API. Required for postage stamps autobuy and hashed identity header.                                                                              |
+| AUTH_SECRET             | undefined                                                        | Authentication secret, disabled if not set (this secret is checked in the request header `authorization`).                                                                  |
+| HOSTNAME                | localhost                                                        | Hostname of the proxy. Required for Bzz.link support.                                                                                                                       |
+| PORT                    | 3000                                                             | Port of the proxy.                                                                                                                                                          |
+| POSTAGE_STAMP           | undefined                                                        | Postage stamp that should be used for all upload requests. If provided, the autobuy feature is disabled.                                                                    |
+| POSTAGE_DEPTH           | undefined                                                        | Postage stamp depth to be used when buying new stamps or selecting existing stamps.                                                                                         |
+| POSTAGE_AMOUNT          | undefined                                                        | Postage stamp amount to be used when buying new stamps or selecting existing stamps.                                                                                        |
+| POSTAGE_USAGE_THRESHOLD | 0.7                                                              | Usage percentage at which new postage stamp will be bought (value between 0 and 1).                                                                                         |
+| POSTAGE_USAGE_MAX       | 0.9                                                              | Usage percentage at which existing postage stamp should not be considered viable ( values 0 to 1).                                                                          |
+| POSTAGE_TTL_MIN         | `autobuy`: 5 \* POSTAGE_REFRESH_PERIOD. `extends TTL`: undefined | In `autobuy`, Minimal time to live for the postage stamps to still be considered for upload (in seconds). In `extends TTL` is mandatory and required to be above 60 seconds |
+| POSTAGE_REFRESH_PERIOD  | 60                                                               | How frequently are the postage stamps checked in seconds.                                                                                                                   |
+| CID_SUBDOMAINS          | false                                                            | Enables Bzz.link subdomain translation functionality for CIDs.                                                                                                              |
+| ENS_SUBDOMAINS          | false                                                            | Enables Bzz.link subdomain translation functionality for ENS.                                                                                                               |
+| REMOVE_PIN_HEADER       | true                                                             | Removes swarm-pin header on all proxy requests.                                                                                                                             |
+| `LOG_LEVEL`             | info                                                             | Log level that is outputted (values: `critical`, `error`, `warn`, `info`, `verbose`, `debug`)                                                                               |
+| POSTAGE_EXTENDSTTL      | false                                                            | Enables extends TTL feature. Works along with POSTAGE_AMOUNT                                                                                                                |
+| EXPOSE_HASHED_IDENTITY  | false                                                            | Exposes `x-bee-node` header, which is the hashed identity of the Bee node for identification purposes                                                                       |
+| REUPLOAD_PERIOD         | undefined                                                        | How frequently are the pinned content checked to be reuploaded.                                                                                                             |
 
 ### Curl
 
@@ -208,7 +207,8 @@ There are some ways you can make this module better:
 
 ### Local development with Bzz.link
 
-Local development with the subdomain Bzz.link support is a bit more tricky as it requires to have a way how to direct local subdomains to given URL.
+Local development with the subdomain Bzz.link support is a bit more tricky as it requires to have a way how to direct
+local subdomains to given URL.
 
 Easy way is to have one testing CID that you will put directly to `/etc/hosts` and use only that for testing.
 
@@ -216,13 +216,12 @@ Easy way is to have one testing CID that you will put directly to `/etc/hosts` a
 bah5acgzamh5fl7emnrazttpy7sag6utq5myidv3venspn6l5sevr4lko2n3q.localhost 127.0.0.1
 ```
 
-If you want fully functional setup than you have to locally install some DNS client that will provide you this functionality.
-See for example [here](https://serverfault.com/a/118589) for `dnsmasq` solution.
+If you want fully functional setup than you have to locally install some DNS client that will provide you this
+functionality. See for example [here](https://serverfault.com/a/118589) for `dnsmasq` solution.
 
 ## Maintainers
 
- - [Cafe137](https://github.com/Cafe137)
-
+- [Cafe137](https://github.com/Cafe137)
 
 ## License
 

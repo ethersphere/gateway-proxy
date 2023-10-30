@@ -1,9 +1,8 @@
-import { BeeDebug, PostageBatch, BatchId } from '@ethersphere/bee-js'
+import { BatchId, BeeDebug, PostageBatch } from '@ethersphere/bee-js'
 import client from 'prom-client'
 import { ERROR_NO_STAMP, StampsConfig, StampsConfigAutobuy, StampsConfigExtends } from './config'
 import { logger } from './logger'
 import { register } from './metrics'
-import { waitForStampUsable } from './utils'
 
 interface Options {
   timeout?: number
@@ -129,8 +128,7 @@ export async function buyNewStamp(
   beeDebug: BeeDebug,
 ): Promise<{ batchId: BatchId; stamp: PostageBatch }> {
   logger.info('buying new stamp')
-  const batchId = await beeDebug.createPostageBatch(amount, depth, { waitForUsable: false })
-  await waitForStampUsable(beeDebug, batchId)
+  const batchId = await beeDebug.createPostageBatch(amount, depth, { waitForUsable: true })
   stampPurchaseCounter.inc()
 
   const stamp = await beeDebug.getPostageBatch(batchId)
@@ -214,15 +212,15 @@ export class StampsManager {
           // Add the bought postage stamp
           this.usableStamps.push(stamp)
           stampUsableCountGauge.set(this.usableStamps.length)
-        } catch (e) {
-          logger.error('failed to buy postage stamp', e)
+        } catch (error) {
+          logger.error('failed to buy postage stamp', error)
           stampPurchaseFailedCounter.inc()
         } finally {
           this.isBuyingStamp = false
         }
       }
-    } catch (e) {
-      logger.error('failed to refresh postage stamp', e)
+    } catch (error) {
+      logger.error('failed to refresh postage stamp', error)
     }
   }
 
@@ -254,8 +252,8 @@ export class StampsManager {
           await this.verifyUsableStamps(beeDebug, ttlMin, config, amount)
         }
       }
-    } catch (e) {
-      logger.error('failed to refresh on extends postage stamps', e)
+    } catch (error) {
+      logger.error('failed to refresh on extends postage stamps', error)
     }
   }
 
@@ -278,11 +276,11 @@ export class StampsManager {
           const stampRes = await topUpStamp(beeDebug, stamp.batchID, amount)
 
           setTimeout(() => this.completeTopUp(stampRes), 60000)
-        } catch (e: any) {
+        } catch (error) {
           // error that indicate that 2 stamps are trying to be extended at the same time. Comes out as a warning
           const errorStampIndex = this.extendingStamps.indexOf(stamp.batchID)
           this.extendingStamps.splice(errorStampIndex, 1)
-          logger.error('failed to topup postage stamp', e)
+          logger.error('failed to topup postage stamp', error)
         }
       }
     }

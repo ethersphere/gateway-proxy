@@ -1,8 +1,9 @@
-import { createLogger, format, transports, Logger, Logform } from 'winston'
-import requestStats from 'request-stats'
 import type { Server } from 'http'
+import requestStats from 'request-stats'
+import { Logform, Logger, createLogger, format, transports } from 'winston'
 
-import { SupportedLevels, logLevel, SUPPORTED_LEVELS } from './config'
+import { Strings } from 'cafe-utility'
+import { SUPPORTED_LEVELS, SupportedLevels, logLevel } from './config'
 
 const supportedLevels: Record<SupportedLevels, number> = SUPPORTED_LEVELS.reduce(
   (acc, cur, idx) => ({ ...acc, [cur]: idx }),
@@ -24,17 +25,10 @@ export const logger: Logger = createLogger({
 
 logger.info(`using max log level=${logLevel}`)
 
-function processMetadata(metadata: Record<string, unknown>): string {
-  // Create array of "<key>=<value>" strings from an object
-  const serializedMetadata = Object.entries(metadata).map(([key, value]) => `${key}=${JSON.stringify(value)}`)
-
-  return serializedMetadata.join(' ')
-}
-
 export function formatLogMessage(info: Logform.TransformableInfo): string {
   let message = `time="${info.timestamp}" level="${info.level}" msg="${info.message}"`
 
-  if (Object.keys(info.metadata).length > 0) message = `${message} ${processMetadata(info.metadata)}`
+  if (Object.keys(info.metadata).length > 0) message = `${message} ${Strings.represent(info.metadata, 'key-value')}`
 
   return message.replace(/\n/g, '\\n')
 }

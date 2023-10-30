@@ -2,6 +2,7 @@ export interface AppConfig {
   beeApiUrl: string
   beeDebugApiUrl: string
   authorization?: string
+  allowlist?: string[]
   hostname?: string
   cidSubdomains?: boolean
   ensSubdomains?: boolean
@@ -54,6 +55,7 @@ export type EnvironmentVariables = Partial<{
   // Proxy
   BEE_API_URL: string
   AUTH_SECRET: string
+  ALLOWLIST: string
 
   // Server
   PORT: string
@@ -106,6 +108,7 @@ export function getAppConfig({
   BEE_API_URL,
   BEE_DEBUG_API_URL,
   AUTH_SECRET,
+  ALLOWLIST,
   CID_SUBDOMAINS,
   ENS_SUBDOMAINS,
   HOSTNAME,
@@ -117,6 +120,7 @@ export function getAppConfig({
     beeApiUrl: BEE_API_URL || DEFAULT_BEE_API_URL,
     beeDebugApiUrl: BEE_DEBUG_API_URL || DEFAULT_BEE_DEBUG_API_URL,
     authorization: AUTH_SECRET,
+    allowlist: ALLOWLIST ? ALLOWLIST.split(',') : undefined,
     cidSubdomains: CID_SUBDOMAINS === 'true',
     ensSubdomains: ENS_SUBDOMAINS === 'true',
     removePinHeader: REMOVE_PIN_HEADER ? REMOVE_PIN_HEADER === 'true' : true,
@@ -145,7 +149,7 @@ export function getStampsConfig({
   // Start in hardcoded mode
   if (POSTAGE_STAMP) return { mode: 'hardcoded', stamp: POSTAGE_STAMP }
   // Start autobuy
-  else if (!POSTAGE_EXTENDSTTL && POSTAGE_DEPTH && POSTAGE_AMOUNT && BEE_DEBUG_API_URL) {
+  else if (!POSTAGE_EXTENDSTTL && POSTAGE_DEPTH && POSTAGE_AMOUNT) {
     return {
       mode: 'autobuy',
       depth: Number(POSTAGE_DEPTH),
@@ -172,11 +176,11 @@ export function getStampsConfig({
     }
   }
   // Missing one of the variables needed for the autobuy or extends TTL
-  else if (POSTAGE_DEPTH || POSTAGE_AMOUNT || POSTAGE_TTL_MIN || BEE_DEBUG_API_URL) {
+  else if (POSTAGE_DEPTH || POSTAGE_AMOUNT || POSTAGE_TTL_MIN) {
     throw new Error(
       `config: please provide POSTAGE_DEPTH=${POSTAGE_DEPTH}, POSTAGE_AMOUNT=${POSTAGE_AMOUNT}, POSTAGE_TTL_MIN=${POSTAGE_TTL_MIN} ${
         POSTAGE_EXTENDSTTL === 'true' ? 'at least 60 seconds ' : ''
-      }or BEE_DEBUG_API_URL=${BEE_DEBUG_API_URL} for the feature to work`,
+      }for the feature to work`,
     )
   }
 

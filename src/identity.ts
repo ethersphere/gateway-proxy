@@ -31,8 +31,8 @@ async function attemptFetchingBeeIdentity(beeDebug: BeeDebug) {
     clearInterval(interval as NodeJS.Timer)
 
     return true
-  } catch (e) {
-    logger.error('failed to fetch identity', e)
+  } catch (error) {
+    logger.error('failed to fetch identity', error)
   }
 }
 

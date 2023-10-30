@@ -61,10 +61,12 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@ethersphere/bee-js": "^6.2.0",
+    "@ethersphere/bee-js": "^6.4.0",
     "@ethersphere/swarm-cid": "^0.1.0",
+    "axios": "^1.5.1",
+    "body-parser": "^1.20.2",
+    "cafe-utility": "^11.0.0",
     "express": "^4.18.1",
-    "http-proxy-middleware": "^2.0.6",
     "prom-client": "^14.1.0",
     "request-stats": "^3.0.0",
     "winston": "^3.8.2"

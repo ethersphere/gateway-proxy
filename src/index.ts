@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 import { Application } from 'express'
-
+import { EnvironmentVariables, getAppConfig, getContentConfig, getServerConfig, getStampsConfig } from './config'
+import { ContentManager } from './content'
+import { logger, subscribeLogServerRequests } from './logger'
 import { createApp } from './server'
 import { StampsManager } from './stamps'
-import { getAppConfig, getServerConfig, getStampsConfig, EnvironmentVariables, getContentConfig } from './config'
-import { logger, subscribeLogServerRequests } from './logger'
-import { ContentManager } from './content'
 
 async function main() {
   // Configuration

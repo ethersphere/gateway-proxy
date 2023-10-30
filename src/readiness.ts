@@ -42,7 +42,7 @@ async function tryUploadingSingleChunk(bee: Bee, stampsManager: StampsManager): 
     return ReadinessStatus.OK
   } catch (error) {
     const errorMessage = getErrorMessage(error)
-    logger.error('unable to upload readiness-check chunk to bee', errorMessage)
+    logger.error('unable to upload readiness-check chunk to bee', error)
 
     if (errorMessage === ERROR_NO_STAMP) {
       return ReadinessStatus.NO_STAMP
