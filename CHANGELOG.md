@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.9.1](https://www.github.com/ethersphere/gateway-proxy/compare/v0.9.0...v0.9.1) (2023-10-30)
+
+
+### Bug Fixes
+
+* do not hit circular reference when logging ([#476](https://www.github.com/ethersphere/gateway-proxy/issues/476)) ([2f41984](https://www.github.com/ethersphere/gateway-proxy/commit/2f41984b88404b615ed97b2b017e225b19c9cff5))
+
 ## [0.9.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.8.0...v0.9.0) (2023-10-30)
 
 
