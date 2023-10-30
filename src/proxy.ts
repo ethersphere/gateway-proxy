@@ -25,26 +25,31 @@ interface Options {
 
 export function createProxyEndpoints(app: Application, options: Options) {
   app.use(async (req, res, next) => {
-    if (!options.hostname || !Strings.before(req.hostname, options.hostname) || req.method !== 'GET') {
+    const subdomain = options.hostname ? Strings.before(req.hostname, options.hostname) : null
+    if (!options.hostname || !subdomain || req.method !== 'GET') {
       next()
 
       return
     }
-    const newUrl = subdomainToBzz(
-      req.hostname,
-      options.hostname!,
-      options.cidSubdomains ?? false,
-      options.ensSubdomains ?? false,
-    )
-    await fetchAndRespond(
-      'GET',
-      Strings.joinUrl('bzz', newUrl, req.path),
-      req.query,
-      req.headers,
-      req.body,
-      res,
-      options,
-    )
+    try {
+      const newUrl = subdomainToBzz(
+        subdomain.slice(0, -1), // remove trailing dot
+        options.cidSubdomains ?? false,
+        options.ensSubdomains ?? false,
+      )
+      await fetchAndRespond(
+        'GET',
+        Strings.joinUrl('bzz', newUrl, req.path),
+        req.query,
+        req.headers,
+        req.body,
+        res,
+        options,
+      )
+    } catch (error) {
+      logger.error(`proxy failed: ${getErrorMessage(error)}`)
+      res.status(500).send('Internal server error')
+    }
   })
   app.get(GET_PROXY_ENDPOINTS, async (req, res) => {
     await fetchAndRespond('GET', req.path, req.query, req.headers, req.body, res, options)

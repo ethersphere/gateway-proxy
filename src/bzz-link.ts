@@ -1,26 +1,14 @@
 import * as swarmCid from '@ethersphere/swarm-cid'
-import { Strings } from 'cafe-utility'
 import { logger } from './logger'
 
 export class NotEnabledError extends Error {}
 
-export function subdomainToBzz(
-  requestHostname: string,
-  appHostname: string,
-  isCidEnabled: boolean,
-  isEnsEnabled: boolean,
-): string {
-  let relevantSubdomain = Strings.before(requestHostname, appHostname)
-
-  if (relevantSubdomain.endsWith('.')) {
-    relevantSubdomain = Strings.beforeLast(relevantSubdomain, '.')
-  }
-
+export function subdomainToBzz(subdomain: string, isCidEnabled: boolean, isEnsEnabled: boolean): string {
   try {
-    const result = swarmCid.decodeCid(relevantSubdomain)
+    const result = swarmCid.decodeCid(subdomain)
 
     if (!isCidEnabled) {
-      logger.warn('cid subdomain support disabled, but got cid', { relevantSubdomain })
+      logger.warn('cid subdomain support disabled, but got cid', { subdomain })
       throw new NotEnabledError('CID subdomain support is disabled, but got a CID!')
     }
 
@@ -31,10 +19,10 @@ export function subdomainToBzz(
     }
 
     if (!isEnsEnabled) {
-      logger.warn('ens subdomain support disabled, but got ens', { relevantSubdomain })
+      logger.warn('ens subdomain support disabled, but got ens', { subdomain })
       throw new NotEnabledError('ENS subdomain support is disabled, but got an ENS domain!')
     }
 
-    return `${relevantSubdomain}.eth`
+    return `${subdomain}.eth`
   }
 }
