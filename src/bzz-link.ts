@@ -11,6 +11,7 @@ export function subdomainToBzz(
   isEnsEnabled: boolean,
 ): string {
   let relevantSubdomain = Strings.before(requestHostname, appHostname)
+
   if (relevantSubdomain.endsWith('.')) {
     relevantSubdomain = Strings.beforeLast(relevantSubdomain, '.')
   }
