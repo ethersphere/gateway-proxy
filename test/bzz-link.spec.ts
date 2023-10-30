@@ -1,27 +1,6 @@
-import { Request } from 'express'
-import { NotEnabledError, requestFilter, subdomainToBzz } from '../src/bzz-link'
+import { NotEnabledError, subdomainToBzz } from '../src/bzz-link'
 
 describe('bzz.link', () => {
-  describe('requestFilter', () => {
-    it('should return true for subdomain', async () => {
-      const req = { subdomains: ['someEnsName'] } as Request
-
-      expect(requestFilter(req)).toStrictEqual(true)
-    })
-
-    it('should return true for multilevel subdomain', async () => {
-      const req = { subdomains: ['swarm', 'book'] } as Request
-
-      expect(requestFilter(req)).toStrictEqual(true)
-    })
-
-    it('should return false for no subdomain', async () => {
-      const req = { subdomains: [] as string[] } as Request
-
-      expect(requestFilter(req)).toStrictEqual(false)
-    })
-  })
-
   describe('routerClosure', () => {
     const MANIFEST = {
       cid: 'bah5acgzamh5fl7emnrazttpy7sag6utq5myidv3venspn6l5sevr4lko2n3q',

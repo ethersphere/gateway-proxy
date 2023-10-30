@@ -1,13 +1,8 @@
 import * as swarmCid from '@ethersphere/swarm-cid'
 import { Strings } from 'cafe-utility'
-import { Request } from 'express'
 import { logger } from './logger'
 
 export class NotEnabledError extends Error {}
-
-export function requestFilter(req: Request): boolean {
-  return req.method === 'GET' && req.subdomains.length >= 1
-}
 
 export function subdomainToBzz(
   requestHostname: string,

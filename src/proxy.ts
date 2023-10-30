@@ -2,7 +2,7 @@ import axios from 'axios'
 import { Dates, Objects, Strings } from 'cafe-utility'
 import { Application, Response } from 'express'
 import { IncomingHttpHeaders } from 'http'
-import { requestFilter, subdomainToBzz } from './bzz-link'
+import { subdomainToBzz } from './bzz-link'
 import { logger } from './logger'
 import { StampsManager } from './stamps'
 import { getErrorMessage } from './utils'
@@ -25,8 +25,10 @@ interface Options {
 
 export function createProxyEndpoints(app: Application, options: Options) {
   app.use(async (req, res, next) => {
-    if (!options.hostname || !requestFilter(req)) {
+    if (!options.hostname || !Strings.before(req.hostname, options.hostname) || req.method !== 'GET') {
       next()
+
+      return
     }
     const newUrl = subdomainToBzz(
       req.hostname,
