@@ -28,7 +28,12 @@ logger.info(`using max log level=${logLevel}`)
 export function formatLogMessage(info: Logform.TransformableInfo): string {
   let message = `time="${info.timestamp}" level="${info.level}" msg="${info.message}"`
 
-  if (Object.keys(info.metadata).length > 0) message = `${message} ${Strings.represent(info.metadata, 'key-value')}`
+  if (Object.keys(info.metadata).length > 0) {
+    if (info.metadata.config) {
+      delete info.metadata.config.data
+    }
+    message = `${message} ${Strings.represent(info.metadata, 'key-value')}`
+  }
 
   return message.replace(/\n/g, '\\n')
 }
