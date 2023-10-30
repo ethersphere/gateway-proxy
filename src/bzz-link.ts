@@ -10,7 +10,10 @@ export function subdomainToBzz(
   isCidEnabled: boolean,
   isEnsEnabled: boolean,
 ): string {
-  const relevantSubdomain = Strings.before(requestHostname, appHostname)
+  let relevantSubdomain = Strings.before(requestHostname, appHostname)
+  if (relevantSubdomain.endsWith('.')) {
+    relevantSubdomain = Strings.beforeLast(relevantSubdomain, '.')
+  }
 
   try {
     const result = swarmCid.decodeCid(relevantSubdomain)
@@ -31,6 +34,6 @@ export function subdomainToBzz(
       throw new NotEnabledError('ENS subdomain support is disabled, but got an ENS domain!')
     }
 
-    return `${relevantSubdomain}eth`
+    return `${relevantSubdomain}.eth`
   }
 }
