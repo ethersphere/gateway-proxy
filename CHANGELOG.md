@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.8.0...v0.9.0) (2023-10-30)
+
+
+### Features
+
+* make readiness check chunks opt-in ([#473](https://www.github.com/ethersphere/gateway-proxy/issues/473)) ([208ffb9](https://www.github.com/ethersphere/gateway-proxy/commit/208ffb9a782e9960ae70baf24b02a8182eeca306))
+
+
+### Bug Fixes
+
+* do not log buffer ([#472](https://www.github.com/ethersphere/gateway-proxy/issues/472)) ([7a8e0fa](https://www.github.com/ethersphere/gateway-proxy/commit/7a8e0fa2bdb65569c01d2d7fd16bbc141d6d993d))
+
 ## [0.8.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.7.0...v0.8.0) (2023-10-30)
 
 
