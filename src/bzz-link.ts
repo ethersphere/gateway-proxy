@@ -31,6 +31,6 @@ export function subdomainToBzz(
       throw new NotEnabledError('ENS subdomain support is disabled, but got an ENS domain!')
     }
 
-    return `${relevantSubdomain}.eth`
+    return `${relevantSubdomain}eth`
   }
 }
