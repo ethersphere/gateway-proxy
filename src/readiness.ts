@@ -16,9 +16,10 @@ export enum ReadinessStatus {
 export async function checkReadiness(
   bee: Bee,
   beeDebug: BeeDebug,
+  readinessCheck: boolean,
   stampManager?: StampsManager,
 ): Promise<ReadinessStatus> {
-  if (stampManager) {
+  if (stampManager && readinessCheck) {
     const ready = await tryUploadingSingleChunk(bee, stampManager)
 
     return ready
