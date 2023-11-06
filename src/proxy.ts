@@ -73,10 +73,10 @@ async function fetchAndRespond(
     delete headers[SWARM_PIN_HEADER]
   }
 
-  if (method === 'POST' && options.stampManager) {
-    headers[SWARM_STAMP_HEADER] = options.stampManager.postageStamp
-  }
   try {
+    if (method === 'POST' && options.stampManager) {
+      headers[SWARM_STAMP_HEADER] = options.stampManager.postageStamp
+    }
     const response = await axios({
       method,
       url: Strings.joinUrl(options.beeApiUrl, path) + Objects.toQueryString(query, true),
