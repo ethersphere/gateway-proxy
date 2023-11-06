@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.9.2](https://www.github.com/ethersphere/gateway-proxy/compare/v0.9.1...v0.9.2) (2023-11-06)
+
+
+### Bug Fixes
+
+* do not crash when there are no stamps ([#478](https://www.github.com/ethersphere/gateway-proxy/issues/478)) ([367131a](https://www.github.com/ethersphere/gateway-proxy/commit/367131a6226f8bf16c12130d3fedc111bd13d3e2))
+
 ### [0.9.1](https://www.github.com/ethersphere/gateway-proxy/compare/v0.9.0...v0.9.1) (2023-10-30)
 
 
