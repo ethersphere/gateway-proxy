@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.9.3](https://www.github.com/ethersphere/gateway-proxy/compare/v0.9.2...v0.9.3) (2023-11-09)
+
+
+### Bug Fixes
+
+* apply allowlist to htm extension ([#481](https://www.github.com/ethersphere/gateway-proxy/issues/481)) ([cb1d341](https://www.github.com/ethersphere/gateway-proxy/commit/cb1d3418fb07b2a2fc784f18a167afe629983cc6))
+
 ### [0.9.2](https://www.github.com/ethersphere/gateway-proxy/compare/v0.9.1...v0.9.2) (2023-11-06)
 
 
