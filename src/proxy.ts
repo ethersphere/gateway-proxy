@@ -93,7 +93,7 @@ async function fetchAndRespond(
 
       if (
         currentHash &&
-        (response.headers['content-disposition'] || '').includes('.html') &&
+        (response.headers['content-disposition'] || '').toLowerCase().includes('.htm') &&
         !options.allowlist.includes(currentHash)
       ) {
         res.status(403).send('Forbidden')
