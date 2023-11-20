@@ -1,5 +1,6 @@
 import { Bee, BeeDebug } from '@ethersphere/bee-js'
 import bodyParser from 'body-parser'
+import { Arrays } from 'cafe-utility'
 import express, { Application } from 'express'
 import { AppConfig, DEFAULT_HOSTNAME } from './config'
 import { HASHED_IDENTITY_HEADER, fetchBeeIdentity, getHashedIdentity } from './identity'
@@ -113,6 +114,9 @@ export const createApp = (
     cidSubdomains,
     ensSubdomains,
     hostname,
+    remap: Object.fromEntries(
+      (Arrays.getArgument(process.argv, 'remap', process.env as any, 'REMAP') || '').split(';').map(x => x.split('=')),
+    ),
   })
 
   app.use(express.static('public'))

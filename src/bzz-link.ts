@@ -3,7 +3,15 @@ import { logger } from './logger'
 
 export class NotEnabledError extends Error {}
 
-export function subdomainToBzz(subdomain: string, isCidEnabled: boolean, isEnsEnabled: boolean): string {
+export function subdomainToBzz(
+  subdomain: string,
+  isCidEnabled: boolean,
+  isEnsEnabled: boolean,
+  remap: Record<string, string>,
+): string {
+  if (subdomain in remap) {
+    return remap[subdomain]
+  }
   try {
     const result = swarmCid.decodeCid(subdomain)
 
