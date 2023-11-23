@@ -1,6 +1,7 @@
 import { Bee, BeeDebug } from '@ethersphere/bee-js'
+import axios from 'axios'
 import bodyParser from 'body-parser'
-import { Arrays } from 'cafe-utility'
+import { Arrays, Strings } from 'cafe-utility'
 import express, { Application } from 'express'
 import { AppConfig, DEFAULT_HOSTNAME } from './config'
 import { HASHED_IDENTITY_HEADER, fetchBeeIdentity, getHashedIdentity } from './identity'
@@ -22,6 +23,7 @@ export const createApp = (
     removePinHeader,
     exposeHashedIdentity,
     readinessCheck,
+    homepage,
   }: AppConfig,
   stampManager?: StampsManager,
 ): Application => {
@@ -118,6 +120,31 @@ export const createApp = (
       (Arrays.getArgument(process.argv, 'remap', process.env as any, 'REMAP') || '').split(';').map(x => x.split('=')),
     ),
   })
+
+  if (homepage) {
+    app.use(async (req, res, next) => {
+      try {
+        const url = Strings.joinUrl(beeApiUrl, 'bzz', homepage, req.url)
+        logger.info('attempting to fetch homepage', { url })
+
+        // attempt to fetch homepage
+        const response = await axios.get(url, {
+          responseType: 'arraybuffer',
+        })
+
+        if (response.status !== 200) {
+          throw Error('Homepage not available')
+        }
+        const contentType = response.headers['content-type']
+        res.set('content-type', contentType || 'application/octet-stream')
+        res.send(await response.data)
+
+        return
+      } catch (error) {
+        next()
+      }
+    })
+  }
 
   app.use(express.static('public'))
 
