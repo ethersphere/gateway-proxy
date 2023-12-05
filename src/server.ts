@@ -42,13 +42,13 @@ export const createApp = (
   )
 
   app.use((req, res, next) => {
+    res.set('Access-Control-Allow-Origin', '*')
+    res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    res.set(
+      'Access-Control-Allow-Headers',
+      'Content-Type, Authorization, swarm-postage-batch-id, swarm-deferred-upload',
+    )
     if (req.method === 'OPTIONS') {
-      res.set('Access-Control-Allow-Origin', '*')
-      res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-      res.set(
-        'Access-Control-Allow-Headers',
-        'Content-Type, Authorization, swarm-postage-batch-id, swarm-deferred-upload',
-      )
       res.sendStatus(200)
       return
     }
