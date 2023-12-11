@@ -150,6 +150,9 @@ npm run start
 | POSTAGE_EXTENDSTTL      | false                                                            | Enables extends TTL feature. Works along with POSTAGE_AMOUNT                                                                                                                |
 | EXPOSE_HASHED_IDENTITY  | false                                                            | Exposes `x-bee-node` header, which is the hashed identity of the Bee node for identification purposes                                                                       |
 | REUPLOAD_PERIOD         | undefined                                                        | How frequently are the pinned content checked to be reuploaded.                                                                                                             |
+| HOMEPAGE                | undefined                                                        | Swarm hash that loads as the homepage of gateway-proxy                                                                                                                      |
+| REMAP                   | undefined                                                        | Semicolon separated `name=hash` values to rewrite Swarm hashes to human-friendly names                                                                                      |
+| ALLOWLIST               | undefined                                                        | Colon separated list of hashes, ENS domains or CIDs to allow                                                                                                                |
 
 ### Curl
 

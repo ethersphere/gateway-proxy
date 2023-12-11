@@ -21,6 +21,7 @@ interface Options {
   hostname?: string
   cidSubdomains?: boolean
   ensSubdomains?: boolean
+  remap: Record<string, string>
 }
 
 export function createProxyEndpoints(app: Application, options: Options) {
@@ -32,11 +33,13 @@ export function createProxyEndpoints(app: Application, options: Options) {
 
       return
     }
+
     try {
       const newUrl = subdomainToBzz(
         subdomain.slice(0, -1), // remove trailing dot
         options.cidSubdomains ?? false,
         options.ensSubdomains ?? false,
+        options.remap,
       )
       await fetchAndRespond(
         'GET',

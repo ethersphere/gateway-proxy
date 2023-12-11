@@ -9,6 +9,7 @@ export interface AppConfig {
   removePinHeader?: boolean
   exposeHashedIdentity?: boolean
   readinessCheck?: boolean
+  homepage?: string
 }
 
 export interface ServerConfig {
@@ -86,6 +87,9 @@ export type EnvironmentVariables = Partial<{
   POSTAGE_REFRESH_PERIOD: string
   POSTAGE_EXTENDSTTL: string
   REUPLOAD_PERIOD: string
+
+  // Homepage
+  HOMEPAGE: string
 }>
 
 export const SUPPORTED_LEVELS = ['critical', 'error', 'warn', 'info', 'verbose', 'debug'] as const
@@ -119,6 +123,7 @@ export function getAppConfig({
   REMOVE_PIN_HEADER,
   EXPOSE_HASHED_IDENTITY,
   READINESS_CHECK,
+  HOMEPAGE,
 }: EnvironmentVariables = {}): AppConfig {
   return {
     hostname: HOSTNAME || DEFAULT_HOSTNAME,
@@ -131,6 +136,7 @@ export function getAppConfig({
     removePinHeader: REMOVE_PIN_HEADER ? REMOVE_PIN_HEADER === 'true' : true,
     exposeHashedIdentity: EXPOSE_HASHED_IDENTITY === 'true',
     readinessCheck: READINESS_CHECK === 'true',
+    homepage: HOMEPAGE,
   }
 }
 
