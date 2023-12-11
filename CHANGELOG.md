@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.9.3...v0.10.0) (2023-12-11)
+
+
+### Features
+
+* add address remapping ([#483](https://www.github.com/ethersphere/gateway-proxy/issues/483)) ([16b2941](https://www.github.com/ethersphere/gateway-proxy/commit/16b294115fbdc366fb87c1b46121648070fb02a5))
+
 ### [0.9.3](https://www.github.com/ethersphere/gateway-proxy/compare/v0.9.2...v0.9.3) (2023-11-09)
 
 
