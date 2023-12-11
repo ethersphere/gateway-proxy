@@ -48,8 +48,10 @@ export const createApp = (
       'Access-Control-Allow-Headers',
       'Content-Type, Authorization, swarm-postage-batch-id, swarm-deferred-upload',
     )
+
     if (req.method === 'OPTIONS') {
       res.sendStatus(200)
+
       return
     }
     next()
