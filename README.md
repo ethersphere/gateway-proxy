@@ -152,7 +152,7 @@ npm run start
 | REUPLOAD_PERIOD         | undefined                                                        | How frequently are the pinned content checked to be reuploaded.                                                                                                             |
 | HOMEPAGE                | undefined                                                        | Swarm hash that loads as the homepage of gateway-proxy                                                                                                                      |
 | REMAP                   | undefined                                                        | Semicolon separated `name=hash` values to rewrite Swarm hashes to human-friendly names                                                                                      |
-| ALLOWLIST               | undefined                                                        | Colon separated list of hashes, ENS domains or CIDs to allow                                                                                                                |
+| ALLOWLIST               | undefined                                                        | Comma separated list of hashes, ENS domains or CIDs to allow                                                                                                                |
 
 ### Curl
 
