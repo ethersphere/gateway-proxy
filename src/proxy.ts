@@ -92,12 +92,15 @@ async function fetchAndRespond(
     })
 
     if (options.allowlist) {
+      const currentCid = Strings.searchSubstring(path, x => x.length > 48 && x.startsWith('bah'))
       const currentHash = Strings.searchHex(path, 64)
 
+      const isBlockedHash = currentHash && !options.allowlist.includes(currentHash)
+      const isBlockedCid = currentCid && !options.allowlist.includes(currentCid)
+
       if (
-        currentHash &&
-        (response.headers['content-disposition'] || '').toLowerCase().includes('.htm') &&
-        !options.allowlist.includes(currentHash)
+        (isBlockedHash || isBlockedCid) &&
+        (response.headers['content-disposition'] || '').toLowerCase().includes('.htm')
       ) {
         res.status(403).send('Forbidden')
 
