@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.10.0...v0.11.0) (2023-12-28)
+
+
+### Features
+
+* add cid support in allowlist ([#486](https://www.github.com/ethersphere/gateway-proxy/issues/486)) ([75d16df](https://www.github.com/ethersphere/gateway-proxy/commit/75d16dfa13e4004711fe7bff03665d28d2a8a852))
+
 ## [0.10.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.9.3...v0.10.0) (2023-12-11)
 
 
