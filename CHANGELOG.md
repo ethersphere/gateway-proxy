@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.11.0...v0.12.0) (2024-01-17)
+
+
+### Features
+
+* update bee-js ([#488](https://www.github.com/ethersphere/gateway-proxy/issues/488)) ([4965eb1](https://www.github.com/ethersphere/gateway-proxy/commit/4965eb139dfe0b373ef75498fd40959518e11ed2))
+
 ## [0.11.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.10.0...v0.11.0) (2023-12-28)
 
 
