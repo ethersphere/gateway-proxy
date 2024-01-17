@@ -319,9 +319,9 @@ describe('POST /feeds/:owner/:topic', () => {
     const reader = bee.makeFeedReader('sequence', topic, writer.owner)
     const dd1 = await reader.download()
 
-    expect(parseInt(dd1.feedIndex, 16)).toBeGreaterThanOrEqual(0)
+    expect(parseInt(dd1.feedIndex as string, 16)).toBeGreaterThanOrEqual(0)
     expect(parseInt(dd1.feedIndexNext, 16)).toBeGreaterThanOrEqual(1)
-    expect(parseInt(dd1.feedIndex, 16) + 1).toEqual(parseInt(dd1.feedIndexNext, 16))
+    expect(parseInt(dd1.feedIndex as string, 16) + 1).toEqual(parseInt(dd1.feedIndexNext, 16))
   }, 10000)
 })
 
@@ -339,9 +339,9 @@ describe('GET /feeds/:owner/:topic', () => {
     const reader = beeProxy.makeFeedReader('sequence', topic, writer.owner)
     const dd1 = await reader.download()
 
-    expect(parseInt(dd1.feedIndex, 16)).toBeGreaterThanOrEqual(0)
+    expect(parseInt(dd1.feedIndex as string, 16)).toBeGreaterThanOrEqual(0)
     expect(parseInt(dd1.feedIndexNext, 16)).toBeGreaterThanOrEqual(1)
-    expect(parseInt(dd1.feedIndex, 16) + 1).toEqual(parseInt(dd1.feedIndexNext, 16))
+    expect(parseInt(dd1.feedIndex as string, 16) + 1).toEqual(parseInt(dd1.feedIndexNext, 16))
   }, 10000)
 })
 
