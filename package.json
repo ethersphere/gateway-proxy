@@ -61,7 +61,7 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@ethersphere/bee-js": "^6.7.2",
+    "@ethersphere/bee-js": "^6.8.1",
     "@ethersphere/swarm-cid": "^0.1.0",
     "axios": "^1.5.1",
     "body-parser": "^1.20.2",
