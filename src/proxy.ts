@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { Dates, Objects, Strings } from 'cafe-utility'
+import { Dates, Objects, Strings, Types } from 'cafe-utility'
 import { Application, Response } from 'express'
 import { IncomingHttpHeaders } from 'http'
 import { subdomainToBzz } from './bzz-link'
@@ -81,7 +81,7 @@ async function fetchAndRespond(
     if (method === 'POST' && options.stampManager) {
       headers[SWARM_STAMP_HEADER] = options.stampManager.postageStamp
     }
-    const response = await axios({
+    let response = await axios({
       method,
       url: Strings.joinUrl(options.beeApiUrl, path) + Objects.toQueryString(query, true),
       data: body,
@@ -91,6 +91,36 @@ async function fetchAndRespond(
       responseType: 'arraybuffer',
       maxRedirects: 0,
     })
+
+    if (response.status === 404 || (response.status >= 300 && response.status < 400)) {
+      const url = Strings.joinUrl(options.beeApiUrl, path) + '.html' + Objects.toQueryString(query, true)
+      const probeResponse = await axios({
+        method,
+        url,
+        data: body,
+        headers,
+        timeout: Dates.minutes(20),
+        validateStatus: status => status < 500,
+        responseType: 'arraybuffer',
+        maxRedirects: 0,
+      })
+
+      if (probeResponse.status >= 200 && probeResponse.status < 300) {
+        response = probeResponse
+      }
+    }
+
+    let isHtml = false
+    const sliceFn = Objects.getDeep(response.data, 'slice')
+
+    if (Types.isFunction(sliceFn)) {
+      const beginning = (sliceFn.call(response.data, 0, 50) as Buffer).toString('utf8')
+      isHtml = beginning.toLowerCase().startsWith('<!doctype html')
+    }
+
+    if (isHtml && response.headers['content-type'] !== 'text/html') {
+      response.headers['content-type'] = 'text/html'
+    }
 
     if (options.allowlist) {
       const allowed = (options.userAgents || [])
@@ -106,7 +136,7 @@ async function fetchAndRespond(
       if (
         !allowed &&
         (isBlockedHash || isBlockedCid) &&
-        (response.headers['content-disposition'] || '').toLowerCase().includes('.htm')
+        ((response.headers['content-disposition'] || '').toLowerCase().includes('.htm') || isHtml)
       ) {
         res.status(403).send('Forbidden')
 
