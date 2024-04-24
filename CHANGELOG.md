@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.14.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.13.0...v0.14.0) (2024-04-24)
+
+
+### Features
+
+* add html rewrite ([#494](https://www.github.com/ethersphere/gateway-proxy/issues/494)) ([2d3fa09](https://www.github.com/ethersphere/gateway-proxy/commit/2d3fa0989e35e72c649fc5efac0c44062c499f08))
+* add user agent allowlist option ([#492](https://www.github.com/ethersphere/gateway-proxy/issues/492)) ([1986127](https://www.github.com/ethersphere/gateway-proxy/commit/1986127ff1fbcd5a6f0b5a403242fa5ce958d615))
+
 ## [0.13.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.12.0...v0.13.0) (2024-03-13)
 
 
