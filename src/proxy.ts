@@ -22,6 +22,7 @@ interface Options {
   cidSubdomains?: boolean
   ensSubdomains?: boolean
   remap: Record<string, string>
+  userAgents?: string[]
 }
 
 export function createProxyEndpoints(app: Application, options: Options) {
@@ -92,6 +93,10 @@ async function fetchAndRespond(
     })
 
     if (options.allowlist) {
+      const allowed = (options.userAgents || [])
+        .filter(x => x)
+        .some(x => headers['user-agent']?.toLowerCase().includes(x.toLowerCase()))
+
       const currentCid = Strings.searchSubstring(path, x => x.length > 48 && x.startsWith('bah'))
       const currentHash = Strings.searchHex(path, 64)
 
@@ -99,6 +104,7 @@ async function fetchAndRespond(
       const isBlockedCid = currentCid && !options.allowlist.includes(currentCid)
 
       if (
+        !allowed &&
         (isBlockedHash || isBlockedCid) &&
         (response.headers['content-disposition'] || '').toLowerCase().includes('.htm')
       ) {

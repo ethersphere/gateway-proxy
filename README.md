@@ -153,6 +153,7 @@ npm run start
 | HOMEPAGE                | undefined                                                        | Swarm hash that loads as the homepage of gateway-proxy                                                                                                                      |
 | REMAP                   | undefined                                                        | Semicolon separated `name=hash` values to rewrite Swarm hashes to human-friendly names                                                                                      |
 | ALLOWLIST               | undefined                                                        | Comma separated list of hashes, ENS domains or CIDs to allow                                                                                                                |
+| ALLOW_USER_AGENTS       | undefined                                                        | Comma separated list of user-agent substrings to give unlimited access to                                                                                                   |
 
 ### Curl
 

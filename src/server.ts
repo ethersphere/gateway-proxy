@@ -133,7 +133,10 @@ export const createApp = (
     ensSubdomains,
     hostname,
     remap: Object.fromEntries(
-      (Arrays.getArgument(process.argv, 'remap', process.env as any, 'REMAP') || '').split(';').map(x => x.split('=')),
+      (Arrays.getArgument(process.argv, 'remap', process.env, 'REMAP') || '').split(';').map(x => x.split('=')),
+    ),
+    userAgents: (Arrays.getArgument(process.argv, 'allow-user-agents', process.env, 'ALLOW_USER_AGENTS') || '').split(
+      ',',
     ),
   })
 
