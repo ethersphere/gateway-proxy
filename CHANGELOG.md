@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.14.1](https://www.github.com/ethersphere/gateway-proxy/compare/v0.14.0...v0.14.1) (2024-05-01)
+
+
+### Bug Fixes
+
+* prevent crash on missing host ([#495](https://www.github.com/ethersphere/gateway-proxy/issues/495)) ([a45be61](https://www.github.com/ethersphere/gateway-proxy/commit/a45be61d5c87aabe17e23bc43813818227d18038))
+
 ## [0.14.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.13.0...v0.14.0) (2024-04-24)
 
 
