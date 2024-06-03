@@ -62,9 +62,9 @@ describe('getServerConfig', () => {
 
 describe('getStampsConfig', () => {
   const POSTAGE_STAMP = 'f1e4ff753ea1cb923269ed0cda909d13a10d624719edf261e196584e9e764e50'
-  const POSTAGE_AMOUNT = '100'
+  const POSTAGE_AMOUNT = '414720000'
   const POSTAGE_DEPTH = '20'
-  const BEE_API_URL = 'http://localhost:1635'
+  const BEE_API_URL = 'http://localhost:1633'
   const POSTAGE_USAGE_THRESHOLD = '0.6'
   const POSTAGE_USAGE_MAX = '0.8'
   const POSTAGE_TTL_MIN = '200'

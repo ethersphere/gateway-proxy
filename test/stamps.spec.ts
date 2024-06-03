@@ -29,7 +29,7 @@ afterEach(() => {
   db.clear()
 })
 
-const defaultAmount = '1000000'
+const defaultAmount = '414720000'
 const defaultDepth = 20
 const defaultTTL = Number(defaultAmount)
 const defaultStamp: PostageBatch = {

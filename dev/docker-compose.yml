@@ -47,7 +47,7 @@ services:
       - PORT=4000
       - BEE_API_URL=http://swarm-test-queen:1633 # http://bee:1633 for bee dev
       - POSTAGE_DEPTH=19
-      - POSTAGE_AMOUNT=100000
+      - POSTAGE_AMOUNT=414720000
       - POSTAGE_USAGE_THRESHOLD=0.49
       - POSTAGE_USAGE_MAX=0.74
       - POSTAGE_TTL_MIN=-2 # this is a hack to work with bee dev and bee-factory, see https://github.com/ethersphere/bee-factory/issues/74
@@ -68,9 +68,7 @@ services:
   #   command: dev
   #   ports:
   #     - 1633:1633
-  #     - 1635:1635
   #   expose:
   #     - 1633
-  #     - 1635
   #   networks:
   #     - swarm-test-network
