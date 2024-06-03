@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
-import { beeDebug } from './utils'
+import { bee } from './utils'
 
 export default async function testsSetup(): Promise<void> {
   try {
     if (process.env.BEE_POSTAGE) {
       try {
-        if (!(await beeDebug.getPostageBatch(process.env.BEE_POSTAGE)).usable) {
+        if (!(await bee.getPostageBatch(process.env.BEE_POSTAGE)).usable) {
           delete process.env.BEE_POSTAGE
           console.log('BEE_POSTAGE stamp was found but is not usable')
         } else {
@@ -26,7 +26,7 @@ export default async function testsSetup(): Promise<void> {
         stampsOrder.push({ env: 'BEE_POSTAGE' })
       }
 
-      const stamps = await Promise.all(stampsOrder.map(async () => beeDebug.createPostageBatch('1000', 20)))
+      const stamps = await Promise.all(stampsOrder.map(async () => bee.createPostageBatch('1000', 20)))
 
       for (let i = 0; i < stamps.length; i++) {
         process.env[stampsOrder[i].env] = stamps[i]
@@ -40,7 +40,7 @@ export default async function testsSetup(): Promise<void> {
           // eslint-disable-next-line max-depth
           try {
             // eslint-disable-next-line max-depth
-            if (!(await beeDebug.getPostageBatch(stamps[i])).usable) {
+            if (!(await bee.getPostageBatch(stamps[i])).usable) {
               allUsable = false
               break
             } else {

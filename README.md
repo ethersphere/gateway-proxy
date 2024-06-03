@@ -51,8 +51,8 @@ The proxy can manage postage stamps for you in 4 modes of operation:
 1. It can just proxy requests without manipulating the request
 2. It can add/replace the request postage stamp with one provided through environment variable `POSTAGE_STAMP`
 3. It can add/replace the request postage stamp with an auto-bought stamp or existing stamp that fulfils the amount,
-   depth and is not too full or about to expire. To enable this, provide at minimum `POSTAGE_DEPTH`, `POSTAGE_AMOUNT`
-   and `BEE_DEBUG_API_URL`.
+   depth and is not too full or about to expire. To enable this, provide at minimum `POSTAGE_DEPTH` and
+   `POSTAGE_AMOUNT`.
 4. It can extend the TTL of a stamp that is about to expire. To enable this, set `POSTAGE_EXTENDSTTL=true`, provide
    `POSTAGE_AMOUNT`, `POSTAGE_DEPTH` with the desired amount to use and `POSTAGE_TTL_MIN` above with a number above or
    equal to 60.
@@ -132,7 +132,6 @@ npm run start
 | Name                    | Default Value                                                    | Description                                                                                                                                                                 |
 | ----------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | BEE_API_URL             | http://localhost:1633                                            | URL of the Bee node API                                                                                                                                                     |
-| BEE_DEBUG_API_URL       | http://localhost:1635                                            | URL of the Bee node Debug API. Required for postage stamps autobuy and hashed identity header.                                                                              |
 | AUTH_SECRET             | undefined                                                        | Authentication secret, disabled if not set (this secret is checked in the request header `authorization`).                                                                  |
 | HOSTNAME                | localhost                                                        | Hostname of the proxy. Required for Bzz.link support.                                                                                                                       |
 | PORT                    | 3000                                                             | Port of the proxy.                                                                                                                                                          |

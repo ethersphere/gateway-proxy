@@ -1,4 +1,4 @@
-import { Bee, BeeDebug, Utils } from '@ethersphere/bee-js'
+import { Bee, Utils } from '@ethersphere/bee-js'
 import { ERROR_NO_STAMP, READINESS_TIMEOUT_MS } from './config'
 import { logger } from './logger'
 import { StampsManager } from './stamps'
@@ -15,7 +15,6 @@ export enum ReadinessStatus {
 
 export async function checkReadiness(
   bee: Bee,
-  beeDebug: BeeDebug,
   readinessCheck: boolean,
   stampManager?: StampsManager,
 ): Promise<ReadinessStatus> {
@@ -25,7 +24,7 @@ export async function checkReadiness(
     return ready
   } else {
     try {
-      const health = await beeDebug.getHealth({ timeout: READINESS_TIMEOUT_MS })
+      const health = await bee.getHealth({ timeout: READINESS_TIMEOUT_MS })
       const ready = health.status === 'ok'
 
       return ready ? ReadinessStatus.OK : ReadinessStatus.HEALTH_CHECK_FAILED

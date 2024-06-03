@@ -1,4 +1,4 @@
-import { Bee, BeeDebug } from '@ethersphere/bee-js'
+import { Bee } from '@ethersphere/bee-js'
 import axios from 'axios'
 import bodyParser from 'body-parser'
 import { Arrays, Strings } from 'cafe-utility'
@@ -15,7 +15,6 @@ export const createApp = (
   {
     hostname,
     beeApiUrl,
-    beeDebugApiUrl,
     allowlist,
     authorization,
     cidSubdomains,
@@ -28,7 +27,6 @@ export const createApp = (
   stampManager?: StampsManager,
 ): Application => {
   const bee = new Bee(beeApiUrl)
-  const beeDebug = new BeeDebug(beeDebugApiUrl)
 
   // Create Express Server
   const app = express()
@@ -59,8 +57,8 @@ export const createApp = (
 
   // Register hashed identity
   if (exposeHashedIdentity) {
-    const beeDebug = new BeeDebug(beeDebugApiUrl)
-    fetchBeeIdentity(beeDebug)
+    const bee = new Bee(beeApiUrl)
+    fetchBeeIdentity(bee)
     app.use((_, res, next) => {
       res.set(HASHED_IDENTITY_HEADER, getHashedIdentity())
       next()
@@ -113,7 +111,7 @@ export const createApp = (
 
   // Readiness endpoint
   app.get('/readiness', async (_req, res) => {
-    const readinessStatus = await checkReadiness(bee, beeDebug, readinessCheck ?? false, stampManager)
+    const readinessStatus = await checkReadiness(bee, readinessCheck ?? false, stampManager)
 
     if (readinessStatus === ReadinessStatus.OK) {
       res.end('OK')

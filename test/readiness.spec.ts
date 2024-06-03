@@ -6,7 +6,6 @@ describe('readiness', () => {
   test('should be ready without stamp management', async () => {
     const app = createApp({
       beeApiUrl: 'http://localhost:1633',
-      beeDebugApiUrl: 'http://localhost:1635',
     })
     const response = await request(app).get('/readiness')
     expect(response.text).toBe('OK')
@@ -18,7 +17,6 @@ describe('readiness', () => {
     const app = createApp(
       {
         beeApiUrl: 'http://localhost:1633',
-        beeDebugApiUrl: 'http://localhost:1635',
       },
       stampManager,
     )
