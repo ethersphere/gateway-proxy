@@ -1,4 +1,4 @@
-import { BatchId, BeeDebug, PostageBatch } from '@ethersphere/bee-js'
+import { BatchId, Bee, PostageBatch } from '@ethersphere/bee-js'
 import { System } from 'cafe-utility'
 import type { Server } from 'http'
 import { getStampsConfig } from '../src/config'
@@ -29,7 +29,7 @@ afterEach(() => {
   db.clear()
 })
 
-const defaultAmount = '1000000'
+const defaultAmount = '414720000'
 const defaultDepth = 20
 const defaultTTL = Number(defaultAmount)
 const defaultStamp: PostageBatch = {
@@ -73,7 +73,7 @@ describe('postageStamp', () => {
         POSTAGE_DEPTH: defaultDepth.toString(),
         POSTAGE_AMOUNT: defaultAmount.toString(),
         POSTAGE_REFRESH_PERIOD: '200',
-        BEE_DEBUG_API_URL: url,
+        BEE_API_URL: url,
       })!,
     )
     await System.sleepMillis(1_000)
@@ -92,7 +92,7 @@ describe('postageStamp', () => {
         POSTAGE_DEPTH: defaultDepth.toString(),
         POSTAGE_AMOUNT: defaultAmount.toString(),
         POSTAGE_REFRESH_PERIOD: '200',
-        BEE_DEBUG_API_URL: url,
+        BEE_API_URL: url,
       })!,
     )
     await System.sleepMillis(1_000)
@@ -113,7 +113,7 @@ describe('postageStamp', () => {
         POSTAGE_DEPTH: defaultDepth.toString(),
         POSTAGE_AMOUNT: defaultAmount.toString(),
         POSTAGE_REFRESH_PERIOD: '200',
-        BEE_DEBUG_API_URL: url,
+        BEE_API_URL: url,
       })!,
     )
 
@@ -136,7 +136,7 @@ describe('postageStamp', () => {
         POSTAGE_AMOUNT: defaultAmount.toString(),
         POSTAGE_REFRESH_PERIOD: '200',
         POSTAGE_USAGE_MAX: '0.8',
-        BEE_DEBUG_API_URL: url,
+        BEE_API_URL: url,
       })!,
     )
 
@@ -179,9 +179,9 @@ describe('getUsage', () => {
 
 describe('buyNewStamp', () => {
   it('should buy correct stamp and await for it to be usable', async () => {
-    const beeDebug = new BeeDebug(url)
-    const stampId = await buyNewStamp(defaultDepth, defaultAmount, new BeeDebug(url))
-    const stamp = await beeDebug.getPostageBatch(stampId.batchId)
+    const bee = new Bee(url)
+    const stampId = await buyNewStamp(defaultDepth, defaultAmount, new Bee(url))
+    const stamp = await bee.getPostageBatch(stampId.batchId)
 
     const [stampFromDb] = db.toArray()
     expect(stamp).toEqual(stampFromDb)
@@ -232,12 +232,12 @@ describe('filterUsableStamps', () => {
 
 describe('topUpStamp', () => {
   it('should extend stamp stamp and await for it to extend others', async () => {
-    const beeDebug = new BeeDebug(url)
-    const stamp = await buyNewStamp(defaultDepth, defaultAmount, beeDebug)
+    const bee = new Bee(url)
+    const stamp = await buyNewStamp(defaultDepth, defaultAmount, bee)
     const extendAmount = '100'
 
-    await topUpStamp(beeDebug, stamp.batchId, extendAmount)
-    const stampExtended = await beeDebug.getPostageBatch(stamp.batchId)
+    await topUpStamp(bee, stamp.batchId, extendAmount)
+    const stampExtended = await bee.getPostageBatch(stamp.batchId)
     expect(Number(stampExtended.amount)).toBeGreaterThan(Number(defaultAmount))
   })
 })

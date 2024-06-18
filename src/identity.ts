@@ -1,4 +1,4 @@
-import { BeeDebug } from '@ethersphere/bee-js'
+import { Bee } from '@ethersphere/bee-js'
 import { createHash } from 'crypto'
 import { logger } from './logger'
 
@@ -15,17 +15,17 @@ export function getHashedIdentity(): string {
   return identity
 }
 
-export async function fetchBeeIdentity(beeDebug: BeeDebug, frequencyMs = 15_000) {
+export async function fetchBeeIdentity(bee: Bee, frequencyMs = 15_000) {
   logger.info(`fetching bee identity with frequency ${frequencyMs}ms`)
 
-  if (!(await attemptFetchingBeeIdentity(beeDebug))) {
-    interval = setInterval(async () => attemptFetchingBeeIdentity(beeDebug), frequencyMs)
+  if (!(await attemptFetchingBeeIdentity(bee))) {
+    interval = setInterval(async () => attemptFetchingBeeIdentity(bee), frequencyMs)
   }
 }
 
-async function attemptFetchingBeeIdentity(beeDebug: BeeDebug) {
+async function attemptFetchingBeeIdentity(bee: Bee) {
   try {
-    const { overlay } = await beeDebug.getNodeAddresses()
+    const { overlay } = await bee.getNodeAddresses()
     identity = mapAddress(overlay)
     logger.info('bee debug overlay', { overlay, identity })
     clearInterval(interval as NodeJS.Timer)
