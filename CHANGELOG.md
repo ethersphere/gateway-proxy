@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.15.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.14.1...v0.15.0) (2024-06-18)
+
+
+### Features
+
+* merge api ([#497](https://www.github.com/ethersphere/gateway-proxy/issues/497)) ([60f71ac](https://www.github.com/ethersphere/gateway-proxy/commit/60f71acc73397bc35c53c240835adf42f58f18ba))
+
+
+### Bug Fixes
+
+* block invalid path ([#498](https://www.github.com/ethersphere/gateway-proxy/issues/498)) ([b6ff4ae](https://www.github.com/ethersphere/gateway-proxy/commit/b6ff4ae865b0783aaa6ed9b7425286bca466c71f))
+
 ### [0.14.1](https://www.github.com/ethersphere/gateway-proxy/compare/v0.14.0...v0.14.1) (2024-05-01)
 
 
