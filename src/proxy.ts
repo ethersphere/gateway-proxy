@@ -10,6 +10,7 @@ import { getErrorMessage } from './utils'
 export const GET_PROXY_ENDPOINTS = ['/chunks/*', '/bytes/*', '/bzz/*', '/feeds/*']
 export const POST_PROXY_ENDPOINTS = ['/chunks', '/bytes', '/bzz', '/soc/*', '/feeds/*']
 
+const BAD_PATH = `bzz/${'00'.repeat(32)}`
 const SWARM_STAMP_HEADER = 'swarm-postage-batch-id'
 const SWARM_PIN_HEADER = 'swarm-pin'
 
@@ -57,6 +58,11 @@ export function createProxyEndpoints(app: Application, options: Options) {
     }
   })
   app.get(GET_PROXY_ENDPOINTS, async (req, res) => {
+    if (req.path.includes(BAD_PATH)) {
+      res.status(400)
+      res.send({ error: 'bad path' })
+      return
+    }
     await fetchAndRespond('GET', req.path, req.query, req.headers, req.body, res, options)
   })
   app.post(POST_PROXY_ENDPOINTS, async (req, res) => {
