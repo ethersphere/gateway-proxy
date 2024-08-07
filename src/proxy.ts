@@ -61,6 +61,7 @@ export function createProxyEndpoints(app: Application, options: Options) {
     if (req.path.includes(BAD_PATH)) {
       res.status(400)
       res.send({ error: 'bad path' })
+
       return
     }
     await fetchAndRespond('GET', req.path, req.query, req.headers, req.body, res, options)
