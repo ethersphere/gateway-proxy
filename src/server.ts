@@ -111,6 +111,8 @@ export const createApp = (
     res.end()
   })
 
+  app.get('/gateway', (_req, res) => res.send({ gateway: true }))
+
   // Health endpoint
   app.get('/health', (_req, res) => res.send('OK'))
 
