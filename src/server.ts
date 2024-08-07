@@ -34,7 +34,7 @@ export const createApp = (
   app.use(
     bodyParser.raw({
       inflate: true,
-      limit: '1gb',
+      limit: Arrays.getArgument(process.argv, 'post-size-limit', process.env, 'POST_SIZE_LIMIT') || '1gb',
       type: '*/*',
     }),
   )
@@ -74,6 +74,11 @@ export const createApp = (
   if (authorization) {
     app.use('', (req, res, next) => {
       if (req.headers.authorization === authorization) {
+        next()
+      } else if (
+        req.method !== 'post' &&
+        Arrays.getBooleanArgument(process.argv, 'soft-auth', process.env, 'SOFT_AUTH')
+      ) {
         next()
       } else {
         res.sendStatus(403)
