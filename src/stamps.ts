@@ -4,10 +4,6 @@ import { ERROR_NO_STAMP, StampsConfig, StampsConfigAutobuy, StampsConfigExtends 
 import { logger } from './logger'
 import { register } from './metrics'
 
-interface Options {
-  timeout?: number
-}
-
 const stampPurchaseCounter = new client.Counter({
   name: 'stamp_purchase_counter',
   help: 'How many stamps were purchased',
