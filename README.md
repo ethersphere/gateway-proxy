@@ -133,6 +133,7 @@ npm run start
 | ----------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | BEE_API_URL             | http://localhost:1633                                            | URL of the Bee node API                                                                                                                                                     |
 | AUTH_SECRET             | undefined                                                        | Authentication secret, disabled if not set (this secret is checked in the request header `authorization`).                                                                  |
+| SOFT_AUTH               | false                                                            | Only POST requests require authentication.                                                                                                                                  |
 | HOSTNAME                | localhost                                                        | Hostname of the proxy. Required for Bzz.link support.                                                                                                                       |
 | PORT                    | 3000                                                             | Port of the proxy.                                                                                                                                                          |
 | POSTAGE_STAMP           | undefined                                                        | Postage stamp that should be used for all upload requests. If provided, the autobuy feature is disabled.                                                                    |
@@ -153,6 +154,7 @@ npm run start
 | REMAP                   | undefined                                                        | Semicolon separated `name=hash` values to rewrite Swarm hashes to human-friendly names                                                                                      |
 | ALLOWLIST               | undefined                                                        | Comma separated list of hashes, ENS domains or CIDs to allow                                                                                                                |
 | ALLOW_USER_AGENTS       | undefined                                                        | Comma separated list of user-agent substrings to give unlimited access to                                                                                                   |
+| POST_SIZE_LIMIT         | 1gb                                                              | Maximum size of the POST request body in bytes.                                                                                                                             |
 
 ### Curl
 
