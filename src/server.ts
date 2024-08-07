@@ -34,7 +34,7 @@ export const createApp = (
   app.use(
     bodyParser.raw({
       inflate: true,
-      limit: '1gb',
+      limit: Arrays.getArgument(process.argv, 'post-size-limit', process.env, 'POST_SIZE_LIMIT') || '1gb',
       type: '*/*',
     }),
   )
@@ -75,6 +75,11 @@ export const createApp = (
     app.use('', (req, res, next) => {
       if (req.headers.authorization === authorization) {
         next()
+      } else if (
+        req.method !== 'post' &&
+        Arrays.getBooleanArgument(process.argv, 'soft-auth', process.env, 'SOFT_AUTH')
+      ) {
+        next()
       } else {
         res.sendStatus(403)
       }
@@ -105,6 +110,8 @@ export const createApp = (
     res.write(await register.metrics())
     res.end()
   })
+
+  app.get('/gateway', (_req, res) => res.send({ gateway: true }))
 
   // Health endpoint
   app.get('/health', (_req, res) => res.send('OK'))
