@@ -150,6 +150,15 @@ async function fetchAndRespond(
       }
     }
 
+    // remove headers that should not be forwarded
+    delete response.headers['content-length']
+    delete response.headers['content-encoding']
+    delete response.headers['transfer-encoding']
+    delete response.headers['connection']
+    delete response.headers['etag']
+    delete response.headers['last-modified']
+    delete response.headers['cache-control']
+
     res.set(response.headers).status(response.status).send(response.data)
   } catch (error) {
     res.status(500).send('Internal server error')
