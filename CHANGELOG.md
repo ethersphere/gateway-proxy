@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.16.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.15.0...v0.16.0) (2024-08-07)
+
+
+### Features
+
+* add gateway indicator endpoint ([#503](https://www.github.com/ethersphere/gateway-proxy/issues/503)) ([c716830](https://www.github.com/ethersphere/gateway-proxy/commit/c716830339211dc2a3a6361c5a59dba56ce5fe8c))
+* add soft-auth and post-size-limit options ([#502](https://www.github.com/ethersphere/gateway-proxy/issues/502)) ([d957e40](https://www.github.com/ethersphere/gateway-proxy/commit/d957e403c351b7341f57848c698a80b1043e9856))
+
+
+### Bug Fixes
+
+* remove http headers that should not be proxied ([#504](https://www.github.com/ethersphere/gateway-proxy/issues/504)) ([2fd1b34](https://www.github.com/ethersphere/gateway-proxy/commit/2fd1b34084992774bc20c8239399e3149d70f3bf))
+
 ## [0.15.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.14.1...v0.15.0) (2024-06-18)
 
 
