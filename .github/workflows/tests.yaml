@@ -30,25 +30,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Auth to Github Package Docker Registry
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login https://docker.pkg.github.com -u ${GITHUB_ACTOR} --password-stdin
-
       - name: Install npm deps
-        run: npm ci
+        run: npm ci && npm install -g @fairdatasociety/fdp-play
 
-      # Start Bee Factory environment
-      - name: Start Bee Factory environment
-        run: npm run bee -- --detach
+      - name: Start fdp-play environment
+        run: npm run bee
 
-      - name: Run unit and integration tests for node
-        run: npm run test -- --detectOpenHandles
-
-      - name: Debug workflow if failed
-        if: failure()
-        run: |
-          KEYS=$(curl -sSf -X POST https://relay.tunshell.com/api/sessions)
-          curl -sSf -X POST -H "Content-Type: application/json" -d "{\"text\": \"**Bee JS**\nDebug -> \`sh <(curl -sSf https://lets.tunshell.com/init.sh) L $(echo $KEYS | jq -r .peer2_key) \${TUNSHELL_SECRET} relay.tunshell.com\`\"}" https://beehive.ethswarm.org/hooks/${{ secrets.WEBHOOK_KEY }}
-          echo "Connect to github actions node using"
-          echo "sh <(curl -sSf https://lets.tunshell.com/init.sh) L $(echo $KEYS | jq -r .peer2_key) \${TUNSHELL_SECRET} relay.tunshell.com"
-          curl -sSf https://lets.tunshell.com/init.sh | sh /dev/stdin T $(echo $KEYS | jq -r .peer1_key) ${{ secrets.TUNSHELL_SECRET }} relay.tunshell.com
+      - name: Tests
+        run: npm run test

@@ -29,13 +29,11 @@
     "lint:check": "eslint \"src/**/*.ts\" \"test/**/*.ts\" && prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
     "depcheck": "depcheck .",
     "check:types": "tsc --project tsconfig.test.json",
-    "test": "jest --verbose",
-    "bee": "bee-factory start"
+    "test": "jest --verbose"
   },
   "license": "BSD-3-Clause",
   "devDependencies": {
     "@commitlint/cli": "^17.1.2",
-    "@ethersphere/bee-factory": "^0.4.1",
     "@jest/types": "^29.0.3",
     "@types/express": "^4.17.14",
     "@types/jest": "^27.5.2",
