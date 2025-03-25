@@ -8,7 +8,7 @@ import { HASHED_IDENTITY_HEADER, fetchBeeIdentity, getHashedIdentity } from './i
 import { logger } from './logger'
 import { register } from './metrics'
 import { createProxyEndpoints } from './proxy'
-import { ReadinessStatus, checkReadiness } from './readiness'
+import { checkReadiness } from './readiness'
 import type { StampManager } from './stamps'
 
 export const createApp = (
@@ -21,7 +21,6 @@ export const createApp = (
     ensSubdomains,
     removePinHeader,
     exposeHashedIdentity,
-    readinessCheck,
     homepage,
   }: AppConfig,
   stampManager?: StampManager,
@@ -118,14 +117,12 @@ export const createApp = (
 
   // Readiness endpoint
   app.get('/readiness', async (_req, res) => {
-    const readinessStatus = await checkReadiness(bee, readinessCheck ?? false, stampManager)
+    const ready = await checkReadiness(bee)
 
-    if (readinessStatus === ReadinessStatus.OK) {
+    if (ready) {
       res.end('OK')
-    } else if (readinessStatus === ReadinessStatus.NO_STAMP) {
-      res.status(503).end(readinessStatus)
     } else {
-      res.status(502).end(readinessStatus)
+      res.status(503).end('NOT READY')
     }
   })
 

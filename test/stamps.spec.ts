@@ -84,8 +84,6 @@ describe('postageStamp', () => {
 
     const batchId = manager.postageStamp
     expect(batchId).toBe(stamp.batchID)
-    manager.stop()
-    await System.sleepMillis(250) // Needed as there could be the wait for posage stamp usable process in progress
   })
 
   it('should start without any postage stamp and create new one', async () => {
@@ -102,8 +100,6 @@ describe('postageStamp', () => {
     expect(db.toArray().length).toEqual(1)
 
     expect(manager.postageStamp).toEqual(db.toArray()[0].batchID)
-    manager.stop()
-    await System.sleepMillis(250) // Needed as there could be the wait for posage stamp usable process in progress
   })
 
   it('should create additional stamp if existing is starting to get full', async () => {
@@ -124,8 +120,6 @@ describe('postageStamp', () => {
 
     expect(db.toArray().length).toEqual(2)
     expect(manager.postageStamp).toEqual(stamp.batchID)
-    manager.stop()
-    await System.sleepMillis(250) // Needed as there could be the wait for posage stamp usable process in progress
   })
 
   it('should create additional stamp if existing stamp usage increases', async () => {
@@ -152,8 +146,6 @@ describe('postageStamp', () => {
 
     expect(db.toArray().length).toEqual(2)
     expect(manager.postageStamp).not.toEqual(stamp.batchID)
-    manager.stop()
-    await System.sleepMillis(1500) // Needed as there could be the wait for posage stamp usable process in progress
   })
 })
 
