@@ -53,15 +53,6 @@ const stampUsableCountGauge = new client.Gauge({
 register.registerMetric(stampUsableCountGauge)
 
 /**
- * Calculate usage of a given postage stamp
- *
- * @param stamp Postage stamp which usage should be determined
- */
-export function getUsage({ utilization, depth, bucketDepth }: PostageBatch): number {
-  return utilization / Math.pow(2, depth - bucketDepth)
-}
-
-/**
  * Filter the stamps and only return those that are usable, have correct amount, depth, are not close to beying maxUsage or close to expire
  *
  * @param stamps Postage stamps to be filtered
@@ -86,11 +77,11 @@ export function filterUsableStampsAutobuy(
         s.usable &&
         s.depth === depth &&
         s.amount === amount &&
-        getUsage(s) < maxUsage &&
+        s.usage < maxUsage &&
         s.duration.toSeconds() > minTTL.toSeconds(),
     )
     // sort the stamps by usage
-    .sort((a, b) => (getUsage(a) < getUsage(b) ? 1 : -1))
+    .sort((a, b) => (a.usage < b.usage ? 1 : -1))
 
   // return the all usable stamp sorted by usage
   return usableStamps
@@ -203,11 +194,11 @@ export class StampManager {
       const mostUsed = this.usableStamps[0]
 
       stampTtlGauge.set(mostUsed ? mostUsed.duration.toSeconds() : 0)
-      stampUsageGauge.set(mostUsed ? getUsage(mostUsed) : 0)
+      stampUsageGauge.set(mostUsed ? mostUsed.usage : 0)
       stampUsableCountGauge.set(this.usableStamps.length)
 
       // Check if the least used stamps is starting to get full and if so purchase new stamp
-      if (!this.isBuyingStamp && (!leastUsed || getUsage(leastUsed) > usageThreshold)) {
+      if (!this.isBuyingStamp && (!leastUsed || leastUsed.usage > usageThreshold)) {
         this.isBuyingStamp = true
         try {
           const { stamp } = await buyNewStamp(depth, amount, bee)
