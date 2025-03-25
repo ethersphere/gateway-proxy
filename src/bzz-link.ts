@@ -1,4 +1,4 @@
-import * as swarmCid from '@ethersphere/swarm-cid'
+import { Reference } from '@ethersphere/bee-js'
 import { logger } from './logger'
 
 export class NotEnabledError extends Error {}
@@ -13,14 +13,14 @@ export function subdomainToBzz(
     return remap[subdomain]
   }
   try {
-    const result = swarmCid.decodeCid(subdomain)
+    const result = new Reference(subdomain)
 
     if (!isCidEnabled) {
       logger.warn('cid subdomain support disabled, but got cid', { subdomain })
       throw new NotEnabledError('CID subdomain support is disabled, but got a CID!')
     }
 
-    return result.reference
+    return result.toHex()
   } catch (e) {
     if (e instanceof NotEnabledError) {
       throw e
