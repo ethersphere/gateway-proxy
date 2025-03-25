@@ -29,7 +29,8 @@
     "lint:check": "eslint \"src/**/*.ts\" \"test/**/*.ts\" && prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
     "depcheck": "depcheck .",
     "check:types": "tsc --project tsconfig.test.json",
-    "test": "jest --verbose"
+    "test": "jest --verbose",
+    "bee": "npx @fairdatasociety/fdp-play@3.2.0 start --detach --fresh"
   },
   "license": "BSD-3-Clause",
   "devDependencies": {
