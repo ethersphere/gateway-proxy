@@ -1,10 +1,9 @@
-import { BatchId, Bee, PostageBatch } from '@ethersphere/bee-js'
-import { System } from 'cafe-utility'
+import { BatchId, Bee, Duration, NumberString, PostageBatch, Size } from '@ethersphere/bee-js'
+import { Strings, System } from 'cafe-utility'
 import type { Server } from 'http'
 import { getStampsConfig } from '../src/config'
-import { StampsManager, buyNewStamp, filterUsableStampsAutobuy, getUsage, topUpStamp } from '../src/stamps'
+import { StampManager, buyNewStamp, filterUsableStampsAutobuy, getUsage, topUpStamp } from '../src/stamps'
 import { StampDB, createStampMockServer } from './stamps.mockserver'
-import { genRandomHex } from './utils'
 
 interface AddressInfo {
   address: string
@@ -31,23 +30,27 @@ afterEach(() => {
 
 const defaultAmount = '414720000'
 const defaultDepth = 20
-const defaultTTL = Number(defaultAmount)
+const defaultTTL = Duration.fromSeconds(Number(defaultAmount))
 const defaultStamp: PostageBatch = {
-  batchID: genRandomHex(64) as BatchId,
+  batchID: new BatchId(Strings.randomHex(64)),
   utilization: 0,
   usable: true,
   label: 'label',
   depth: defaultDepth,
-  amount: defaultAmount,
+  amount: defaultAmount as NumberString,
   bucketDepth: 16,
   blockNumber: 0,
   immutableFlag: false,
-  exists: true,
-  batchTTL: defaultTTL,
+  duration: defaultTTL,
+  usage: 0,
+  usageText: '0%',
+  remainingSize: Size.fromGigabytes(4),
+  size: Size.fromGigabytes(4),
+  theoreticalSize: Size.fromGigabytes(4),
 }
 
 const buildStamp = (overwrites: Partial<PostageBatch>) => {
-  const batchID = genRandomHex(64) as BatchId
+  const batchID = new BatchId(Strings.randomHex(64))
 
   return {
     ...defaultStamp,
@@ -59,7 +62,7 @@ const buildStamp = (overwrites: Partial<PostageBatch>) => {
 describe('postageStamp', () => {
   it('should return correct hardcoded single postage stamp', async () => {
     const stamp = '0000000000000000000000000000000000000000000000000000000000000000'
-    const stampManager = new StampsManager()
+    const stampManager = new StampManager()
     await stampManager.start(getStampsConfig({ POSTAGE_STAMP: stamp })!)
     expect(stampManager.postageStamp).toEqual(stamp)
   })
@@ -67,7 +70,7 @@ describe('postageStamp', () => {
   it('should return existing stamp', async () => {
     const stamp = buildStamp({ utilization: 0 })
     db.add(stamp)
-    const manager = new StampsManager()
+    const manager = new StampManager()
     await manager.start(
       getStampsConfig({
         POSTAGE_DEPTH: defaultDepth.toString(),
@@ -86,7 +89,7 @@ describe('postageStamp', () => {
   })
 
   it('should start without any postage stamp and create new one', async () => {
-    const manager = new StampsManager()
+    const manager = new StampManager()
     await manager.start(
       getStampsConfig({
         POSTAGE_DEPTH: defaultDepth.toString(),
@@ -107,7 +110,7 @@ describe('postageStamp', () => {
     const stamp = buildStamp({ utilization: 14 })
     db.add(stamp)
 
-    const manager = new StampsManager()
+    const manager = new StampManager()
     await manager.start(
       getStampsConfig({
         POSTAGE_DEPTH: defaultDepth.toString(),
@@ -129,7 +132,7 @@ describe('postageStamp', () => {
     const stamp = buildStamp({ utilization: 5 })
     db.add(stamp)
 
-    const manager = new StampsManager()
+    const manager = new StampManager()
     await manager.start(
       getStampsConfig({
         POSTAGE_DEPTH: defaultDepth.toString(),
@@ -190,7 +193,7 @@ describe('buyNewStamp', () => {
 
 describe('filterUsableStamps', () => {
   it('should return empty arry if there are no stamps', async () => {
-    const res = filterUsableStampsAutobuy([], 20, '1000', 0.7, 1_000)
+    const res = filterUsableStampsAutobuy([], 20, '1000', 0.7, Duration.fromSeconds(1_000))
     expect(res).toEqual(expect.arrayContaining([]))
   })
 
@@ -205,26 +208,26 @@ describe('filterUsableStamps', () => {
 
     const allStamps = [buildStamp({ utilization: 15 }), ...goodStamps, buildStamp({ utilization: 16 })]
 
-    const res = filterUsableStampsAutobuy(allStamps, defaultDepth, defaultAmount, 0.9, 1_000)
+    const res = filterUsableStampsAutobuy(allStamps, defaultDepth, defaultAmount, 0.9, Duration.fromSeconds(1_000))
     expect(res).toEqual(expect.arrayContaining(goodStamps))
     for (let i = 1; i < res.length; i++) expect(getUsage(res[i - 1])).toBeGreaterThanOrEqual(getUsage(res[i]))
   })
 
   it('should return only usable stamps eliminating the ones with low TTL', async () => {
     const goodStamps = [
-      buildStamp({ utilization: 7, batchTTL: 200_000 }),
-      buildStamp({ utilization: 6, batchTTL: 110_000 }),
-      buildStamp({ utilization: 9, batchTTL: 105_000 }),
+      buildStamp({ utilization: 7, duration: Duration.fromSeconds(200_000) }),
+      buildStamp({ utilization: 6, duration: Duration.fromSeconds(110_000) }),
+      buildStamp({ utilization: 9, duration: Duration.fromSeconds(105_000) }),
     ]
 
     const allStamps = [
-      buildStamp({ utilization: 4, batchTTL: 50_000 }),
+      buildStamp({ utilization: 4, duration: Duration.fromSeconds(50_000) }),
       ...goodStamps,
-      buildStamp({ utilization: 12, batchTTL: 40_000 }),
-      buildStamp({ utilization: 14, batchTTL: 50_000 }),
+      buildStamp({ utilization: 12, duration: Duration.fromSeconds(40_000) }),
+      buildStamp({ utilization: 14, duration: Duration.fromSeconds(50_000) }),
     ]
 
-    const res = filterUsableStampsAutobuy(allStamps, defaultDepth, defaultAmount, 0.9, 100_000)
+    const res = filterUsableStampsAutobuy(allStamps, defaultDepth, defaultAmount, 0.9, Duration.fromSeconds(100_000))
     expect(res).toEqual(expect.arrayContaining(goodStamps))
     for (let i = 1; i < res.length; i++) expect(getUsage(res[i - 1])).toBeGreaterThanOrEqual(getUsage(res[i]))
   })

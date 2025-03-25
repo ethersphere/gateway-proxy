@@ -26,7 +26,7 @@ export async function fetchBeeIdentity(bee: Bee, frequencyMs = 15_000) {
 async function attemptFetchingBeeIdentity(bee: Bee) {
   try {
     const { overlay } = await bee.getNodeAddresses()
-    identity = mapAddress(overlay)
+    identity = mapAddress(overlay.toHex())
     logger.info('bee debug overlay', { overlay, identity })
     clearInterval(interval as NodeJS.Timer)
 

@@ -1,4 +1,4 @@
-import { BatchId, Bee, PostageBatch } from '@ethersphere/bee-js'
+import { BatchId, Bee, Duration, PostageBatch } from '@ethersphere/bee-js'
 import client from 'prom-client'
 import { ERROR_NO_STAMP, StampsConfig, StampsConfigAutobuy, StampsConfigExtends } from './config'
 import { logger } from './logger'
@@ -77,11 +77,18 @@ export function filterUsableStampsAutobuy(
   depth: number,
   amount: string,
   maxUsage: number,
-  minTTL: number,
+  minTTL: Duration,
 ): PostageBatch[] {
   const usableStamps = stamps
     // filter to get stamps that have the right depth, amount and are not fully used or expired
-    .filter(s => s.usable && s.depth === depth && s.amount === amount && getUsage(s) < maxUsage && s.batchTTL > minTTL)
+    .filter(
+      s =>
+        s.usable &&
+        s.depth === depth &&
+        s.amount === amount &&
+        getUsage(s) < maxUsage &&
+        s.duration.toSeconds() > minTTL.toSeconds(),
+    )
     // sort the stamps by usage
     .sort((a, b) => (getUsage(a) < getUsage(b) ? 1 : -1))
 
@@ -101,7 +108,7 @@ export function filterUsableStampsExtends(stamps: PostageBatch[]): PostageBatch[
     // filter to get stamps that have the right depth, amount and are not fully used or expired
     .filter(s => s.usable)
     // sort the stamps by usage
-    .sort((a, b) => (a.batchTTL > b.batchTTL ? 1 : -1))
+    .sort((a, b) => (a.duration.toSeconds() > b.duration.toSeconds() ? 1 : -1))
 
   // return the all usable stamp sorted by usage
   return usableStamps
@@ -133,15 +140,15 @@ export async function buyNewStamp(
   return { batchId, stamp }
 }
 
-export async function topUpStamp(bee: Bee, postageBatchId: string, amount: string): Promise<PostageBatch> {
+export async function topUpStamp(bee: Bee, postageBatchId: BatchId | string, amount: string): Promise<PostageBatch> {
   await bee.topUpBatch(postageBatchId, amount)
   const stamp = await bee.getPostageBatch(postageBatchId)
 
   return stamp
 }
 
-export class StampsManager {
-  private stamp?: string
+export class StampManager {
+  private stamp?: BatchId
   private usableStamps?: PostageBatch[]
   private interval?: ReturnType<typeof setInterval>
   private isBuyingStamp?: boolean = false
@@ -161,14 +168,14 @@ export class StampsManager {
       const stamp = this.stamp
       logger.info('using hardcoded stamp', { stamp })
 
-      return stamp
+      return stamp.toHex()
     }
 
     if (this.usableStamps && this.usableStamps[0]) {
       const stamp = this.usableStamps[0]
       logger.info('using autobought stamp', { stamp })
 
-      return stamp.batchID
+      return stamp.batchID.toHex()
     }
 
     stampGetErrorCounter.inc()
@@ -195,7 +202,7 @@ export class StampsManager {
       const leastUsed = this.usableStamps[this.usableStamps.length - 1]
       const mostUsed = this.usableStamps[0]
 
-      stampTtlGauge.set(mostUsed ? mostUsed.batchTTL : 0)
+      stampTtlGauge.set(mostUsed ? mostUsed.duration.toSeconds() : 0)
       stampUsageGauge.set(mostUsed ? getUsage(mostUsed) : 0)
       stampUsableCountGauge.set(this.usableStamps.length)
 
@@ -255,17 +262,17 @@ export class StampsManager {
 
   async verifyUsableStamps(
     bee: Bee,
-    ttlMin: number,
+    ttlMin: Duration,
     config: StampsConfigAutobuy | StampsConfigExtends,
     amount: string,
   ) {
     for (let i = 0; i < this.usableStamps!.length; i++) {
       const stamp = this.usableStamps![i]
 
-      const minTimeThreshold = ttlMin + config.refreshPeriod / 1000
+      const minTimeThreshold = ttlMin.toSeconds() + config.refreshPeriod
 
-      if (stamp.batchTTL < minTimeThreshold && !this.extendingStamps.includes(stamp.batchID)) {
-        this.extendingStamps.push(stamp.batchID)
+      if (stamp.duration.toSeconds() < minTimeThreshold && !this.extendingStamps.includes(stamp.batchID.toHex())) {
+        this.extendingStamps.push(stamp.batchID.toHex())
         logger.info(`extending postage stamp ${stamp.batchID}`)
 
         try {
@@ -274,7 +281,7 @@ export class StampsManager {
           setTimeout(() => this.completeTopUp(stampRes), 60000)
         } catch (error) {
           // error that indicate that 2 stamps are trying to be extended at the same time. Comes out as a warning
-          const errorStampIndex = this.extendingStamps.indexOf(stamp.batchID)
+          const errorStampIndex = this.extendingStamps.indexOf(stamp.batchID.toHex())
           this.extendingStamps.splice(errorStampIndex, 1)
           logger.error('failed to topup postage stamp', error)
         }
@@ -285,7 +292,7 @@ export class StampsManager {
   completeTopUp(stamp: PostageBatch) {
     logger.info('successfully extended postage stamp', { stamp })
     // remove stamps from extending stamps array
-    const stampIndex = this.extendingStamps.findIndex(id => stamp.batchID === id)
+    const stampIndex = this.extendingStamps.findIndex(id => stamp.batchID.toHex() === id)
     this.extendingStamps.splice(stampIndex, 1)
   }
 
@@ -294,7 +301,9 @@ export class StampsManager {
    */
   async start(config: StampsConfig): Promise<void> {
     // Hardcoded stamp mode
-    if (config.mode === 'hardcoded') this.stamp = config.stamp
+    if (config.mode === 'hardcoded') {
+      this.stamp = new BatchId(config.stamp)
+    }
     // Autobuy or ExtendsTTL mode
     else {
       let refreshStamps: () => Promise<void>

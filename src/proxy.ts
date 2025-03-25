@@ -4,7 +4,7 @@ import { Application, Response } from 'express'
 import { IncomingHttpHeaders } from 'http'
 import { subdomainToBzz } from './bzz-link'
 import { logger } from './logger'
-import { StampsManager } from './stamps'
+import { StampManager } from './stamps'
 import { getErrorMessage } from './utils'
 
 export const GET_PROXY_ENDPOINTS = ['/chunks/*', '/bytes/*', '/bzz/*', '/feeds/*']
@@ -17,7 +17,7 @@ const SWARM_PIN_HEADER = 'swarm-pin'
 interface Options {
   beeApiUrl: string
   removePinHeader: boolean
-  stampManager: StampsManager | null
+  stampManager: StampManager | null
   allowlist?: string[]
   hostname?: string
   cidSubdomains?: boolean
@@ -76,7 +76,7 @@ async function fetchAndRespond(
   path: string,
   query: Record<string, unknown>,
   headers: IncomingHttpHeaders,
-  body: any,
+  body: unknown,
   res: Response,
   options: Options,
 ) {
@@ -155,8 +155,8 @@ async function fetchAndRespond(
     delete response.headers['content-length']
     delete response.headers['content-encoding']
     delete response.headers['transfer-encoding']
-    delete response.headers['connection']
-    delete response.headers['etag']
+    delete response.headers.connection
+    delete response.headers.etag
     delete response.headers['last-modified']
     delete response.headers['cache-control']
 

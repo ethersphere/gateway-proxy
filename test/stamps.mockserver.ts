@@ -1,17 +1,17 @@
+import { BatchId, NumberString, PostageBatch, Size, Utils } from '@ethersphere/bee-js'
+import { Strings } from 'cafe-utility'
 import express from 'express'
 import type { Server } from 'http'
-import type { PostageBatch, BatchId } from '@ethersphere/bee-js'
-import { genRandomHex } from './utils'
 
 export class StampDB {
-  stamps: Record<BatchId, PostageBatch> = {}
+  stamps: Map<BatchId, PostageBatch> = new Map()
 
-  get(batchID: BatchId): PostageBatch {
-    return this.stamps[batchID]
+  get(batchID: BatchId): PostageBatch | undefined {
+    return this.stamps.get(batchID)
   }
 
   add(stamp: PostageBatch): void {
-    this.stamps[stamp.batchID] = stamp
+    this.stamps.set(stamp.batchID, stamp)
   }
 
   toArray(): PostageBatch[] {
@@ -19,34 +19,41 @@ export class StampDB {
   }
 
   clear(): void {
-    this.stamps = {}
+    this.stamps.clear()
   }
 }
 
 export async function createStampMockServer(db: StampDB): Promise<Server> {
   const app = express()
 
-  app.get('/stamps', (req, res) => {
+  app.get('/stamps', (_req, res) => {
     res.send({ stamps: db.toArray() })
   })
 
   app.get('/stamps/:id', (req, res) => {
-    res.send(db.get(req.params.id as BatchId))
+    res.send(db.get(new BatchId(req.params.id)))
   })
 
   app.post('/stamps/:amount/:depth', (req, res) => {
-    const newStamp = {
-      batchID: genRandomHex(64) as BatchId,
+    const depth = Number(req.params.depth)
+    const effectiveSize = Size.fromBytes(Utils.getStampEffectiveBytes(depth))
+    const theoreticalSize = Size.fromBytes(Utils.getStampTheoreticalBytes(depth))
+    const newStamp: PostageBatch = {
+      batchID: new BatchId(Strings.randomHex(64)),
       utilization: 0,
       usable: false,
       label: 'label',
-      depth: Number(req.params.depth),
-      amount: req.params.amount,
+      depth,
+      amount: req.params.amount as NumberString,
       bucketDepth: 0,
       blockNumber: 0,
       immutableFlag: false,
-      exists: true,
-      batchTTL: Number(req.params.amount),
+      duration: Utils.getStampDuration(req.params.amount, 24000),
+      size: effectiveSize,
+      remainingSize: effectiveSize,
+      theoreticalSize,
+      usage: 0,
+      usageText: '0%',
     }
     db.add(newStamp)
     setTimeout(() => (newStamp.usable = true), 100)
@@ -54,8 +61,14 @@ export async function createStampMockServer(db: StampDB): Promise<Server> {
   })
 
   app.patch('/stamps/topup/:batchId/:amount', (req, res) => {
-    const stamp = db.get(req.params.batchId as BatchId)
-    stamp.amount = (Number(stamp.amount) + Number(req.params.amount)).toString()
+    const stamp = db.get(new BatchId(req.params.batchId))
+
+    if (!stamp) {
+      res.status(404).send({ message: 'Stamp not found' })
+
+      return
+    }
+    stamp.amount = (Number(stamp.amount) + Number(req.params.amount)).toString() as NumberString
     res.send({ batchID: stamp.batchID })
   })
 

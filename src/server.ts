@@ -9,7 +9,7 @@ import { logger } from './logger'
 import { register } from './metrics'
 import { createProxyEndpoints } from './proxy'
 import { ReadinessStatus, checkReadiness } from './readiness'
-import type { StampsManager } from './stamps'
+import type { StampManager } from './stamps'
 
 export const createApp = (
   {
@@ -24,7 +24,7 @@ export const createApp = (
     readinessCheck,
     homepage,
   }: AppConfig,
-  stampManager?: StampsManager,
+  stampManager?: StampManager,
 ): Application => {
   const bee = new Bee(beeApiUrl)
 

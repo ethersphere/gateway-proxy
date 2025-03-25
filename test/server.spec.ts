@@ -4,7 +4,7 @@ import request from 'supertest'
 import { createApp } from '../src/server'
 
 import { POST_PROXY_ENDPOINTS } from '../src/proxy'
-import { StampsManager } from '../src/stamps'
+import { StampManager } from '../src/stamps'
 import { createHeaderCheckMockServer } from './header-check.mockserver'
 import { bee, getPostageBatch, makeCollectionFromFS } from './utils'
 
@@ -35,8 +35,8 @@ beforeAll(async () => {
   beeProxy = new Bee(`http://localhost:${port}`)
 
   const stamp = getPostageBatch()
-  const stampManager = new StampsManager()
-  await stampManager.start({ mode: 'hardcoded', stamp })
+  const stampManager = new StampManager()
+  await stampManager.start({ mode: 'hardcoded', stamp: stamp.toHex() })
   const appWithStamp = createApp({ beeApiUrl }, stampManager)
   proxyWithStamp = await new Promise((resolve, _reject) => {
     const server = appWithStamp.listen(async () => resolve(server))
@@ -135,7 +135,7 @@ describe('POST /bytes', () => {
 
     const downloadedData = await bee.downloadData(reference)
 
-    expect(Buffer.from(downloadedData).toString()).toEqual(data)
+    expect(downloadedData.toUtf8()).toEqual(data)
   })
 
   it('should store and retrieve actual data with environment defined postage stamp', async () => {
@@ -147,7 +147,7 @@ describe('POST /bytes', () => {
 
     const downloadedData = await bee.downloadData(reference)
 
-    expect(Buffer.from(downloadedData).toString()).toEqual(data)
+    expect(downloadedData.toUtf8()).toEqual(data)
   })
 })
 
@@ -161,7 +161,7 @@ describe('GET /bytes/:reference/', () => {
 
     const downloadedData = await beeProxy.downloadData(reference)
 
-    expect(Buffer.from(downloadedData).toString()).toEqual(data)
+    expect(downloadedData.toUtf8()).toEqual(data)
   })
 
   it('with authorization enabled should return 403 & Forbidden', async () => {
@@ -182,7 +182,7 @@ describe('POST /bzz', () => {
 
     const file1 = await bee.downloadFile(reference)
     expect(file1.name).toEqual(indexDocument)
-    expect(file1.data.text()).toMatch(/^1abcd\n$/)
+    expect(file1.data.toUtf8()).toMatch(/^1abcd\n$/)
   })
 
   it('should upload with environment defined postage stamp', async () => {
@@ -197,7 +197,7 @@ describe('POST /bzz', () => {
 
     const file1 = await bee.downloadFile(reference)
     expect(file1.name).toEqual(indexDocument)
-    expect(file1.data.text()).toMatch(/^1abcd\n$/)
+    expect(file1.data.toUtf8()).toMatch(/^1abcd\n$/)
   })
 })
 
@@ -253,7 +253,7 @@ describe('POST /chunks', () => {
     // the hash is hardcoded because we would need the bmt hasher otherwise
     const hash = 'ca6357a08e317d15ec560fef34e4c45f8f19f01c372aa70f1da72bfa7f1a4338'
 
-    const reference = await beeProxy.uploadChunk(batch, data)
+    const { reference } = await beeProxy.uploadChunk(batch, data)
     expect(reference).toEqual(hash)
 
     const downloadedData = await bee.downloadChunk(reference)
@@ -269,7 +269,7 @@ describe('POST /chunks', () => {
     // the hash is hardcoded because we would need the bmt hasher otherwise
     const hash = '5094b636d1282c3ef22363ca816684edd843784b3d9f4d1a94c044c09919d335'
 
-    const reference = await beeWithStamp.uploadChunk(batch, data)
+    const { reference } = await beeWithStamp.uploadChunk(batch, data)
     expect(reference).toEqual(hash)
 
     const downloadedData = await bee.downloadChunk(reference)
@@ -287,7 +287,7 @@ describe('GET /chunks/:reference/', () => {
     // the hash is hardcoded because we would need the bmt hasher otherwise
     const hash = 'ca6357a08e317d15ec560fef34e4c45f8f19f01c372aa70f1da72bfa7f1a4338'
 
-    const reference = await bee.uploadChunk(batch, data)
+    const { reference } = await bee.uploadChunk(batch, data)
     expect(reference).toEqual(hash)
 
     const downloadedData = await beeProxy.downloadChunk(reference)
@@ -310,15 +310,15 @@ describe('POST /feeds/:owner/:topic', () => {
 
     const d1 = await bee.uploadData(batch, 'hello world!')
 
-    const writer = beeWithStamp.makeFeedWriter('sequence', topic, signer)
-    await writer.upload(batchFake, d1.reference)
+    const writer = beeWithStamp.makeFeedWriter(topic, signer)
+    await writer.uploadReference(batchFake, d1.reference)
 
-    const reader = bee.makeFeedReader('sequence', topic, writer.owner)
-    const dd1 = await reader.download()
+    const reader = bee.makeFeedReader(topic, writer.owner)
+    const dd1 = await reader.downloadReference()
 
-    expect(parseInt(dd1.feedIndex as string, 16)).toBeGreaterThanOrEqual(0)
-    expect(parseInt(dd1.feedIndexNext, 16)).toBeGreaterThanOrEqual(1)
-    expect(parseInt(dd1.feedIndex as string, 16) + 1).toEqual(parseInt(dd1.feedIndexNext, 16))
+    expect(dd1.feedIndex.toBigInt()).toBeGreaterThanOrEqual(0)
+    expect(dd1.feedIndexNext?.toBigInt()).toBeGreaterThanOrEqual(1)
+    expect(dd1.feedIndex.toBigInt() + 1n).toEqual(dd1.feedIndexNext!.toBigInt() + 1n)
   }, 10000)
 })
 
@@ -330,15 +330,15 @@ describe('GET /feeds/:owner/:topic', () => {
 
     const d1 = await bee.uploadData(batch, 'hello from the other side!')
 
-    const writer = bee.makeFeedWriter('sequence', topic, signer)
-    await writer.upload(batch, d1.reference)
+    const writer = bee.makeFeedWriter(topic, signer)
+    await writer.uploadReference(batch, d1.reference)
 
-    const reader = beeProxy.makeFeedReader('sequence', topic, writer.owner)
-    const dd1 = await reader.download()
+    const reader = beeProxy.makeFeedReader(topic, writer.owner)
+    const dd1 = await reader.downloadReference()
 
-    expect(parseInt(dd1.feedIndex as string, 16)).toBeGreaterThanOrEqual(0)
-    expect(parseInt(dd1.feedIndexNext, 16)).toBeGreaterThanOrEqual(1)
-    expect(parseInt(dd1.feedIndex as string, 16) + 1).toEqual(parseInt(dd1.feedIndexNext, 16))
+    expect(dd1.feedIndex.toBigInt()).toBeGreaterThanOrEqual(0)
+    expect(dd1.feedIndexNext?.toBigInt()).toBeGreaterThanOrEqual(1)
+    expect(dd1.feedIndex.toBigInt() + 1n).toEqual(dd1.feedIndexNext!.toBigInt() + 1n)
   }, 10000)
 })
 

@@ -1,3 +1,6 @@
+import { Duration } from '@ethersphere/bee-js'
+import { Types } from 'cafe-utility'
+
 export interface AppConfig {
   beeApiUrl: string
   authorization?: string
@@ -22,7 +25,7 @@ interface StampsConfigHardcoded {
 }
 export interface StampsConfigExtends {
   mode: 'extendsTTL'
-  ttlMin: number
+  ttlMin: Duration
   depth: number
   amount: string
   refreshPeriod: number
@@ -41,7 +44,7 @@ export interface StampsConfigAutobuy {
   beeApiUrl: string
   usageThreshold: number
   usageMax: number
-  ttlMin: number
+  ttlMin: Duration
   refreshPeriod: number
 }
 
@@ -84,7 +87,6 @@ export type EnvironmentVariables = Partial<{
   POSTAGE_TTL_MIN: string
   POSTAGE_REFRESH_PERIOD: string
   POSTAGE_EXTENDSTTL: string
-  REUPLOAD_PERIOD: string
 
   // Homepage
   HOMEPAGE: string
@@ -163,7 +165,7 @@ export function getStampsConfig({
       amount: POSTAGE_AMOUNT,
       usageThreshold: Number(POSTAGE_USAGE_THRESHOLD || DEFAULT_POSTAGE_USAGE_THRESHOLD),
       usageMax: Number(POSTAGE_USAGE_MAX || DEFAULT_POSTAGE_USAGE_MAX),
-      ttlMin: Number(POSTAGE_TTL_MIN || (refreshPeriod / 1000) * 5),
+      ttlMin: Duration.fromSeconds(Types.asNumber(POSTAGE_TTL_MIN || refreshPeriod * 5)),
       refreshPeriod,
       beeApiUrl,
     }
@@ -176,7 +178,7 @@ export function getStampsConfig({
     return {
       mode: 'extendsTTL',
       depth: Number(POSTAGE_DEPTH),
-      ttlMin: Number(POSTAGE_TTL_MIN),
+      ttlMin: Duration.fromSeconds(Types.asNumber(POSTAGE_TTL_MIN)),
       amount: POSTAGE_AMOUNT,
       refreshPeriod,
       beeApiUrl,
@@ -193,15 +195,4 @@ export function getStampsConfig({
 
   // Stamps rewrite is disabled
   return undefined
-}
-
-export function getContentConfig({ BEE_API_URL, REUPLOAD_PERIOD }: EnvironmentVariables = {}): ContentConfig | false {
-  if (!REUPLOAD_PERIOD) {
-    return false
-  }
-
-  return {
-    beeApiUrl: BEE_API_URL || DEFAULT_BEE_API_URL,
-    refreshPeriod: Number(REUPLOAD_PERIOD),
-  }
 }

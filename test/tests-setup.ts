@@ -29,8 +29,8 @@ export default async function testsSetup(): Promise<void> {
       const stamps = await Promise.all(stampsOrder.map(async () => bee.createPostageBatch('414720000', 20)))
 
       for (let i = 0; i < stamps.length; i++) {
-        process.env[stampsOrder[i].env] = stamps[i]
-        console.log(`${stampsOrder[i].env}: ${stamps[i]}`)
+        process.env[stampsOrder[i].env] = stamps[i].toHex()
+        console.log(`${stampsOrder[i].env}: ${stamps[i].toHex()}`)
       }
 
       console.log('Waiting for the stamps to be usable')

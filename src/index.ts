@@ -1,15 +1,13 @@
 #!/usr/bin/env node
 import { Application } from 'express'
-import { EnvironmentVariables, getAppConfig, getContentConfig, getServerConfig, getStampsConfig } from './config'
-import { ContentManager } from './content'
+import { EnvironmentVariables, getAppConfig, getServerConfig, getStampsConfig } from './config'
 import { logger, subscribeLogServerRequests } from './logger'
 import { createApp } from './server'
-import { StampsManager } from './stamps'
+import { StampManager } from './stamps'
 
 async function main() {
   // Configuration
   const stampsConfig = getStampsConfig(process.env as EnvironmentVariables)
-  const contentConfig = getContentConfig(process.env as EnvironmentVariables)
   const appConfig = getAppConfig(process.env as EnvironmentVariables)
   const { hostname, port } = getServerConfig(process.env as EnvironmentVariables)
 
@@ -18,16 +16,9 @@ async function main() {
 
   let app: Application
 
-  if (contentConfig) {
-    logger.debug('content config', contentConfig)
-    const contentManager = new ContentManager()
-    logger.info('starting content manager')
-    contentManager.start(contentConfig)
-  }
-
   if (stampsConfig) {
     logger.debug('stamps config', stampsConfig)
-    const stampManager = new StampsManager()
+    const stampManager = new StampManager()
     logger.info('starting postage stamp manager')
     stampManager.start(stampsConfig)
     logger.info('starting the proxy')

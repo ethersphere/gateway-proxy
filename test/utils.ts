@@ -1,4 +1,5 @@
 import { BatchId, Bee, Collection } from '@ethersphere/bee-js'
+import { Types } from 'cafe-utility'
 import fs, { statSync } from 'fs'
 import path from 'path'
 
@@ -10,13 +11,7 @@ export const bee = new Bee(BEE_API_URL)
  * Helper function that to get a postage stamp for the tests.
  */
 export function getPostageBatch(): BatchId {
-  const stamp = process.env.BEE_POSTAGE as BatchId
-
-  if (!stamp) {
-    throw new Error('There is no postage stamp')
-  }
-
-  return stamp
+  return new BatchId(Types.asString(process.env.BEE_POSTAGE, { name: 'BEE_POSTAGE' }))
 }
 
 /**
@@ -60,6 +55,3 @@ async function buildCollectionRelative(dir: string, relativePath: string): Promi
 
   return collection
 }
-
-export const genRandomHex = (size: number): string =>
-  [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('')

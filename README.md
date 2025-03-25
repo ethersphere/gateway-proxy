@@ -69,11 +69,6 @@ allows to have better security model for your web applications.
 In order to use Bzz.link, set the `HOSTNAME` environment variable, and either or both of `CID_SUBDOMAINS` and
 `ENS_SUBDOMAINS` according to your requirements. You may also need to set up DNS with wildcard subdomain support.
 
-### Reupload pinned content
-
-It can reupload existing pinned content that appear as not retrievable. To enable this, provide `REAUPLOAD_PERIOD` with
-the miliseconds that represent the time to periodicaly check pinned content status.
-
 ### Examples
 
 #### 1. No postage stamp
@@ -111,14 +106,6 @@ export POSTAGE_AMOUNT=414720000
 npm run start
 ```
 
-#### Reupload pinned content
-
-```sh
-export REUPLOAD_PERIOD=30000
-
-npm run start
-```
-
 #### Enable authentication
 
 ```sh
@@ -149,7 +136,6 @@ npm run start
 | `LOG_LEVEL`             | info                                                             | Log level that is outputted (values: `critical`, `error`, `warn`, `info`, `verbose`, `debug`)                                                                               |
 | POSTAGE_EXTENDSTTL      | false                                                            | Enables extends TTL feature. Works along with POSTAGE_AMOUNT                                                                                                                |
 | EXPOSE_HASHED_IDENTITY  | false                                                            | Exposes `x-bee-node` header, which is the hashed identity of the Bee node for identification purposes                                                                       |
-| REUPLOAD_PERIOD         | undefined                                                        | How frequently are the pinned content checked to be reuploaded.                                                                                                             |
 | HOMEPAGE                | undefined                                                        | Swarm hash that loads as the homepage of gateway-proxy                                                                                                                      |
 | REMAP                   | undefined                                                        | Semicolon separated `name=hash` values to rewrite Swarm hashes to human-friendly names                                                                                      |
 | ALLOWLIST               | undefined                                                        | Comma separated list of hashes, ENS domains or CIDs to allow                                                                                                                |

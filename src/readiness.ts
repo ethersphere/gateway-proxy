@@ -1,7 +1,8 @@
-import { Bee, Utils } from '@ethersphere/bee-js'
+import { Bee } from '@ethersphere/bee-js'
+import { Binary } from 'cafe-utility'
 import { ERROR_NO_STAMP, READINESS_TIMEOUT_MS } from './config'
 import { logger } from './logger'
-import { StampsManager } from './stamps'
+import { StampManager } from './stamps'
 import { getErrorMessage } from './utils'
 
 const MAX_CHUNK_SIZE = 4096
@@ -16,7 +17,7 @@ export enum ReadinessStatus {
 export async function checkReadiness(
   bee: Bee,
   readinessCheck: boolean,
-  stampManager?: StampsManager,
+  stampManager?: StampManager,
 ): Promise<ReadinessStatus> {
   if (stampManager && readinessCheck) {
     const ready = await tryUploadingSingleChunk(bee, stampManager)
@@ -34,10 +35,10 @@ export async function checkReadiness(
   }
 }
 
-async function tryUploadingSingleChunk(bee: Bee, stampsManager: StampsManager): Promise<ReadinessStatus> {
+async function tryUploadingSingleChunk(bee: Bee, stampManager: StampManager): Promise<ReadinessStatus> {
   const chunk = makeChunk()
   try {
-    await bee.uploadChunk(stampsManager.postageStamp, chunk, { deferred: true }, { timeout: READINESS_TIMEOUT_MS })
+    await bee.uploadChunk(stampManager.postageStamp, chunk, { deferred: true }, { timeout: READINESS_TIMEOUT_MS })
 
     return ReadinessStatus.OK
   } catch (error) {
@@ -60,7 +61,7 @@ function makeChunk(seed = '', length = MAX_CHUNK_SIZE): Uint8Array {
   let random: Uint8Array = Buffer.from(seed || getDefaultSeed())
   let offset = 0
   while (offset < length) {
-    random = Utils.keccak256Hash(random)
+    random = Binary.keccak256(random)
 
     if (length - offset < 32) {
       random = random.slice(0, length - offset)
