@@ -123,3 +123,19 @@ export function mapPostageBatch(
     },
   }
 }
+
+export function unmapPostageBatch(postageBatch: PostageBatch): RawPostageBatch {
+  return {
+    batchID: postageBatch.batchID.toHex(),
+    utilization: postageBatch.utilization,
+    usable: postageBatch.usable,
+    label: postageBatch.label,
+    depth: postageBatch.depth,
+    amount: postageBatch.amount,
+    bucketDepth: postageBatch.bucketDepth,
+    blockNumber: postageBatch.blockNumber,
+    immutableFlag: postageBatch.immutableFlag,
+    exists: true,
+    batchTTL: postageBatch.duration.toSeconds(),
+  }
+}

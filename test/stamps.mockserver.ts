@@ -2,21 +2,21 @@ import { BatchId, NumberString, PostageBatch } from '@ethersphere/bee-js'
 import { Strings } from 'cafe-utility'
 import express from 'express'
 import type { Server } from 'http'
-import { mapPostageBatch } from './utils'
+import { mapPostageBatch, RawPostageBatch, unmapPostageBatch } from './utils'
 
 export class StampDB {
   stamps: Record<string, PostageBatch> = {}
 
-  get(batchID: BatchId): PostageBatch {
-    return this.stamps[batchID.toHex()]
+  get(batchID: BatchId): RawPostageBatch {
+    return unmapPostageBatch(this.stamps[batchID.toHex()])
   }
 
   add(stamp: PostageBatch): void {
     this.stamps[stamp.batchID.toHex()] = stamp
   }
 
-  toArray(): PostageBatch[] {
-    return Object.values(this.stamps)
+  toArray(): RawPostageBatch[] {
+    return Object.values(this.stamps).map(x => unmapPostageBatch(x))
   }
 
   clear(): void {
