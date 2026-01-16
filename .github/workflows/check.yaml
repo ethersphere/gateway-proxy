@@ -12,10 +12,6 @@ jobs:
   check:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [14.x]
-
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -27,9 +23,6 @@ jobs:
 
       - name: Install local dependencies
         run: npm ci
-
-      - name: Commit linting
-        uses: wagoid/commitlint-github-action@v2
 
       - name: Code linting
         run: npm run lint:check

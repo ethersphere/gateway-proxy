@@ -15,10 +15,6 @@ jobs:
   nodejs:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [14.x, 16.x, 17.x]
-
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -31,8 +27,11 @@ jobs:
       - name: Install local dependencies
         run: npm ci
 
+      - name: Install global dependencies
+        run: npm install --global @ethersphere/bee-factory
+
       - name: Start Bee Factory environment
-        run: npm run bee -- --detach
+        run: bee-factory start --detach
 
       - name: Run unit and integration tests for node
         run: npm run test -- --detectOpenHandles
