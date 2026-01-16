@@ -62,7 +62,7 @@ describe('getServerConfig', () => {
 
 describe('getStampsConfig', () => {
   const POSTAGE_STAMP = 'f1e4ff753ea1cb923269ed0cda909d13a10d624719edf261e196584e9e764e50'
-  const POSTAGE_AMOUNT = '414720000'
+  const POSTAGE_AMOUNT = '414720001'
   const POSTAGE_DEPTH = '20'
   const BEE_API_URL = 'http://localhost:1633'
   const POSTAGE_USAGE_THRESHOLD = '0.6'
@@ -183,7 +183,7 @@ describe('getStampsConfig', () => {
     it(`should throw for ${JSON.stringify(v)}`, () => {
       expect(() => {
         getStampsConfig(v)
-      }).toThrowError(
+      }).toThrow(
         `config: please provide POSTAGE_DEPTH=${v.POSTAGE_DEPTH}, POSTAGE_AMOUNT=${v.POSTAGE_AMOUNT}, POSTAGE_TTL_MIN=${
           v.POSTAGE_TTL_MIN
         } ${v.POSTAGE_EXTENDSTTL === 'true' ? 'at least 60 seconds ' : ''}for the feature to work`,

@@ -2,7 +2,7 @@ import type { Server } from 'http'
 import requestStats from 'request-stats'
 import { Logform, Logger, createLogger, format, transports } from 'winston'
 
-import { Strings } from 'cafe-utility'
+import { Objects, Strings, Types } from 'cafe-utility'
 import { SUPPORTED_LEVELS, SupportedLevels, logLevel } from './config'
 
 const supportedLevels: Record<SupportedLevels, number> = SUPPORTED_LEVELS.reduce(
@@ -28,11 +28,10 @@ logger.info(`using max log level=${logLevel}`)
 export function formatLogMessage(info: Logform.TransformableInfo): string {
   let message = `time="${info.timestamp}" level="${info.level}" msg="${info.message}"`
 
-  if (Object.keys(info.metadata).length > 0) {
-    if (info.metadata.config) {
-      delete info.metadata.config.data
-    }
-    message = `${message} ${Strings.represent(info.metadata, 'key-value')}`
+  if (Types.isObject(info.metadata)) {
+    const metadata = Types.asObject(info.metadata)
+    Objects.deleteDeep(metadata, 'config.data')
+    message = `${message} ${Strings.represent(metadata, 'key-value')}`
   }
 
   return message.replace(/\n/g, '\\n')

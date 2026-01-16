@@ -7,7 +7,7 @@ let server: Server
 
 beforeAll(async () => {
   const serverApp = express()
-  serverApp.get('*', (_, res) => {
+  serverApp.get('*path', (_, res) => {
     res.json({
       overlay: '36b7efd913ca4cf880b8eeac5093fa27b0825906c600685b6abdd6566e6cfe8f',
       underlay: ['/ip4/127.0.0.1/tcp/1634/p2p/16Uiu2HAmTm17toLDaPYzRyjKn27iCB76yjKnJ5DjQXneFmifFvaX'],
@@ -29,7 +29,7 @@ test('should return hashed identity in header', async () => {
     exposeHashedIdentity: true,
   })
   let tries = 0
-  let hashedIdentity = null
+  let hashedIdentity: string | null = null
   while (tries < 10 && !hashedIdentity) {
     await wait()
     const response = await request(app).get('/health')

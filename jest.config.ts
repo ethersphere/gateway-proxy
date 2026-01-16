@@ -2,9 +2,9 @@
  * For a detailed explanation regarding each configuration property and type check, visit:
  * https://jestjs.io/docs/en/configuration.html
  */
-import type { Config } from '@jest/types'
+import { JestConfigWithTsJest } from 'ts-jest'
 
-export default async (): Promise<Config.InitialOptions> => {
+export default async (): Promise<JestConfigWithTsJest> => {
   return {
     preset: 'ts-jest',
     testEnvironment: 'node',
@@ -29,9 +29,5 @@ export default async (): Promise<Config.InitialOptions> => {
 
     // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
     testPathIgnorePatterns: ['/node_modules/'],
-
-    moduleNameMapper: {
-      axios: 'axios/dist/node/axios.cjs',
-    },
   }
 }

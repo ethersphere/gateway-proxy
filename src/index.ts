@@ -18,19 +18,20 @@ async function main() {
 
   let app: Application
 
-  if (contentConfig) {
-    logger.debug('content config', contentConfig)
-    const contentManager = new ContentManager()
-    logger.info('starting content manager')
-    contentManager.start(contentConfig)
-  }
-
   if (stampsConfig) {
     logger.debug('stamps config', stampsConfig)
     const stampManager = new StampsManager()
     logger.info('starting postage stamp manager')
     stampManager.start(stampsConfig)
     logger.info('starting the proxy')
+
+    if (contentConfig) {
+      logger.debug('content config', contentConfig)
+      const contentManager = new ContentManager()
+      logger.info('starting content manager')
+      contentManager.start(contentConfig, stampManager)
+    }
+
     app = createApp(appConfig, stampManager)
   } else {
     logger.info('starting the app without postage stamps management')

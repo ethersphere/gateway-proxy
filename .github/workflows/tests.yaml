@@ -15,49 +15,23 @@ jobs:
   nodejs:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [14.x, 16.x, 17.x]
-
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
+        uses: actions/checkout@v6
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 24.x
 
-      - name: Auth to Github Package Docker Registry
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login https://docker.pkg.github.com -u ${GITHUB_ACTOR} --password-stdin
-      ## Try getting the node modules from cache, if failed npm ci
-      - uses: actions/cache@v2
-        id: cache-npm
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-${{ matrix.node }}-${{ env.cache-name }}-
-            ${{ runner.OS }}-node-${{ matrix.node }}-
-      - name: Install npm deps
-        if: steps.cache-npm.outputs.cache-hit != 'true'
+      - name: Install local dependencies
         run: npm ci
 
-      # Start Bee Factory environment
-      - name: Start Bee Factory environment
-        run: npm run bee -- --detach
+      - name: Install global dependencies
+        run: npm install --global @fairdatasociety/fdp-play
+
+      - name: Start fdp-play environment
+        run: fdp-play start --detach --fresh --bee-version d0aa8b9-commit
 
       - name: Run unit and integration tests for node
         run: npm run test -- --detectOpenHandles
-
-      - name: Debug workflow if failed
-        if: failure()
-        run: |
-          KEYS=$(curl -sSf -X POST https://relay.tunshell.com/api/sessions)
-          curl -sSf -X POST -H "Content-Type: application/json" -d "{\"text\": \"**Bee JS**\nDebug -> \`sh <(curl -sSf https://lets.tunshell.com/init.sh) L $(echo $KEYS | jq -r .peer2_key) \${TUNSHELL_SECRET} relay.tunshell.com\`\"}" https://beehive.ethswarm.org/hooks/${{ secrets.WEBHOOK_KEY }}
-          echo "Connect to github actions node using"
-          echo "sh <(curl -sSf https://lets.tunshell.com/init.sh) L $(echo $KEYS | jq -r .peer2_key) \${TUNSHELL_SECRET} relay.tunshell.com"
-          curl -sSf https://lets.tunshell.com/init.sh | sh /dev/stdin T $(echo $KEYS | jq -r .peer1_key) ${{ secrets.TUNSHELL_SECRET }} relay.tunshell.com

@@ -2,7 +2,7 @@ import { Bee } from '@ethersphere/bee-js'
 import { createHash } from 'crypto'
 import { logger } from './logger'
 
-let interval: NodeJS.Timer | null
+let interval: NodeJS.Timeout
 let identity = 'unknown'
 
 export const HASHED_IDENTITY_HEADER = 'X-Bee-Node'
@@ -26,9 +26,9 @@ export async function fetchBeeIdentity(bee: Bee, frequencyMs = 15_000) {
 async function attemptFetchingBeeIdentity(bee: Bee) {
   try {
     const { overlay } = await bee.getNodeAddresses()
-    identity = mapAddress(overlay)
+    identity = mapAddress(overlay.toHex())
     logger.info('bee debug overlay', { overlay, identity })
-    clearInterval(interval as NodeJS.Timer)
+    clearInterval(interval)
 
     return true
   } catch (error) {

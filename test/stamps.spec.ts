@@ -1,10 +1,10 @@
-import { BatchId, Bee, PostageBatch } from '@ethersphere/bee-js'
-import { System } from 'cafe-utility'
+import { Bee, NumberString } from '@ethersphere/bee-js'
+import { Strings, System } from 'cafe-utility'
 import type { Server } from 'http'
 import { getStampsConfig } from '../src/config'
 import { StampsManager, buyNewStamp, filterUsableStampsAutobuy, getUsage, topUpStamp } from '../src/stamps'
 import { StampDB, createStampMockServer } from './stamps.mockserver'
-import { genRandomHex } from './utils'
+import { RawPostageBatch, mapPostageBatch, unmapPostageBatch } from './utils'
 
 interface AddressInfo {
   address: string
@@ -29,11 +29,11 @@ afterEach(() => {
   db.clear()
 })
 
-const defaultAmount = '414720000'
+const defaultAmount = '414720001' as NumberString
 const defaultDepth = 20
 const defaultTTL = Number(defaultAmount)
-const defaultStamp: PostageBatch = {
-  batchID: genRandomHex(64) as BatchId,
+const defaultStamp = {
+  batchID: Strings.randomHex(64),
   utilization: 0,
   usable: true,
   label: 'label',
@@ -46,8 +46,8 @@ const defaultStamp: PostageBatch = {
   batchTTL: defaultTTL,
 }
 
-const buildStamp = (overwrites: Partial<PostageBatch>) => {
-  const batchID = genRandomHex(64) as BatchId
+function buildStamp(overwrites: Partial<RawPostageBatch>): RawPostageBatch {
+  const batchID = Strings.randomHex(64)
 
   return {
     ...defaultStamp,
@@ -156,18 +156,18 @@ describe('postageStamp', () => {
 
 describe('getUsage', () => {
   const stamps = [
-    { stamp: buildStamp({ depth: 20, utilization: 4, bucketDepth: 16 }), usage: 0.25 },
-    { stamp: buildStamp({ depth: 20, utilization: 8, bucketDepth: 16 }), usage: 0.5 },
-    { stamp: buildStamp({ depth: 20, utilization: 12, bucketDepth: 16 }), usage: 0.75 },
-    { stamp: buildStamp({ depth: 20, utilization: 14, bucketDepth: 16 }), usage: 0.875 },
-    { stamp: buildStamp({ depth: 20, utilization: 15, bucketDepth: 16 }), usage: 0.9375 },
-    { stamp: buildStamp({ depth: 20, utilization: 16, bucketDepth: 16 }), usage: 1 },
-    { stamp: buildStamp({ depth: 17, utilization: 2, bucketDepth: 16 }), usage: 1 },
-    { stamp: buildStamp({ depth: 17, utilization: 1, bucketDepth: 16 }), usage: 0.5 },
-    { stamp: buildStamp({ depth: 18, utilization: 4, bucketDepth: 16 }), usage: 1 },
-    { stamp: buildStamp({ depth: 18, utilization: 3, bucketDepth: 16 }), usage: 0.75 },
-    { stamp: buildStamp({ depth: 18, utilization: 2, bucketDepth: 16 }), usage: 0.5 },
-    { stamp: buildStamp({ depth: 18, utilization: 1, bucketDepth: 16 }), usage: 0.25 },
+    { stamp: buildStamp({ depth: 20, utilization: 4 }), usage: 0.25 },
+    { stamp: buildStamp({ depth: 20, utilization: 8 }), usage: 0.5 },
+    { stamp: buildStamp({ depth: 20, utilization: 12 }), usage: 0.75 },
+    { stamp: buildStamp({ depth: 20, utilization: 14 }), usage: 0.875 },
+    { stamp: buildStamp({ depth: 20, utilization: 15 }), usage: 0.9375 },
+    { stamp: buildStamp({ depth: 20, utilization: 16 }), usage: 1 },
+    { stamp: buildStamp({ depth: 17, utilization: 2 }), usage: 1 },
+    { stamp: buildStamp({ depth: 17, utilization: 1 }), usage: 0.5 },
+    { stamp: buildStamp({ depth: 18, utilization: 4 }), usage: 1 },
+    { stamp: buildStamp({ depth: 18, utilization: 3 }), usage: 0.75 },
+    { stamp: buildStamp({ depth: 18, utilization: 2 }), usage: 0.5 },
+    { stamp: buildStamp({ depth: 18, utilization: 1 }), usage: 0.25 },
   ]
 
   stamps.forEach(({ stamp, usage }) =>
@@ -180,16 +180,16 @@ describe('getUsage', () => {
 describe('buyNewStamp', () => {
   it('should buy correct stamp and await for it to be usable', async () => {
     const bee = new Bee(url)
-    const stampId = await buyNewStamp(defaultDepth, defaultAmount, new Bee(url))
-    const stamp = await bee.getPostageBatch(stampId.batchId)
+    const boughtStamp = await buyNewStamp(defaultDepth, defaultAmount, new Bee(url))
+    const stamp = await bee.getPostageBatch(boughtStamp.batchId)
 
-    const [stampFromDb] = db.toArray()
-    expect(stamp).toEqual(stampFromDb)
+    const stampFromDb = db.get(stamp.batchID)
+    expect(unmapPostageBatch(stamp)).toEqual(stampFromDb)
   })
 })
 
 describe('filterUsableStamps', () => {
-  it('should return empty arry if there are no stamps', async () => {
+  it('should return empty array if there are no stamps', async () => {
     const res = filterUsableStampsAutobuy([], 20, '1000', 0.7, 1_000)
     expect(res).toEqual(expect.arrayContaining([]))
   })
@@ -205,8 +205,14 @@ describe('filterUsableStamps', () => {
 
     const allStamps = [buildStamp({ utilization: 15 }), ...goodStamps, buildStamp({ utilization: 16 })]
 
-    const res = filterUsableStampsAutobuy(allStamps, defaultDepth, defaultAmount, 0.9, 1_000)
-    expect(res).toEqual(expect.arrayContaining(goodStamps))
+    const res = filterUsableStampsAutobuy(
+      allStamps.map(x => mapPostageBatch(x)),
+      defaultDepth,
+      defaultAmount,
+      0.9,
+      1_000,
+    )
+    expect(res.map(unmapPostageBatch)).toEqual(expect.arrayContaining(goodStamps))
     for (let i = 1; i < res.length; i++) expect(getUsage(res[i - 1])).toBeGreaterThanOrEqual(getUsage(res[i]))
   })
 
@@ -224,8 +230,14 @@ describe('filterUsableStamps', () => {
       buildStamp({ utilization: 14, batchTTL: 50_000 }),
     ]
 
-    const res = filterUsableStampsAutobuy(allStamps, defaultDepth, defaultAmount, 0.9, 100_000)
-    expect(res).toEqual(expect.arrayContaining(goodStamps))
+    const res = filterUsableStampsAutobuy(
+      allStamps.map(x => mapPostageBatch(x)),
+      defaultDepth,
+      defaultAmount,
+      0.9,
+      100_000,
+    )
+    expect(res.map(unmapPostageBatch)).toEqual(expect.arrayContaining(goodStamps))
     for (let i = 1; i < res.length; i++) expect(getUsage(res[i - 1])).toBeGreaterThanOrEqual(getUsage(res[i]))
   })
 })

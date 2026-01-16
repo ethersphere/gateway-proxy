@@ -12,35 +12,17 @@ jobs:
   check:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [14.x]
-
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
+      - name: Checkout
+        uses: actions/checkout@v6
 
-      ## Try getting the node modules from cache, if failed npm ci
-      - uses: actions/cache@v2
-        id: cache-npm
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-${{ env.cache-name }}-
-            ${{ runner.OS }}-node-
-            ${{ runner.OS }}-
-      - name: Install npm deps
-        if: steps.cache-npm.outputs.cache-hit != 'true'
+          node-version: 24.x
+
+      - name: Install local dependencies
         run: npm ci
-
-      - name: Commit linting
-        uses: wagoid/commitlint-github-action@v2
 
       - name: Code linting
         run: npm run lint:check
@@ -52,10 +34,3 @@ jobs:
 
       - name: Check typings
         run: npm run check:types
-
-      - name: Update supported Bee action
-        uses: ethersphere/update-supported-bee-action@v1
-        if: github.ref == 'refs/heads/master'
-        with:
-          token: ${{ secrets.REPO_GHA_PAT }}
-          updateEngine: 'true'

@@ -1,20 +1,21 @@
+import { BatchId, NumberString } from '@ethersphere/bee-js'
+import { Strings } from 'cafe-utility'
 import express from 'express'
 import type { Server } from 'http'
-import type { PostageBatch, BatchId } from '@ethersphere/bee-js'
-import { genRandomHex } from './utils'
+import { RawPostageBatch } from './utils'
 
 export class StampDB {
-  stamps: Record<BatchId, PostageBatch> = {}
+  stamps: Record<string, RawPostageBatch> = {}
 
-  get(batchID: BatchId): PostageBatch {
-    return this.stamps[batchID]
+  get(batchID: BatchId): RawPostageBatch {
+    return this.stamps[batchID.toHex()]
   }
 
-  add(stamp: PostageBatch): void {
+  add(stamp: RawPostageBatch): void {
     this.stamps[stamp.batchID] = stamp
   }
 
-  toArray(): PostageBatch[] {
+  toArray(): RawPostageBatch[] {
     return Object.values(this.stamps)
   }
 
@@ -31,12 +32,21 @@ export async function createStampMockServer(db: StampDB): Promise<Server> {
   })
 
   app.get('/stamps/:id', (req, res) => {
-    res.send(db.get(req.params.id as BatchId))
+    res.send(db.get(new BatchId(req.params.id)))
+  })
+
+  app.get('/chainstate', (req, res) => {
+    res.send({
+      chainTip: 44197704,
+      block: 44197695,
+      totalAmount: '519339258398',
+      currentPrice: '24000',
+    })
   })
 
   app.post('/stamps/:amount/:depth', (req, res) => {
     const newStamp = {
-      batchID: genRandomHex(64) as BatchId,
+      batchID: Strings.randomHex(64),
       utilization: 0,
       usable: false,
       label: 'label',
@@ -54,8 +64,8 @@ export async function createStampMockServer(db: StampDB): Promise<Server> {
   })
 
   app.patch('/stamps/topup/:batchId/:amount', (req, res) => {
-    const stamp = db.get(req.params.batchId as BatchId)
-    stamp.amount = (Number(stamp.amount) + Number(req.params.amount)).toString()
+    const stamp = db.get(new BatchId(req.params.batchId))
+    stamp.amount = (Number(stamp.amount) + Number(req.params.amount)).toString() as NumberString
     res.send({ batchID: stamp.batchID })
   })
 
