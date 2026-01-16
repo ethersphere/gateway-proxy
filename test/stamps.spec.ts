@@ -189,7 +189,7 @@ describe('buyNewStamp', () => {
 })
 
 describe('filterUsableStamps', () => {
-  it('should return empty arry if there are no stamps', async () => {
+  it('should return empty array if there are no stamps', async () => {
     const res = filterUsableStampsAutobuy([], 20, '1000', 0.7, 1_000)
     expect(res).toEqual(expect.arrayContaining([]))
   })

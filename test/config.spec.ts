@@ -183,7 +183,7 @@ describe('getStampsConfig', () => {
     it(`should throw for ${JSON.stringify(v)}`, () => {
       expect(() => {
         getStampsConfig(v)
-      }).toThrowError(
+      }).toThrow(
         `config: please provide POSTAGE_DEPTH=${v.POSTAGE_DEPTH}, POSTAGE_AMOUNT=${v.POSTAGE_AMOUNT}, POSTAGE_TTL_MIN=${
           v.POSTAGE_TTL_MIN
         } ${v.POSTAGE_EXTENDSTTL === 'true' ? 'at least 60 seconds ' : ''}for the feature to work`,

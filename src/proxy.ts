@@ -7,8 +7,8 @@ import { logger } from './logger'
 import { StampsManager } from './stamps'
 import { getErrorMessage } from './utils'
 
-export const GET_PROXY_ENDPOINTS = ['/chunks/*', '/bytes/*', '/bzz/*', '/feeds/*']
-export const POST_PROXY_ENDPOINTS = ['/chunks', '/bytes', '/bzz', '/soc/*', '/feeds/*']
+export const GET_PROXY_ENDPOINTS = ['/chunks/*reference', '/bytes/*reference', '/bzz/*reference', '/feeds/*reference']
+export const POST_PROXY_ENDPOINTS = ['/chunks', '/bytes', '/bzz', '/soc/*reference', '/feeds/*reference']
 
 const BAD_PATH = `bzz/${'00'.repeat(32)}`
 const SWARM_STAMP_HEADER = 'swarm-postage-batch-id'
