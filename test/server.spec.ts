@@ -3,6 +3,7 @@ import type { Server } from 'http'
 import request from 'supertest'
 import { createApp } from '../src/server'
 
+import { Dates, System } from 'cafe-utility'
 import { POST_PROXY_ENDPOINTS } from '../src/proxy'
 import { StampsManager } from '../src/stamps'
 import { createHeaderCheckMockServer } from './header-check.mockserver'
@@ -311,10 +312,10 @@ describe('POST /feeds/:owner/:topic', () => {
     const d1 = await bee.uploadData(batch, 'hello world!')
 
     const writer = beeWithStamp.makeFeedWriter(topic, signer)
-    await writer.upload(batchFake, d1.reference)
+    await writer.uploadReference(batchFake, d1.reference)
 
     const reader = bee.makeFeedReader(topic, writer.owner)
-    const dd1 = await reader.download()
+    const dd1 = await System.withRetries(async () => reader.downloadReference(), 10, Dates.seconds(1), Dates.seconds(2))
 
     expect(dd1.feedIndex.toBigInt()).toBeGreaterThanOrEqual(0)
     expect(dd1.feedIndexNext?.toBigInt()).toBeGreaterThanOrEqual(1)
@@ -331,10 +332,10 @@ describe('GET /feeds/:owner/:topic', () => {
     const d1 = await bee.uploadData(batch, 'hello from the other side!')
 
     const writer = bee.makeFeedWriter(topic, signer)
-    await writer.upload(batch, d1.reference)
+    await writer.uploadReference(batch, d1.reference)
 
     const reader = beeProxy.makeFeedReader(topic, writer.owner)
-    const dd1 = await reader.download()
+    const dd1 = await System.withRetries(async () => reader.downloadReference(), 10, Dates.seconds(1), Dates.seconds(2))
 
     expect(dd1.feedIndex.toBigInt()).toBeGreaterThanOrEqual(0)
     expect(dd1.feedIndexNext?.toBigInt()).toBeGreaterThanOrEqual(1)
