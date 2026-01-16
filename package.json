@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@ethersphere/bee-js": "^10.3.0",
-    "axios": "1",
+    "axios": "^0.30.2",
     "body-parser": "^2.2.2",
     "cafe-utility": "^33.3.5",
     "express": "^5.2.1",
