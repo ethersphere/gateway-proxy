@@ -148,11 +148,11 @@ export async function topUpStamp(bee: Bee, postageBatchId: BatchId, amount: stri
 }
 
 export class StampsManager {
-  private stamp?: BatchId
+  private stamp?: string
   private usableStamps?: PostageBatch[]
   private interval?: ReturnType<typeof setInterval>
   private isBuyingStamp?: boolean = false
-  private extendingStamps: BatchId[] = []
+  private extendingStamps: string[] = []
 
   /**
    * Get postage stamp that should be replaced in a the proxy request header
@@ -161,7 +161,7 @@ export class StampsManager {
    *
    * @throws Error if there is no postage stamp
    */
-  get postageStamp(): BatchId {
+  get postageStamp(): string {
     stampGetCounter.inc()
 
     if (this.stamp) {
@@ -175,7 +175,7 @@ export class StampsManager {
       const stamp = this.usableStamps[0]
       logger.info('using autobought stamp', { stamp })
 
-      return stamp.batchID
+      return stamp.batchID.toHex()
     }
 
     stampGetErrorCounter.inc()
@@ -192,7 +192,7 @@ export class StampsManager {
     try {
       stampCheckCounter.inc()
       logger.info('checking postage stamps')
-      const stamps = await bee.getAllPostageBatch()
+      const stamps = await bee.getPostageBatches()
       logger.debug('retrieved stamps', stamps)
 
       const { depth, amount, usageMax, usageThreshold, ttlMin } = config
@@ -232,7 +232,7 @@ export class StampsManager {
     logger.info('checking postage stamps')
 
     try {
-      const stamps = await bee.getAllPostageBatch()
+      const stamps = await bee.getPostageBatches()
       logger.debug('retrieved stamps', stamps)
 
       const { amount, ttlMin, depth } = config
@@ -271,9 +271,9 @@ export class StampsManager {
 
       const minTimeThreshold = ttlMin + config.refreshPeriod / 1000
 
-      if (stamp.duration.toSeconds() < minTimeThreshold && !this.extendingStamps.includes(stamp.batchID)) {
-        this.extendingStamps.push(stamp.batchID)
-        logger.info(`extending postage stamp ${stamp.batchID}`)
+      if (stamp.duration.toSeconds() < minTimeThreshold && !this.extendingStamps.includes(stamp.batchID.toHex())) {
+        this.extendingStamps.push(stamp.batchID.toHex())
+        logger.info(`extending postage stamp ${stamp.batchID.toHex()}`)
 
         try {
           const stampRes = await topUpStamp(bee, stamp.batchID, amount)
@@ -281,7 +281,7 @@ export class StampsManager {
           setTimeout(() => this.completeTopUp(stampRes), 60000)
         } catch (error) {
           // error that indicate that 2 stamps are trying to be extended at the same time. Comes out as a warning
-          const errorStampIndex = this.extendingStamps.indexOf(stamp.batchID)
+          const errorStampIndex = this.extendingStamps.indexOf(stamp.batchID.toHex())
           this.extendingStamps.splice(errorStampIndex, 1)
           logger.error('failed to topup postage stamp', error)
         }
@@ -301,7 +301,7 @@ export class StampsManager {
    */
   async start(config: StampsConfig): Promise<void> {
     // Hardcoded stamp mode
-    if (config.mode === 'hardcoded') this.stamp = new BatchId(config.stamp)
+    if (config.mode === 'hardcoded') this.stamp = new BatchId(config.stamp).toHex()
     // Autobuy or ExtendsTTL mode
     else {
       let refreshStamps: () => Promise<void>

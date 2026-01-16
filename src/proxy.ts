@@ -86,7 +86,7 @@ async function fetchAndRespond(
 
   try {
     if (method === 'POST' && options.stampManager) {
-      headers[SWARM_STAMP_HEADER] = options.stampManager.postageStamp.toHex()
+      headers[SWARM_STAMP_HEADER] = options.stampManager.postageStamp
     }
     let response = await axios({
       method,
