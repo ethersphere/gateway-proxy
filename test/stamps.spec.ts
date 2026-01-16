@@ -29,7 +29,7 @@ afterEach(() => {
   db.clear()
 })
 
-const defaultAmount = '414720000' as NumberString
+const defaultAmount = '414720001' as NumberString
 const defaultDepth = 20
 const defaultTTL = Number(defaultAmount)
 const defaultStamp = mapPostageBatch({
