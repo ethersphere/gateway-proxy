@@ -254,7 +254,7 @@ describe('POST /chunks', () => {
     const hash = 'ca6357a08e317d15ec560fef34e4c45f8f19f01c372aa70f1da72bfa7f1a4338'
 
     const { reference } = await beeProxy.uploadChunk(batch, data)
-    expect(reference).toEqual(hash)
+    expect(reference.toHex()).toEqual(hash)
 
     const downloadedData = await bee.downloadChunk(reference)
     expect(downloadedData).toEqual(data)
@@ -270,7 +270,7 @@ describe('POST /chunks', () => {
     const hash = '5094b636d1282c3ef22363ca816684edd843784b3d9f4d1a94c044c09919d335'
 
     const { reference } = await beeWithStamp.uploadChunk(batch, data)
-    expect(reference).toEqual(hash)
+    expect(reference.toHex()).toEqual(hash)
 
     const downloadedData = await bee.downloadChunk(reference)
     expect(downloadedData).toEqual(data)
@@ -288,7 +288,7 @@ describe('GET /chunks/:reference/', () => {
     const hash = 'ca6357a08e317d15ec560fef34e4c45f8f19f01c372aa70f1da72bfa7f1a4338'
 
     const { reference } = await bee.uploadChunk(batch, data)
-    expect(reference).toEqual(hash)
+    expect(reference.toHex()).toEqual(hash)
 
     const downloadedData = await beeProxy.downloadChunk(reference)
     expect(downloadedData).toEqual(data)

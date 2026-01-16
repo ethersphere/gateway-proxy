@@ -35,6 +35,15 @@ export async function createStampMockServer(db: StampDB): Promise<Server> {
     res.send(db.get(new BatchId(req.params.id)))
   })
 
+  app.get('/chainstate', (req, res) => {
+    res.send({
+      chainTip: 44197704,
+      block: 44197695,
+      totalAmount: '519339258398',
+      currentPrice: '24000',
+    })
+  })
+
   app.post('/stamps/:amount/:depth', (req, res) => {
     const newStamp = mapPostageBatch({
       batchID: Strings.randomHex(64),
