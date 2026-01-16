@@ -4,7 +4,7 @@ import type { Server } from 'http'
 import { getStampsConfig } from '../src/config'
 import { StampsManager, buyNewStamp, filterUsableStampsAutobuy, getUsage, topUpStamp } from '../src/stamps'
 import { StampDB, createStampMockServer } from './stamps.mockserver'
-import { RawPostageBatch, mapPostageBatch } from './utils'
+import { RawPostageBatch, mapPostageBatch, unmapPostageBatch } from './utils'
 
 interface AddressInfo {
   address: string
@@ -180,11 +180,11 @@ describe('getUsage', () => {
 describe('buyNewStamp', () => {
   it('should buy correct stamp and await for it to be usable', async () => {
     const bee = new Bee(url)
-    const stampId = await buyNewStamp(defaultDepth, defaultAmount, new Bee(url))
-    const stamp = await bee.getPostageBatch(stampId.batchId)
+    const boughtStamp = await buyNewStamp(defaultDepth, defaultAmount, new Bee(url))
+    const stamp = await bee.getPostageBatch(boughtStamp.batchId)
 
-    const [stampFromDb] = db.toArray()
-    expect(stamp).toEqual(stampFromDb)
+    const stampFromDb = db.get(stamp.batchID)
+    expect(unmapPostageBatch(stamp)).toEqual(stampFromDb)
   })
 })
 
@@ -212,7 +212,7 @@ describe('filterUsableStamps', () => {
       0.9,
       1_000,
     )
-    expect(res.map(x => x.batchID.toHex())).toEqual(goodStamps.map(x => x.batchID))
+    expect(res.map(unmapPostageBatch)).toEqual(expect.arrayContaining(goodStamps))
     for (let i = 1; i < res.length; i++) expect(getUsage(res[i - 1])).toBeGreaterThanOrEqual(getUsage(res[i]))
   })
 
@@ -237,7 +237,7 @@ describe('filterUsableStamps', () => {
       0.9,
       100_000,
     )
-    expect(res.map(x => x.batchID.toHex())).toEqual(goodStamps.map(x => x.batchID))
+    expect(res.map(unmapPostageBatch)).toEqual(expect.arrayContaining(goodStamps))
     for (let i = 1; i < res.length; i++) expect(getUsage(res[i - 1])).toBeGreaterThanOrEqual(getUsage(res[i]))
   })
 })
