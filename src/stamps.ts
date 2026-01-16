@@ -52,12 +52,19 @@ const stampUsableCountGauge = new client.Gauge({
 })
 register.registerMetric(stampUsableCountGauge)
 
+interface BatchLike {
+  usable: boolean
+  utilization: number
+  depth: number
+  bucketDepth: number
+}
+
 /**
  * Calculate usage of a given postage stamp
  *
  * @param stamp Postage stamp which usage should be determined
  */
-export function getUsage({ utilization, depth, bucketDepth }: PostageBatch): number {
+export function getUsage({ utilization, depth, bucketDepth }: BatchLike): number {
   return utilization / Math.pow(2, depth - bucketDepth)
 }
 

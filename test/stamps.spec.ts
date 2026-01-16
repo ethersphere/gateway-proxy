@@ -1,10 +1,10 @@
-import { BatchId, Bee, NumberString } from '@ethersphere/bee-js'
+import { Bee, NumberString } from '@ethersphere/bee-js'
 import { Strings, System } from 'cafe-utility'
 import type { Server } from 'http'
 import { getStampsConfig } from '../src/config'
 import { StampsManager, buyNewStamp, filterUsableStampsAutobuy, getUsage, topUpStamp } from '../src/stamps'
 import { StampDB, createStampMockServer } from './stamps.mockserver'
-import { mapPostageBatch } from './utils'
+import { RawPostageBatch, mapPostageBatch } from './utils'
 
 interface AddressInfo {
   address: string
@@ -32,7 +32,7 @@ afterEach(() => {
 const defaultAmount = '414720001' as NumberString
 const defaultDepth = 20
 const defaultTTL = Number(defaultAmount)
-const defaultStamp = mapPostageBatch({
+const defaultStamp = {
   batchID: Strings.randomHex(64),
   utilization: 0,
   usable: true,
@@ -44,10 +44,10 @@ const defaultStamp = mapPostageBatch({
   immutableFlag: false,
   exists: true,
   batchTTL: defaultTTL,
-})
+}
 
-const buildStamp = (overwrites: { batchTTL?: number; utilization?: number; depth?: number }) => {
-  const batchID = new BatchId(Strings.randomHex(64))
+function buildStamp(overwrites: Partial<RawPostageBatch>): RawPostageBatch {
+  const batchID = Strings.randomHex(64)
 
   return {
     ...defaultStamp,
@@ -205,8 +205,14 @@ describe('filterUsableStamps', () => {
 
     const allStamps = [buildStamp({ utilization: 15 }), ...goodStamps, buildStamp({ utilization: 16 })]
 
-    const res = filterUsableStampsAutobuy(allStamps, defaultDepth, defaultAmount, 0.9, 1_000)
-    expect(res).toEqual(expect.arrayContaining(goodStamps))
+    const res = filterUsableStampsAutobuy(
+      allStamps.map(x => mapPostageBatch(x)),
+      defaultDepth,
+      defaultAmount,
+      0.9,
+      1_000,
+    )
+    expect(res.map(x => x.batchID)).toEqual(goodStamps.map(x => x.batchID))
     for (let i = 1; i < res.length; i++) expect(getUsage(res[i - 1])).toBeGreaterThanOrEqual(getUsage(res[i]))
   })
 
@@ -224,8 +230,14 @@ describe('filterUsableStamps', () => {
       buildStamp({ utilization: 14, batchTTL: 50_000 }),
     ]
 
-    const res = filterUsableStampsAutobuy(allStamps, defaultDepth, defaultAmount, 0.9, 100_000)
-    expect(res).toEqual(expect.arrayContaining(goodStamps))
+    const res = filterUsableStampsAutobuy(
+      allStamps.map(x => mapPostageBatch(x)),
+      defaultDepth,
+      defaultAmount,
+      0.9,
+      100_000,
+    )
+    expect(res.map(x => x.batchID.toHex())).toEqual(goodStamps.map(x => x.batchID))
     for (let i = 1; i < res.length; i++) expect(getUsage(res[i - 1])).toBeGreaterThanOrEqual(getUsage(res[i]))
   })
 })
