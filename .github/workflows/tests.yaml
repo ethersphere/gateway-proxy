@@ -28,10 +28,10 @@ jobs:
         run: npm ci
 
       - name: Install global dependencies
-        run: npm install --global @ethersphere/bee-factory
+        run: npm install --global @fairdatasociety/fdp-play
 
-      - name: Start Bee Factory environment
-        run: bee-factory start --detach
+      - name: Start fdp-play environment
+        run: fdp-play start --detach --fresh --bee-version d0aa8b9-commit
 
       - name: Run unit and integration tests for node
         run: npm run test -- --detectOpenHandles
