@@ -212,7 +212,7 @@ describe('filterUsableStamps', () => {
       0.9,
       1_000,
     )
-    expect(res.map(x => x.batchID)).toEqual(goodStamps.map(x => x.batchID))
+    expect(res.map(x => x.batchID.toHex())).toEqual(goodStamps.map(x => x.batchID))
     for (let i = 1; i < res.length; i++) expect(getUsage(res[i - 1])).toBeGreaterThanOrEqual(getUsage(res[i]))
   })
 
