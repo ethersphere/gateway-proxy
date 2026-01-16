@@ -29,7 +29,7 @@ test('should return hashed identity in header', async () => {
     exposeHashedIdentity: true,
   })
   let tries = 0
-  let hashedIdentity = null
+  let hashedIdentity: string | null = null
   while (tries < 10 && !hashedIdentity) {
     await wait()
     const response = await request(app).get('/health')

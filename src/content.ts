@@ -3,6 +3,7 @@ import client from 'prom-client'
 import type { ContentConfig } from './config'
 import { logger } from './logger'
 import { register } from './metrics'
+import { StampsManager } from './stamps'
 
 const contentReuploadCounter = new client.Counter({
   name: 'content_reupload_counter',
@@ -14,15 +15,15 @@ export class ContentManager {
   private interval?: ReturnType<typeof setInterval>
   private isReuploading = false
 
-  public async attemptRefreshContentReupload(beeApi: Bee): Promise<void> {
+  public async attemptRefreshContentReupload(beeApi: Bee, stampManager: StampsManager): Promise<void> {
     try {
-      await this.refreshContentReupload(beeApi)
+      await this.refreshContentReupload(beeApi, stampManager)
     } catch (error) {
       logger.error('content reupload job failed', error)
     }
   }
 
-  public async refreshContentReupload(beeApi: Bee): Promise<void> {
+  public async refreshContentReupload(beeApi: Bee, stampManager: StampsManager): Promise<void> {
     const pins = await beeApi.getAllPins()
 
     if (!pins.length) {
@@ -40,7 +41,7 @@ export class ContentManager {
         this.isReuploading = true
         try {
           logger.debug(`reuploading pinned content: ${pin}`)
-          await beeApi.reuploadPinnedData(pin)
+          await beeApi.reuploadPinnedData(stampManager.postageStamp, pin)
           contentReuploadCounter.inc()
           logger.info(`pinned content reuploaded: ${pin}`)
         } catch (error) {
@@ -54,8 +55,8 @@ export class ContentManager {
   /**
    * Start the manager that checks for pinned content availability and reuploads the data if needed.
    */
-  start(config: ContentConfig): void {
-    const refreshContent = async () => this.attemptRefreshContentReupload(new Bee(config.beeApiUrl))
+  start(config: ContentConfig, stampManager: StampsManager): void {
+    const refreshContent = async () => this.attemptRefreshContentReupload(new Bee(config.beeApiUrl), stampManager)
     this.stop()
     refreshContent()
 

@@ -1,17 +1,18 @@
+import { BatchId, NumberString, PostageBatch } from '@ethersphere/bee-js'
+import { Strings } from 'cafe-utility'
 import express from 'express'
 import type { Server } from 'http'
-import type { PostageBatch, BatchId } from '@ethersphere/bee-js'
-import { genRandomHex } from './utils'
+import { mapPostageBatch } from './utils'
 
 export class StampDB {
-  stamps: Record<BatchId, PostageBatch> = {}
+  stamps: Record<string, PostageBatch> = {}
 
   get(batchID: BatchId): PostageBatch {
-    return this.stamps[batchID]
+    return this.stamps[batchID.toHex()]
   }
 
   add(stamp: PostageBatch): void {
-    this.stamps[stamp.batchID] = stamp
+    this.stamps[stamp.batchID.toHex()] = stamp
   }
 
   toArray(): PostageBatch[] {
@@ -31,12 +32,12 @@ export async function createStampMockServer(db: StampDB): Promise<Server> {
   })
 
   app.get('/stamps/:id', (req, res) => {
-    res.send(db.get(req.params.id as BatchId))
+    res.send(db.get(new BatchId(req.params.id)))
   })
 
   app.post('/stamps/:amount/:depth', (req, res) => {
-    const newStamp = {
-      batchID: genRandomHex(64) as BatchId,
+    const newStamp = mapPostageBatch({
+      batchID: Strings.randomHex(64),
       utilization: 0,
       usable: false,
       label: 'label',
@@ -47,15 +48,15 @@ export async function createStampMockServer(db: StampDB): Promise<Server> {
       immutableFlag: false,
       exists: true,
       batchTTL: Number(req.params.amount),
-    }
+    })
     db.add(newStamp)
     setTimeout(() => (newStamp.usable = true), 100)
     res.send({ batchID: newStamp.batchID })
   })
 
   app.patch('/stamps/topup/:batchId/:amount', (req, res) => {
-    const stamp = db.get(req.params.batchId as BatchId)
-    stamp.amount = (Number(stamp.amount) + Number(req.params.amount)).toString()
+    const stamp = db.get(new BatchId(req.params.batchId))
+    stamp.amount = (Number(stamp.amount) + Number(req.params.amount)).toString() as NumberString
     res.send({ batchID: stamp.batchID })
   })
 

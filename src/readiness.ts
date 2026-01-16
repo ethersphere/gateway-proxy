@@ -1,4 +1,4 @@
-import { Bee, Utils } from '@ethersphere/bee-js'
+import { Bee, Bytes } from '@ethersphere/bee-js'
 import { ERROR_NO_STAMP, READINESS_TIMEOUT_MS } from './config'
 import { logger } from './logger'
 import { StampsManager } from './stamps'
@@ -60,7 +60,7 @@ function makeChunk(seed = '', length = MAX_CHUNK_SIZE): Uint8Array {
   let random: Uint8Array = Buffer.from(seed || getDefaultSeed())
   let offset = 0
   while (offset < length) {
-    random = Utils.keccak256Hash(random)
+    random = Bytes.keccak256(random).toUint8Array()
 
     if (length - offset < 32) {
       random = random.slice(0, length - offset)

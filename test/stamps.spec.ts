@@ -1,10 +1,10 @@
-import { BatchId, Bee, PostageBatch } from '@ethersphere/bee-js'
-import { System } from 'cafe-utility'
+import { BatchId, Bee, NumberString } from '@ethersphere/bee-js'
+import { Strings, System } from 'cafe-utility'
 import type { Server } from 'http'
 import { getStampsConfig } from '../src/config'
 import { StampsManager, buyNewStamp, filterUsableStampsAutobuy, getUsage, topUpStamp } from '../src/stamps'
 import { StampDB, createStampMockServer } from './stamps.mockserver'
-import { genRandomHex } from './utils'
+import { mapPostageBatch } from './utils'
 
 interface AddressInfo {
   address: string
@@ -29,11 +29,11 @@ afterEach(() => {
   db.clear()
 })
 
-const defaultAmount = '414720000'
+const defaultAmount = '414720000' as NumberString
 const defaultDepth = 20
 const defaultTTL = Number(defaultAmount)
-const defaultStamp: PostageBatch = {
-  batchID: genRandomHex(64) as BatchId,
+const defaultStamp = mapPostageBatch({
+  batchID: Strings.randomHex(64),
   utilization: 0,
   usable: true,
   label: 'label',
@@ -44,10 +44,10 @@ const defaultStamp: PostageBatch = {
   immutableFlag: false,
   exists: true,
   batchTTL: defaultTTL,
-}
+})
 
-const buildStamp = (overwrites: Partial<PostageBatch>) => {
-  const batchID = genRandomHex(64) as BatchId
+const buildStamp = (overwrites: { batchTTL?: number; utilization?: number; depth?: number }) => {
+  const batchID = new BatchId(Strings.randomHex(64))
 
   return {
     ...defaultStamp,
@@ -156,18 +156,18 @@ describe('postageStamp', () => {
 
 describe('getUsage', () => {
   const stamps = [
-    { stamp: buildStamp({ depth: 20, utilization: 4, bucketDepth: 16 }), usage: 0.25 },
-    { stamp: buildStamp({ depth: 20, utilization: 8, bucketDepth: 16 }), usage: 0.5 },
-    { stamp: buildStamp({ depth: 20, utilization: 12, bucketDepth: 16 }), usage: 0.75 },
-    { stamp: buildStamp({ depth: 20, utilization: 14, bucketDepth: 16 }), usage: 0.875 },
-    { stamp: buildStamp({ depth: 20, utilization: 15, bucketDepth: 16 }), usage: 0.9375 },
-    { stamp: buildStamp({ depth: 20, utilization: 16, bucketDepth: 16 }), usage: 1 },
-    { stamp: buildStamp({ depth: 17, utilization: 2, bucketDepth: 16 }), usage: 1 },
-    { stamp: buildStamp({ depth: 17, utilization: 1, bucketDepth: 16 }), usage: 0.5 },
-    { stamp: buildStamp({ depth: 18, utilization: 4, bucketDepth: 16 }), usage: 1 },
-    { stamp: buildStamp({ depth: 18, utilization: 3, bucketDepth: 16 }), usage: 0.75 },
-    { stamp: buildStamp({ depth: 18, utilization: 2, bucketDepth: 16 }), usage: 0.5 },
-    { stamp: buildStamp({ depth: 18, utilization: 1, bucketDepth: 16 }), usage: 0.25 },
+    { stamp: buildStamp({ depth: 20, utilization: 4 }), usage: 0.25 },
+    { stamp: buildStamp({ depth: 20, utilization: 8 }), usage: 0.5 },
+    { stamp: buildStamp({ depth: 20, utilization: 12 }), usage: 0.75 },
+    { stamp: buildStamp({ depth: 20, utilization: 14 }), usage: 0.875 },
+    { stamp: buildStamp({ depth: 20, utilization: 15 }), usage: 0.9375 },
+    { stamp: buildStamp({ depth: 20, utilization: 16 }), usage: 1 },
+    { stamp: buildStamp({ depth: 17, utilization: 2 }), usage: 1 },
+    { stamp: buildStamp({ depth: 17, utilization: 1 }), usage: 0.5 },
+    { stamp: buildStamp({ depth: 18, utilization: 4 }), usage: 1 },
+    { stamp: buildStamp({ depth: 18, utilization: 3 }), usage: 0.75 },
+    { stamp: buildStamp({ depth: 18, utilization: 2 }), usage: 0.5 },
+    { stamp: buildStamp({ depth: 18, utilization: 1 }), usage: 0.25 },
   ]
 
   stamps.forEach(({ stamp, usage }) =>

@@ -148,7 +148,7 @@ export const createApp = (
   if (homepage) {
     app.use(async (req, res, next) => {
       try {
-        const url = Strings.joinUrl(beeApiUrl, 'bzz', homepage, req.url)
+        const url = Strings.joinUrl([beeApiUrl, 'bzz', homepage, req.url])
         logger.info('attempting to fetch homepage', { url })
 
         // attempt to fetch homepage

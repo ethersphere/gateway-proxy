@@ -45,7 +45,7 @@ export function createProxyEndpoints(app: Application, options: Options) {
       )
       await fetchAndRespond(
         'GET',
-        Strings.joinUrl('bzz', newUrl, req.path),
+        Strings.joinUrl(['bzz', newUrl, req.path]),
         req.query,
         req.headers,
         req.body,
@@ -86,11 +86,11 @@ async function fetchAndRespond(
 
   try {
     if (method === 'POST' && options.stampManager) {
-      headers[SWARM_STAMP_HEADER] = options.stampManager.postageStamp
+      headers[SWARM_STAMP_HEADER] = options.stampManager.postageStamp.toHex()
     }
     let response = await axios({
       method,
-      url: Strings.joinUrl(options.beeApiUrl, path) + Objects.toQueryString(query, true),
+      url: Strings.joinUrl([options.beeApiUrl, path]) + Objects.toQueryString(query, true),
       data: body,
       headers,
       timeout: Dates.minutes(20),
@@ -100,7 +100,7 @@ async function fetchAndRespond(
     })
 
     if (response.status === 404 || (response.status >= 300 && response.status < 400)) {
-      const url = Strings.joinUrl(options.beeApiUrl, path) + '.html' + Objects.toQueryString(query, true)
+      const url = Strings.joinUrl([options.beeApiUrl, path]) + '.html' + Objects.toQueryString(query, true)
       const probeResponse = await axios({
         method,
         url,
