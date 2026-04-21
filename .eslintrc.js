@@ -5,6 +5,7 @@ module.exports = {
     ecmaVersion: 2018,
     project: './tsconfig.test.json',
   },
+  ignores: ['dist/**'],
   env: {
     jest: true,
   },
