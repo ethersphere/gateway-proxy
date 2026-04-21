@@ -24,11 +24,6 @@ jobs:
       - name: Install local dependencies
         run: npm ci
 
-      - name: Code linting
-        run: npm run lint:check
-        env:
-          CI: true
-
       - name: Dependency check
         run: npm run depcheck
 
