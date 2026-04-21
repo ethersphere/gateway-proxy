@@ -1,3 +1,13 @@
 {
-  "ignores": ["@types/node", "@commitlint/cli", "husky", "ts-node", "@types/readable-stream", "@types/jest", "ts-jest"]
+  "ignores": [
+    "@types/node",
+    "@commitlint/cli",
+    "husky",
+    "ts-node",
+    "@types/readable-stream",
+    "@types/jest",
+    "ts-jest",
+    "prettier",
+    "rimraf"
+  ]
 }

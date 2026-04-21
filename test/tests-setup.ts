@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { bee } from './utils'
 
 export default async function testsSetup(): Promise<void> {
@@ -37,9 +36,7 @@ export default async function testsSetup(): Promise<void> {
       let allUsable = true
       do {
         for (let i = 0; i < stamps.length; i++) {
-          // eslint-disable-next-line max-depth
           try {
-            // eslint-disable-next-line max-depth
             if (!(await bee.getPostageBatch(stamps[i])).usable) {
               allUsable = false
               break
@@ -52,7 +49,6 @@ export default async function testsSetup(): Promise<void> {
           }
         }
 
-        // eslint-disable-next-line no-loop-func
         await new Promise<void>(resolve => setTimeout(() => resolve(), 1_000))
       } while (!allUsable)
       console.log('Usable, yey!')
