@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.17.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.16.0...v0.17.0) (2026-04-21)
+
+
+### Features
+
+* modernize dependencies ([#514](https://www.github.com/ethersphere/gateway-proxy/issues/514)) ([4f50bda](https://www.github.com/ethersphere/gateway-proxy/commit/4f50bda15ceba513d1040d1f81209b753bd4cbb0))
+
+
+### Bug Fixes
+
+* update vulnerable dependencies ([#516](https://www.github.com/ethersphere/gateway-proxy/issues/516)) ([bdf9d50](https://www.github.com/ethersphere/gateway-proxy/commit/bdf9d505fa4c8ea569a940593e46c30c55f04945))
+
 ## [0.16.0](https://www.github.com/ethersphere/gateway-proxy/compare/v0.15.0...v0.16.0) (2024-08-07)
 
 
