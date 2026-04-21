@@ -160,7 +160,7 @@ export const createApp = (
           throw Error('Homepage not available')
         }
         const contentType = response.headers['content-type']
-        res.set('content-type', contentType || 'application/octet-stream')
+        res.set('content-type', contentType ? contentType.toString() : 'application/octet-stream')
         res.send(await response.data)
 
         return
