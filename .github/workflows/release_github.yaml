@@ -11,10 +11,25 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
+      - name: Generate App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.BEE_RUNNER_APP_ID }}
+          private-key: ${{ secrets.BEE_RUNNER_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: gateway-proxy
+          # contents:      commits, branches, tags and the GitHub release
+          # pull-requests: the release PR
+          # issues:        the "autorelease: pending"/"autorelease: tagged" labels
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+
       - uses: GoogleCloudPlatform/release-please-action@v2
         id: release
         with:
-          token: ${{ secrets.GHA_PAT_ADVANCED }}
+          token: ${{ steps.app-token.outputs.token }}
           release-type: node
           package-name: gateway-proxy
           bump-minor-pre-major: true
