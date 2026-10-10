@@ -35,7 +35,7 @@
     "@commitlint/cli": "^20.3.1",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.0.9",
+    "@types/node": "^26.1.1",
     "@types/request-stats": "^3.0.3",
     "@types/supertest": "^6.0.3",
     "depcheck": "^1.4.7",
