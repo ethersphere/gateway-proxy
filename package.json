@@ -52,7 +52,7 @@
   "dependencies": {
     "@ethersphere/bee-js": "^12.0.0",
     "axios": "^1.15.1",
-    "body-parser": "^2.2.2",
+    "body-parser": "^2.3.0",
     "cafe-utility": "^33.9.0",
     "express": "^5.2.1",
     "prom-client": "^15.1.3",
