@@ -10,13 +10,15 @@ on:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    # Only this environment (default branch only) holds RELEASE_APP_KEY.
+    environment: release-ci
     steps:
       - name: Generate App token
         id: app-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
         with:
-          app-id: ${{ secrets.BEE_RUNNER_APP_ID }}
-          private-key: ${{ secrets.BEE_RUNNER_KEY }}
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: gateway-proxy
           # contents:      commits, branches, tags and the GitHub release
@@ -26,7 +28,7 @@ jobs:
           permission-pull-requests: write
           permission-issues: write
 
-      - uses: GoogleCloudPlatform/release-please-action@v2
+      - uses: googleapis/release-please-action@00911586051618367fa9c19b161a0a146ac51970 # v2
         id: release
         with:
           token: ${{ steps.app-token.outputs.token }}
