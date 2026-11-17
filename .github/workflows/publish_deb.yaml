@@ -4,6 +4,10 @@ on:
   release:
     types: [published]
 
+# Uploads the .deb packages to the GitHub release.
+permissions:
+  contents: write
+
 jobs:
   docker-release:
     runs-on: ubuntu-latest
