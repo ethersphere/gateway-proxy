@@ -9,16 +9,20 @@
 ![](https://img.shields.io/badge/npm-%3E%3D6.0.0-orange.svg?style=flat-square)
 ![](https://img.shields.io/badge/Node.js-%3E%3D12.0.0-orange.svg?style=flat-square)
 
+> **⚠️ This repository is deprecated and is being sunset.** It is legacy software and is no longer maintained: no
+> further features, bug fixes, dependency updates or security patches will be made.
+>
+> Please use **[ethersphere/swarm-gateway](https://github.com/ethersphere/swarm-gateway)** instead. It has been the
+> actively developed solution for running Swarm gateways for a long time and is a more mature, complete stack for
+> managing them.
+>
+> The documentation below is kept for reference only.
+
 > Proxy to you bee node which aims to work as a public or personal gateway or to be used in CI for uploading to Swarm.
 
-**Warning: This project is in beta state. There might (and most probably will) be changes in the future to its API and
-working. Also, no guarantees can be made about its stability, efficiency, and security at this stage.**
-
-This project is intended to be used with
+This project was intended to be used with
 **Bee&nbsp;version&nbsp;<!-- SUPPORTED_BEE_START -->1.7.0-bbf13011<!-- SUPPORTED_BEE_END -->**. Using it with older or
-newer Bee versions is not recommended and may not work. Stay up to date by joining the
-[official Discord](https://discord.gg/GU22h2utj6) and by keeping an eye on the
-[releases tab](https://github.com/ethersphere/gateway-proxy/releases).
+newer Bee versions is not recommended and may not work.
 
 ## Table of Contents
 
@@ -203,12 +207,8 @@ curl \
 
 ## Contribute
 
-There are some ways you can make this module better:
-
-- Consult our [open issues](https://github.com/ethersphere/gateway-proxy/issues) and take on one of them
-- Help our tests reach 100% coverage!
-- Join us in our [Discord chat](https://discord.gg/wdghaQsGq5) in the #develop-on-swarm channel if you have questions or
-  want to give feedback
+This repository is no longer accepting contributions. Please direct issues, feature requests and pull requests to
+[ethersphere/swarm-gateway](https://github.com/ethersphere/swarm-gateway) instead.
 
 ### Local development with Bzz.link
 
